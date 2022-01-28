@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common.css"/>
+		<script src="__STATIC__/product/js/vue.min.js"></script>
+	</head>
+	<body>
+	<div id="main" v-cloak @click="closePop">
+		<div class="bgfff H120 head flexbox1 f35">
+			<div class="flexbox2">
+				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
+				<span>City b2b</span>
+			</div>
+		    <div class="relative hand" @click.stop="chose(1)">
+				{{choseDate1?choseDate1:list[0]}}
+				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
+					<div class="mb10" v-for="(item,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item}}</div>
+				</div>
+			</div>
+			<div class="flexbox2 relative hand" @click.stop="chose(2)">
+				{{choseDate2?choseDate2:list2[0]}}
+				<img src="__STATIC__/product/img/updown.png" class="updown"/>
+				<div class="choseCustomerBox" v-show="whichPopShow==2">
+					<div class="mb10" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item}}</div>
+				</div>
+			</div>
+			<div class="flexbox2 relative hand" @click.stop="chose(3)">
+				{{choseDate3?choseDate3:list3[0]}}
+				<img src="__STATIC__/product/img/updown.png" class="updown"/>
+				<div class="choseCustomerBox" v-show="whichPopShow==3">
+					<div class="mb10" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">{{item}}</div>
+				</div>
+			</div>
+
+			<div class="btn bgFD6921">12/17</div>
+			<div class="btn bg34C079">178/139</div>
+		</div>
+
+		<div class="flexbox3" style="min-height:100%;">
+			<div class="left bgfff">
+				<div class="colfff f32 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-show="currentPage==1">
+					<img src="__STATIC__/product/img/goodsIcon.png" class="goodsIcon"/>
+					货物列表&nbsp;
+					<img src="__STATIC__/product/img/arrow.png" class="arrIcon"/>
+				</div>
+				<div class="colfff f32 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-show="currentPage==2">
+					<img src="__STATIC__/product/img/return.png" class="returnIcon"/>
+					返回
+				</div>
+				<div class="f35 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
+					<!-- <span class="col000" v-show="isHandle==0">序号</span> -->
+					<span class="colFD6921" v-if="isHandle">待处理</span>
+					<span class="col34C079" v-else>已处理</span>
+					<img src="__STATIC__/product/img/updown.png" class="updown"/>
+				</div>
+				<div class="f35 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
+					<span class="col000">序号</span>
+					<img src="__STATIC__/product/img/updown.png" class="updown"/>
+				</div>
+				<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="f35 lbtn relative hand" v-show="currentPage==2" @click="clickMenu(index)">
+					{{item}}
+					<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
+				</div>
+
+				<div v-show="currentPage==1" class="hand">
+					<div :class="item.status==0?'bgFD6921':'bg34C079'" class="colfff f35 lbtn2 relative" v-for="(item,index) in menudata2" @click="clickGoods(item,index)">
+						<span :class="item.isBlink?'blink':''">猪肉</span>
+						<div :class="item.isBlink?'blink':''">324324</div>
+					</div>
+					<div class="colfff f35 bgB5B5B5 lbtn2 relative">
+						猪肉
+						<div>324324</div>
+						<img src="__STATIC__/product/img/suo.png" class="suo"/>
+					</div>
+
+				</div>
+			</div>
+			<div class="right pa20">
+				<div v-show="currentPage==1">
+					<div v-if="currentContent==0">
+						<div class="flexbox2 rsection1">
+							<div class="bgGrey colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+							<div class="bgdarkGrey colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+							<div class="bgOrange colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+							<div class="bgGreen colfff rbtn">
+								<div class="blink">
+									<div class="textLeft f25">5mm</div>
+									<div class="textCenter maT10 f30">15/78kg</div>
+								</div>
+							</div>
+						</div>
+						<div class="flexbox2 rsection2">
+							<div class="rbtn2 bgdarkGrey">
+								1kg
+							</div>
+							<div class="rbtn2 bgOrange">
+								1kg
+							</div>
+						</div>
+						<!-- 下面开始 -->
+						<div class="rsection3 bgfff">
+							<!-- 头部 -->
+							<div class="flexbox1 pa20">
+								<div class="flexbox2">
+									<div class="flexbox1 xxBox" @click.stop="tab(0)">
+										物流号<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+									</div>
+									<div class="flexbox1 xxBox" @click.stop="tab(1)">
+										处理中<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+									</div>
+									<div class="flexbox1 xxBox" @click.stop="tab(2)">
+										已处理<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+									</div>
+								</div>
+								<div class="flexbox2 relative hand" @click="popKeyboard">
+									<span>i am jason</span>&nbsp;&nbsp;
+									<img src="__STATIC__/product/img/suo2.png" class="suo2"/>
+								</div>
+							</div>
+							<!-- 主体部分 -->
+							<div class="mainBox" v-show="currentTab==0">
+								<div class="flexbox1 mb15" v-for="(item,index) in handleList">
+									<div class="flexbox1 pa5-10 w70" :class="item.bg">
+										<div class="flexbox2">
+											<div class="col666 F36" style="width: 50px;">16</div>
+											<div class="col666 f35" style="width: 350px;">zhonghua001</div>
+										</div>
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,0)" v-else/>
+											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,0)"/>
+										</div>
+									</div>
+									<div class="flexbox1 pa18-0" :class="item.bg">
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,1)" v-else/>
+											<input class="inputW" v-model="item.num1"/>
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,1)"/>
+										</div>
+										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(0,item.status,index)"/>
+									</div>
+									<div class="rbtn3 bg34C079 relative" v-if="item.status==0" @click="handle(index)">
+										已处理
+										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
+											<div class="colFD6921" @click.stop="Popcontinue(0,index)">继续处理</div>
+											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
+										</div>
+									</div>
+									<div class="rbtn3 bgFD6921" v-else @click="changeStatus(0,item.status,index)">
+										待处理
+									</div>
+								</div>
+							</div>
+							<div class="mainBox" v-show="currentTab==1">
+								<div class="flexbox1 mb15" v-for="(item,index) in handleList1">
+									<div class="flexbox1 pa5-10 w70" :class="item.bg">
+										<div class="flexbox2">
+											<div class="col666 F36" style="width: 50px;">16</div>
+											<div class="col666 f35" style="width: 350px;">zhonghua001</div>
+										</div>
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(1,index,0)" v-else/>
+											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(1,index,0)"/>
+										</div>
+									</div>
+									<div class="flexbox1 pa18-0" :class="item.bg">
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(1,index,1)" v-else/>
+											<input class="inputW" v-model="item.num1"/>
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(1,index,1)"/>
+										</div>
+										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(1,item.status,index)"/>
+									</div>
+									<div class="rbtn3 bgFD6921" v-if="item.status==1" @click="changeStatus(0,item.status,index)">
+										待处理
+									</div>
+									<div class="rbtn3 bg34C079 relative" v-else @click="handle(index)">
+										已处理
+										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
+											<div class="colFD6921" @click.stop="Popcontinue(1,index)">继续处理</div>
+											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="mainBox" v-show="currentTab==2">
+								<div class="flexbox1 mb15" v-for="(item,index) in handleList2">
+									<div class="flexbox1 pa5-10 w70" :class="item.bg">
+										<div class="flexbox2">
+											<div class="col666 F36" style="width: 50px;">16</div>
+											<div class="col666 f35" style="width: 350px;">zhonghua001</div>
+										</div>
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(2,index,0)" v-else/>
+											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(2,index,0)"/>
+										</div>
+									</div>
+									<div class="flexbox1 pa18-0" :class="item.bg">
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(2,index,1)" v-else/>
+											<input class="inputW" v-model="item.num1"/>
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(2,index,1)"/>
+										</div>
+										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(2,item.status,index)"/>
+									</div>
+									<div class="rbtn3 bg34C079 relative" v-if="item.status==0"  @click="handle(index)">
+										已处理
+										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
+											<div class="colFD6921" @click.stop="Popcontinue(2,index)">继续处理</div>
+											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
+										</div>
+									</div>
+									<div class="rbtn3 bgFD6921" v-if="item.status==1" @click="changeStatus(2,item.status,index)">
+										待处理
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- 下面结束 -->
+					</div>
+					<div v-if="currentContent==1">
+						<div class="flexbox2 rsection1">
+							<div class="bgGrey colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+							<div class="bgdarkGrey colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+							<div class="bgOrange colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+							<div class="bgOrange colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+							<div class="bgOrange colfff rbtn">
+								<div class="textLeft f25">5mm</div>
+								<div class="textCenter maT10 f30">15/78kg</div>
+							</div>
+						</div>
+						<div class="flexbox2 rsection2">
+							<div class="rbtn2 bgdarkGrey">
+								1kg
+							</div>
+							<div class="rbtn2 bgOrange">
+								1kg
+							</div>
+							<div class="rbtn2 bgOrange">
+								1kg
+							</div>
+							<div class="rbtn2 bgOrange">
+								1kg
+							</div>
+							<div class="rbtn2 bgOrange">
+								1kg
+							</div>
+						</div>
+						<!-- 下面开始 -->
+						<div class="rsection3 bgfff">
+							<!-- 头部 -->
+							<div class="flexbox1 pa20">
+								<div class="flexbox2">
+									<div class="flexbox1 xxBox" @click.stop="tab(0)">
+										物流号<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+									</div>
+									<div class="flexbox1 xxBox" @click.stop="tab(1)">
+										处理中<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+									</div>
+									<div class="flexbox1 xxBox" @click.stop="tab(2)">
+										已处理<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+									</div>
+								</div>
+								<div class="flexbox2 relative hand" @click="popKeyboard">
+									<span>i am jason</span>&nbsp;&nbsp;
+									<img src="__STATIC__/product/img/suo2.png" class="suo2"/>
+								</div>
+							</div>
+							<!-- 主体部分 -->
+							<div class="mainBox" v-show="currentTab==0">
+								<div class="flexbox1 mb15" v-for="(item,index) in handleList">
+									<div class="flexbox1 pa5-10 w70" :class="item.bg">
+										<div class="flexbox2">
+											<div class="col666 F36" style="width: 50px;">16</div>
+											<div class="col666 f25" style="width: 350px;">zhonghua001</div>
+										</div>
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,0)" v-else/>
+											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,0)"/>
+										</div>
+									</div>
+									<div class="flexbox1 pa5-10" :class="item.bg">
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,1)" v-else/>
+											<input class="inputW" v-model="item.num1"/>
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,1)"/>
+										</div>
+										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(0,item.status,index)"/>
+									</div>
+									<div class="rbtn3 bg34C079 relative" v-if="item.status==0" @click="handle(index)">
+										已处理
+										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
+											<div class="colFD6921" @click.stop="Popcontinue(0,index)">继续处理</div>
+											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
+										</div>
+									</div>
+									<div class="rbtn3 bgFD6921" v-else @click="changeStatus(0,item.status,index)">
+										待处理
+									</div>
+								</div>
+							</div>
+							<div class="mainBox" v-show="currentTab==1">
+								<div class="flexbox1 mb15" v-for="(item,index) in handleList1">
+									<div class="flexbox1 pa5-10 w70" :class="item.bg">
+										<div class="flexbox2">
+											<div class="col666 F36" style="width: 50px;">16</div>
+											<div class="col666 f35" style="width: 350px;">zhonghua001</div>
+										</div>
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(1,index,0)" v-else/>
+											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(1,index,0)"/>
+										</div>
+									</div>
+									<div class="flexbox1 pa5-10" :class="item.bg">
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(1,index,1)" v-else/>
+											<input class="inputW" v-model="item.num1"/>
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(1,index,1)"/>
+										</div>
+										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(1,item.status,index)"/>
+									</div>
+									<div class="rbtn3 bgFD6921" v-if="item.status==1" @click="changeStatus(0,item.status,index)">
+										待处理
+									</div>
+									<div class="rbtn3 bg34C079 relative" v-else @click="handle(index)">
+										已处理
+										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
+											<div class="colFD6921" @click.stop="Popcontinue(1,index)">继续处理</div>
+											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="mainBox" v-show="currentTab==2">
+								<div class="flexbox1 mb15" v-for="(item,index) in handleList2">
+									<div class="flexbox1 pa5-10 w70" :class="item.bg">
+										<div class="flexbox2">
+											<div class="col666 F36" style="width: 50px;">16</div>
+											<div class="col666 f35" style="width: 350px;">zhonghua001</div>
+										</div>
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(2,index,0)" v-else/>
+											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(2,index,0)"/>
+										</div>
+									</div>
+									<div class="flexbox1 pa5-10" :class="item.bg">
+										<div class="flexbox2">
+											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(2,index,1)" v-else/>
+											<input class="inputW" v-model="item.num1"/>
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(2,index,1)"/>
+										</div>
+										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(2,item.status,index)"/>
+									</div>
+									<div class="rbtn3 bg34C079 relative" v-if="item.status==0" @click="handle(index)">
+										已处理
+										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
+											<div class="colFD6921" @click.stop="Popcontinue(2,index)">继续处理</div>
+											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
+										</div>
+									</div>
+									<div class="rbtn3 bgFD6921" v-else @click="changeStatus(2,item.status,index)">
+										待处理
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- 下面结束 -->
+					</div>
+				</div>
+				<div v-show="currentPage==2">
+					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter f35 colFD6921 relative hand" @click="returnPage(1)">
+						<img src="__STATIC__/product/img/return2.png" style="width:11px;position:absolute;left:15px;"/>
+						返回该类别
+					</div>
+					<div class="flexbox2">
+						<div v-for="(item,index) in goods">
+							<div class="rbtn2 bgOrange">
+								猪肉
+							</div>
+							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu==1&&currentPage==2" @click="cancelZD(index)">
+								<img src="__STATIC__/product/img/zd.png" class="zd"/>
+								 取消置顶
+							</div>
+							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu==2&&currentPage==2" @click="cancelZD(index)">
+								 <img src="__STATIC__/product/img/zd2.png" class="zd"/>
+								 置顶
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 主体部分结束 -->
+
+		<div class="mask" v-if="iskeyboardShow" @click="closeKeyboard">
+			<div class="keyboardBox">
+				<div class="tips" v-show="isPsdCorrect">密码不正确 请重新输入</div>
+				<div class="keyboard">{{psd2}}</div>
+				<div>
+					<div class="textRight w100 bgF7F7F7 save" @click.stop="save">完成</div>
+					<div class="flexbox1 pa10" style="background: #F2F2F2;">
+						<div class="textCenter number" v-for="number in numberList" @click.stop="clickNum(number)">{{number}}</div>
+						<div class="textCenter number" @click.stop="deletePsd">
+							<img src="__STATIC__/product/img/delete.png" class="delete">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	</body>
+	<script>
+		new Vue({
+			el:"#main",
+			data:{
+				currentHandlePop:-1,
+				currentContent:0,
+				currentDay:0,
+				current2:0,
+				current3:0,
+				choseDate1:'',
+				choseDate2:'',
+				choseDate3:'',
+				list:['2021年11月28日昨天','2021年11月28日前天','2021年11月28日明天'],
+				list2:['全部客户','团购客户','客户'],
+				list3:['司机1','司机2','司机3'],
+				num:20,
+				whichPopShow:-1,
+				currentPage:1,  // 1表示1级页面 2是2级页面
+				menudata:['当前备货','置顶','猪肉','牛肉','羊肉'],
+				menudata2:[
+					{
+						name:'猪肉',
+						status:0,
+						isBlink:false
+					},
+					{
+						name:'猪肉',
+						status:1,
+						isBlink:false
+					},
+					{
+						name:'猪肉',
+						status:2,
+						isBlink:false
+					}
+				],
+				currentTab:0,
+				handleList:[
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:1    // 0已处理  1未处理
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:1
+					}
+				],
+				handleList1:[
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:1    // 0已处理  1未处理
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:1
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:1
+					}
+				],
+				handleList2:[
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0    // 0已处理  1未处理
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgFFF7F3',
+						status:0
+
+					},
+					{
+						num:10,
+						num1:1,
+						bg:'bgF0FBFB',
+						status:0
+					}
+				],
+				currentMenu:0,
+				isHandle:false,
+				goods:['','','','','','','','','','','','','','','','','','','',''],
+				numberList:[1,2,3,4,5,6,7,8,9,'.',0],
+				isPsdCorrect:false,
+				iskeyboardShow:false,
+				psd:'',
+				psd2:''
+			},
+			methods:{
+				changeStatus(source,status,index){
+					if(status==1){
+						if(source==0){
+							this.handleList[index].status=0
+						}else if(source==1){
+							this.handleList1[index].status=0
+						}else{
+							this.handleList2[index].status=0
+						}
+					}
+				},
+				handle(index){  // 点击已处理
+					this.currentHandlePop=index
+				},
+				Popcontinue(source,index){  // 变成待处理
+					this.currentHandlePop=-1
+					if(source==0){
+						this.handleList[index].status=1
+					}else if(source==1){
+						this.handleList1[index].status=1
+					}else{
+						this.handleList2[index].status=1
+					}
+				},
+				Popreturn(index){
+					this.currentHandlePop=-1
+				},
+				clickGoods(item,index){
+				   	this.currentContent=index
+					if(item.status==0){
+						this.menudata2[index].isBlink=true
+					}
+				},
+				tab(index){
+					this.currentTab=index
+					this.currentHandlePop=-1
+				},
+				add(source,index,sec){
+					if(source==0){
+						if(sec==0){
+							this.handleList[index].num=this.numAdd(this.handleList[index].num,0.1)
+						}else{
+							this.handleList[index].num1++
+						}
+					}else if(source==1){
+						if(sec==0){
+							this.handleList1[index].num=this.numAdd(this.handleList1[index].num,0.1)
+						}else{
+							this.handleList1[index].num1++
+						}
+					}else{
+						if(sec==0){
+							this.handleList2[index].num=this.numAdd(this.handleList2[index].num,0.1)
+						}else{
+							this.handleList2[index].num1++
+						}
+					}
+				},
+				reduce(source,index,sec){
+					if(source==0){
+						if(sec==0){
+							this.handleList[index].num=this.numSub(this.handleList[index].num,0.1)
+						}else{
+							this.handleList[index].num1--
+
+						}
+					}else if(source==1){
+						if(sec==0){
+							this.handleList1[index].num=this.numSub(this.handleList1[index].num,0.1)
+						}else{
+							this.handleList1[index].num1--
+						}
+					}else{
+						if(sec==0){
+							this.handleList2[index].num=this.numSub(this.handleList2[index].num,0.1)
+						}else{
+							this.handleList2[index].num1--
+						}
+					}
+				},
+				numSub(arg1,arg2){
+				    var r1,r2,m;
+				    try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+				    try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+				    m=Math.pow(10,Math.max(r1,r2))
+				    return (arg1*m-arg2*m)/m;
+				},
+				numAdd(arg1, arg2) {
+				    var r1, r2, m;
+				    try { r1 = arg1.toString().split(".")[1].length; } catch (e) { r1 = 0; }
+				    try { r2 = arg2.toString().split(".")[1].length; } catch (e) { r2 = 0; }
+				    m = Math.pow(10, Math.max(r1, r2));
+				    return (arg1 * m + arg2 * m) / m;
+				},
+				choseDay(item,index){
+					this.choseDate1=item
+					this.currentDay=index
+					this.whichPopShow=-1
+				},
+				choseCus(item,index){
+					this.choseDate2=item
+					this.current2=index
+					this.whichPopShow=-1
+				},
+				choseDriver(item,index){
+					this.choseDate3=item
+					this.current3=index
+					this.whichPopShow=-1
+				},
+				closePop(){
+					this.whichPopShow=-1
+				},
+				chose(index){
+					this.whichPopShow=index
+				},
+				returnPage(index){
+					this.currentPage=index
+				},
+				clickMenu(index){
+					this.currentMenu=index
+				},
+				clickHandle(){
+					this.isHandle=!this.isHandle
+				},
+				cancelZD(index){
+					this.goods.splice(index,1)
+				},
+				clickNum(number){
+					this.psd+=number
+					this.psd2 += new String('*',this.psd.Length);
+					console.log(this.psd)
+				},
+				popKeyboard(){
+					this.iskeyboardShow=true
+				},
+				closeKeyboard(){
+					this.iskeyboardShow=false
+				},
+				save(){
+					this.isPsdCorrect=!this.isPsdCorrect
+				},
+				deletePsd(){
+					this.psd=this.psd.substr(0, this.psd.length - 1);
+					this.psd2=this.psd2.substr(0, this.psd2.length - 1);
+				}
+			}
+		})
+	</script>
+</html>
