@@ -12,10 +12,10 @@ function isButtonLoading(isLoading, button) {
 }
 
 let common = {
-    // apiUrl: 'http://127.0.0.1/',//api接口地址
-    // webUrl: 'http://127.0.0.1/',//web访问地址
     apiUrl: 'http://product.cooltechsolution.com/',//api接口地址
     webUrl: 'http://product.cooltechsolution.com/',//web访问地址
+    // apiUrl: 'http://127.0.0.1/',//api接口地址
+    // webUrl: 'http://127.0.0.1/',//web访问地址
 }
 
 function getData(url,data,callback){
@@ -28,7 +28,7 @@ function getData(url,data,callback){
         // timeout:10000,
         data:JSON.stringify(data), //  字符串格式
         complete(xhr){
-            console.log(xhr);
+            // console.log(xhr);
             callback(xhr.responseJSON)
         },
         error:function(xhr,msg){
