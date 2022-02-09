@@ -13,6 +13,10 @@ Route::post('loginByPassword', 'Login/loginByPassword');
 Route::post('loginByPincode', 'Index/loginByPincode');
 //pincode登录
 Route::post('loginInfo', 'Index/loginInfo');
+//退出登录
+Route::post('loginOut', 'Index/loginOut');
+//退出pincode登录
+Route::post('loginOutPincode', 'Index/loginOutPincode');
 //test
 Route::post('test', 'Index/test');
 

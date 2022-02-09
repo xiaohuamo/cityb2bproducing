@@ -109,4 +109,12 @@ abstract class Base
     {
         return Cookie::get('user_name');
     }
+
+    /**
+     * 清空cookie
+     */
+    public function clearPincodeCookie()
+    {
+        Cookie::delete('user_name');
+    }
 }

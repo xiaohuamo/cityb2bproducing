@@ -8,7 +8,7 @@
 		<script src="__STATIC__/product/js/common.js"></script>
 	</head>
 	<body>
-	<div id="main" v-cloak @click="closePop">
+	<div id="main" v-cloak @click="closePop();isDo()">
 		<div class="bgfff H120 head flexbox1 f35">
 			<div class="flexbox2">
 				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
@@ -766,6 +766,10 @@
 				timeLock:0,//上锁时间
 				timer:null,//定时器
 				userName:'',//登录用户信息
+				intervalId:null,//定时器id，刷新数据使用
+				lastTime: null, //最后一次点击的时间
+				currentTime: null, //当前点击的时间
+				timeOut: 10 * 60 * 1000 //设置超时时间： 10分钟
 			},
 			mounted: function () {
 				var _this = this
@@ -780,6 +784,38 @@
 				});
 			},
 			methods:{
+				// 定时刷新数据函数
+				dataRefreh() {
+					// 计时器正在进行中，退出函数
+					if (this.intervalId != null) {
+						return;
+					}
+					// 计时器为空，操作
+					this.intervalId = setInterval(() => {
+						console.log("刷新" + new Date());
+						// this.initData(); //加载数据函数
+					}, 5000);
+				},
+				// 停止定时器
+				clear() {
+					clearInterval(this.intervalId); //清除计时器
+					this.intervalId = null; //设置为null
+				},
+				//判断用户10分钟内是否有操作，无操作则需要上锁，弹出pincode登录框
+				isDo() {
+					this.currentTime = new Date().getTime(); //记录这次点击的时间
+					console.log("操作时间"+this.currentTime);
+					if(this.currentTime - this.lastTime > this.timeOut) {  //判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
+						//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
+						var _this = this
+						getData('product/loginOutPincode', '', function (res) {
+							_this.iskeyboardShow = true
+							_this.isClock = true
+						});
+					} else {
+						this.lastTime = new Date().getTime(); //如果在10分钟内点击，则把这次点击的时间记录覆盖掉之前存的最后一次点击的时间
+					}
+				},
 				changeStatus(source,status,index){
 					if(status==1){
 						if(source==0){
@@ -935,7 +971,14 @@
 						if(res.status == 200){
 							//登录成功，隐藏密码框
 							_this.iskeyboardShow=false
+							//显示登录信息
 							_this.isLoginPincode=false
+							//清空pincode信息
+							_this.psd=''
+							_this.psd2=''
+							if (res.result.user_name) {
+								_this.userName = 'i am '+res.result.user_name
+							}
 						} else {
 							_this.message = res.message
 							_this.isPsdCorrect=true
@@ -970,6 +1013,14 @@
 						}, 1000)
 					}
 				}
+			},
+			created(){
+				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
+				this.dataRefreh();
+			},
+			destroyed(){
+				// 在页面销毁后，清除计时器
+				this.clear();
 			}
 		})
 	</script>
