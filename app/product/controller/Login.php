@@ -6,7 +6,7 @@ namespace app\product\controller;
 use think\facade\Cookie;
 use app\product\validate\LoginValidate;
 use think\facade\View;
-use app\Model\{
+use app\model\{
     User,
     StaffRoles
 };
