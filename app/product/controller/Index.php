@@ -100,4 +100,17 @@ class Index extends AuthBase
         ];
         return $data;
     }
+
+    //退出pincode登录
+    public function loginOutPincode()
+    {
+        $this->clearPincodeCookie();
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+    }
+
+    //获取加工日期
+    public function OrderDate()
+    {
+
+    }
 }
