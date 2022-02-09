@@ -14,7 +14,7 @@ use app\model\{
 class Login extends Base
 {
     /**
-     * 显示资源列表
+     * 显示登录页面
      *
      * @return \think\Response
      */
