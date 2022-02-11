@@ -28,6 +28,11 @@ class Order extends Model
         $sql_union = 'select DISTINCT  logistic_delivery_date from (select * from( ('. $sql_cc_order_avaliabe_date.') union ('.$sql_cc_order_import_avaliabe_date.')) as d ) as c';
         return $sql_union;
         $res = Db::query($sql_union);
+        Db::name('order')->where([
+            ['business_userId', '=', $businessId],
+            ['coupon_status', '=', 'c01'],
+            ['']
+        ])->group('logistic_delivery_date')->cloumn('logistic_delivery_date');
         return $res;
     }
 }

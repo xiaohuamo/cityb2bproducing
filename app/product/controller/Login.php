@@ -47,7 +47,7 @@ class Login extends Base
 
         //2.查询用户是否存在
         $map['name'] = $name;
-        $user = User::is_exist($map,'id,name,nickname,password,role,user_belong_to_user,isApproved,isSuspended');
+        $user = User::is_exist($map,'id,name,nickname,password,role,user_belong_to_user,isApproved,isSuspended,pincode');
         if (!$user) {
             return show(config('status.code')['account_or_pwd_error']['code'],config('status.code')['account_or_pwd_error']['msg']);
         }
@@ -91,6 +91,10 @@ class Login extends Base
                 $business_id = $user['id'];
             }
             Cookie::set('business_id', $business_id, 60 * 60 * 24 * 365);
+            if($user['pincode']){
+                $user_name = $user['nickname'] ?: $user['name'];
+                Cookie::set('user_name',$user_name);
+            }
         }
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
     }

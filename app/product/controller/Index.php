@@ -207,7 +207,7 @@ class Index extends AuthBase
     public function deliveryDate()
     {
         $Order = new Order();
-        $businessId = 319188;//$this->getBusinessId();
+        $businessId = $this->getBusinessId();
         $res = $Order->getDeliveryDate($businessId);
         dump($res);
     }
