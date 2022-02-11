@@ -85,4 +85,14 @@ trait modelTrait
     {
         return self::where($where)->sum($field);
     }
+
+    /**
+     * 更新数据
+     * @param array|int $where 查询条件
+     * @return static
+     */
+    static public function getUpdate($where=[], $data)
+    {
+        return self::where($where)->update($data);
+    }
 }

@@ -38,5 +38,9 @@ return [
             'code' => 105,//pincode输入错误次数过多
             'msg' => 'Too many errors, please try again later'
         ],
+        'pincode_exist' => [
+            'code' => 106,//pincode已存在
+            'msg' => 'Please reset pincode'
+        ],
     ]
 ];
