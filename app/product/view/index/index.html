@@ -797,7 +797,7 @@
 				isShowTypePincode1:false,//显示pincode输入框样式-1.pincode登录是否显示
 				isShowTypePincode2:false,//显示pincode输入框样式-创建pincode是否显示
 				isShowTypePincode3:false,//显示pincode输入框样式-修改pincode是否显示
-				editText:'Edit',//键盘文字显示
+				editText:'setting',//键盘文字显示
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -832,7 +832,6 @@
 					// 计时器为空，操作
 					this.intervalId = setInterval(() => {
 						console.log("刷新" + new Date());
-						// this.initData(); //加载数据函数
 					}, 5000);
 				},
 				// 停止定时器
@@ -1018,6 +1017,7 @@
 					this.isClock = true
 					this.psd=this.psd2=this.npsd=this.npsd2=this.nrpsd=this.nrpsd2=''
 					this.message=''
+					this.editText='setting'
 					//退出pincode登录
 					getData('product/loginOutPincode', '', function (res) {
 					});
