@@ -14,7 +14,8 @@ class LoginValidate extends Validate
         'remember' =>  'require',//是否记住账号密码
         'pincode' => 'require|number|length:4',//pincode
         'new_pincode' => 'require|number|length:4',//新pincode
-        'sure_pincode' => 'require|number|length:4|confirm:new_pincode'//确认pincode
+//        'sure_pincode' => 'require|number|length:4|confirm:new_pincode',//确认pincode
+        'sure_pincode' => 'require|number|length:4'//确认pincode
     ];
 
     protected $scene = [

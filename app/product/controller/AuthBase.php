@@ -32,7 +32,7 @@ class AuthBase extends Base
         //校验加密的信息和用户信息是否一致，不一致，跳转到登录页面
         $encrypt_data = md5( $user['id'].$user['name'].$user['password']);
         $cookie_data = $this->getMemberUserShell();
-        if ($encrypt_data !== $cookie_data) {
+        if ($encrypt_data != $cookie_data) {
             $this->clearCookie();
             return redirect('login')->send();
         }

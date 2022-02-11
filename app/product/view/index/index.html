@@ -441,16 +441,16 @@
 			<div class="keyboardBox">
 				<div class="tips" v-show="isPsdCorrect">{{message}}</div>
 				<div v-if="isShowTypePincode1">
-					<div class="keyboard input" :class="{'keyboardBorder':focusDatype==10}" tabindex="0" placeholder="" @focus="focusData($event,10,1)">{{psd2}}</div>
+					<div class="keyboard input J_pincode" :class="{'keyboardBorder':focusDatype==10}" tabindex="0" :placeholder="placeholderPincode" @focus="focusData($event,10,1)">{{psd2}}</div>
 				</div>
 				<div v-if="isShowTypePincode2">
-					<div class="keyboard input" :class="{'keyboardBorder':focusDatype==20}" tabindex="0" placeholder="New pincode" @focus="focusData($event,20,2)">{{npsd2}}</div>
-					<div class="keyboard input" :class="{'keyboardBorder':focusDatype==30}" tabindex="0" placeholder="Re-enter pincode" @focus="focusData($event,30,2)">{{nrpsd2}}</div>
+					<div class="keyboard input J_n_pincode" :class="{'keyboardBorder':focusDatype==20}" tabindex="0" :placeholder="placeholderNPincode" @focus="focusData($event,20,2)">{{npsd2}}</div>
+					<div class="keyboard input J_nr_pincode" :class="{'keyboardBorder':focusDatype==30}" tabindex="0" :placeholder="placeholderNRPincode" @focus="focusData($event,30,2)">{{nrpsd2}}</div>
 				</div>
 				<div v-if="isShowTypePincode3">
-					<div class="keyboard input" :class="{'keyboardBorder':focusDatype==10}" tabindex="0" placeholder="Old pincode" @focus="focusData($event,10,3)">{{psd2}}</div>
-					<div class="keyboard input" :class="{'keyboardBorder':focusDatype==20}" tabindex="0" placeholder="New pincode" @focus="focusData($event,20,3)">{{npsd2}}</div>
-					<div class="keyboard input" :class="{'keyboardBorder':focusDatype==30}" tabindex="0" placeholder="Re-enter pincode" @focus="focusData($event,30,3)">{{nrpsd2}}</div>
+					<div class="keyboard input J_o_pincode" :class="{'keyboardBorder':focusDatype==10}" tabindex="0" :placeholder="placeholderOPincode" @focus="focusData($event,10,3)">{{psd2}}</div>
+					<div class="keyboard input J_n_pincode" :class="{'keyboardBorder':focusDatype==20}" tabindex="0" :placeholder="placeholderNPincode" @focus="focusData($event,20,3)">{{npsd2}}</div>
+					<div class="keyboard input J_nr_pincode" :class="{'keyboardBorder':focusDatype==30}" tabindex="0" :placeholder="placeholderNRPincode" @focus="focusData($event,30,3)">{{nrpsd2}}</div>
 				</div>
 				<div>
 					<div class="textRight w100 bgF7F7F7 save" :class="{'flexbox1':!isShowTypePincode2}">
@@ -781,6 +781,10 @@
 				npsd2:'',
 				nrpsd:'',
 				nrpsd2:'',
+				placeholderPincode:'',
+				placeholderNPincode:'New pincode',
+				placeholderNRPincode:'Re-enter pincode',
+				placeholderOPincode:'Old pincode',
 				focusDatype:'',//光标所在的位置，获取到光标所在位置，给哪个输入框输入内容
 				pincodeType:'',//pincode登录内容
 				message: '',//pincode登录错误信息
@@ -832,6 +836,18 @@
 					// 计时器为空，操作
 					this.intervalId = setInterval(() => {
 						console.log("刷新" + new Date());
+						this.currentTime = new Date().getTime();
+						if(this.currentTime - this.lastTime > this.timeOut) {  //判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
+							//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
+							var _this = this
+							getData('product/loginOutPincode', '', function (res) {
+								_this.iskeyboardShow = true
+								_this.isClock = true
+								_this.psd=_this.psd2=_this.npsd=_this.npsd2=_this.nrpsd=_this.nrpsd2=''
+								_this.message=''
+								_this.isPsdCorrect=false
+							});
+						}
 					}, 5000);
 				},
 				// 停止定时器
@@ -841,18 +857,8 @@
 				},
 				//判断用户10分钟内是否有操作，无操作则需要上锁，弹出pincode登录框
 				isDo() {
-					this.currentTime = new Date().getTime(); //记录这次点击的时间
-					console.log("操作时间"+this.currentTime);
-					if(this.currentTime - this.lastTime > this.timeOut) {  //判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
-						//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
-						var _this = this
-						getData('product/loginOutPincode', '', function (res) {
-							_this.iskeyboardShow = true
-							_this.isClock = true
-						});
-					} else {
-						this.lastTime = new Date().getTime(); //如果在10分钟内点击，则把这次点击的时间记录覆盖掉之前存的最后一次点击的时间
-					}
+					this.lastTime = new Date().getTime(); //如果在10分钟内点击，则把这次点击的时间记录覆盖掉之前存的最后一次点击的时间
+					console.log('最后一次点击时间----'+this.lastTime);
 				},
 				changeStatus(source,status,index){
 					if(status==1){
@@ -918,7 +924,6 @@
 							this.handleList[index].num=this.numSub(this.handleList[index].num,0.1)
 						}else{
 							this.handleList[index].num1--
-
 						}
 					}else if(source==1){
 						if(sec==0){
@@ -1036,7 +1041,7 @@
 						this.pincodeType = 1
 						this.focusDatype=10
 						this.psd=this.psd2=this.npsd=this.npsd2=this.nrpsd=this.nrpsd2=''
-						this.editText='Edit'
+						this.editText='setting'
 					}
 					if(this.isShowTypePincode3){
 						this.pincodeType = 3
@@ -1044,6 +1049,8 @@
 						this.psd=this.psd2=''
 						this.editText='Back'
 					}
+					this.message=''
+					this.isPsdCorrect=false
 				},
 				//pincode登录
 				save(){
@@ -1053,15 +1060,42 @@
 					}
 					var data = {};
 					var url = '';
-					console.log(this.pincodeType);
-					switch(this.pincodeType){
+					console.log(_this.pincodeType);
+					switch(_this.pincodeType){
 						case 1:
+							if (_this.psd==''||_this.psd==null) {
+								this.isPsdCorrect=true
+								this.message='Please input pincode'
+								return
+							}
 							data = {
 								pincode: _this.psd,
 							}
 							url = 'product/loginByPincode'
 							break;
 						case 2:
+							if (_this.npsd==''||_this.npsd==null) {
+								this.isPsdCorrect=true
+								this.message='Please input New pincode'
+								$('.J_n_pincode').attr('placeholder',_this.placeholderNPincode);
+								$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
+								return
+							}
+							if (_this.nrpsd==''||_this.nrpsd==null) {
+								this.isPsdCorrect=true
+								this.message='Please input Re-enter pincode'
+								$('.J_n_pincode').attr('placeholder',_this.placeholderNPincode);
+								$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
+								return
+							}
+							if(_this.npsd.length!=4||_this.nrpsd.length!=4){
+								this.isPsdCorrect=true
+								this.message='Please enter a 4-digit code'
+								this.npsd=this.nrpsd=this.npsd2=this.nrpsd2=''
+								$('.J_n_pincode').attr('placeholder',_this.placeholderNPincode);
+								$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
+								return
+							}
 							data = {
 								new_pincode: _this.npsd,
 								sure_pincode: _this.nrpsd,
@@ -1069,6 +1103,34 @@
 							url = 'product/setPincode'
 							break;
 						case 3:
+							if (_this.psd==''||_this.psd==null) {
+								this.isPsdCorrect=true
+								this.message='Please input Old pincode'
+								$('.J_o_pincode').attr('placeholder',_this.placeholderOPincode);
+								return
+							}
+							if (_this.npsd==''||_this.npsd==null) {
+								this.isPsdCorrect=true
+								this.message='Please input New pincode'
+								$('.J_n_pincode').attr('placeholder',_this.placeholderNPincode);
+								$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
+								return
+							}
+							if (_this.nrpsd==''||_this.nrpsd==null) {
+								this.isPsdCorrect=true
+								this.message='Please input Re-enter pincode'
+								$('.J_n_pincode').attr('placeholder',_this.placeholderNPincode);
+								$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
+								return
+							}
+							if(_this.npsd.length!=4||_this.nrpsd.length!=4){
+								this.isPsdCorrect=true
+								this.message='Please enter a 4-digit code'
+								this.npsd=this.nrpsd=this.npsd2=this.nrpsd2=''
+								$('.J_n_pincode').attr('placeholder',_this.placeholderNPincode);
+								$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
+								return
+							}
 							data = {
 								pincode: _this.psd,
 								new_pincode: _this.npsd,
@@ -1100,12 +1162,29 @@
 						} else {
 							_this.message = res.message
 							_this.isPsdCorrect=true
-							//pincode错误次数过多，屏幕锁屏1分钟
-							if (res.status == 105) {
-								_this.isDisable = true
-								_this.isClock = true
-								_this.timeLock = 60
-								_this.getTimeDown()
+							switch(res.status){
+								case 104:
+									$('.J_pincode').attr('placeholder',_this.placeholderPincode);
+									_this.psd=_this.psd2=''
+									break;
+								case 105://pincode错误次数过多，屏幕锁屏1分钟
+									$('.J_pincode').attr('placeholder',_this.placeholderPincode);
+									_this.psd=_this.psd2=''
+									_this.isDisable = true
+									_this.isClock = true
+									_this.timeLock = 60
+									_this.getTimeDown()
+									break;
+								case 106://pincode已存在
+								case 108://pincode两次输入不一致
+									$('.J_n_pincode').attr('placeholder',_this.placeholderNPincode);
+									$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
+									_this.npsd=_this.npsd2=_this.nrpsd=_this.nrpsd2=''
+									break;
+								case 107:
+									$('.J_o_pincode').attr('placeholder',_this.placeholderOPincode);
+									_this.psd=_this.psd2=''
+									break;
 							}
 						}
 					});
@@ -1146,7 +1225,6 @@
 								this.timeLock--;
 							} else {
 								this.isDisable = !this.isDisable
-								this.isClock = !this.isDisable
 								this.timeLock = 0
 								console.log(this.isDisable,this.isClock);
 								clearInterval(this.timer);
@@ -1159,7 +1237,6 @@
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
 				this.dataRefreh();
-
 			},
 			destroyed(){
 				// 在页面销毁后，清除计时器

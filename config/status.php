@@ -32,7 +32,7 @@ return [
         ],
         'pincode_error' => [
             'code' => 104,//pincode输入错误
-            'msg' => 'Pincode is wrong!'
+            'msg' => 'pincode is wrong!'
         ],
         'pincode_error_limit' => [
             'code' => 105,//pincode输入错误次数过多
@@ -40,7 +40,15 @@ return [
         ],
         'pincode_exist' => [
             'code' => 106,//pincode已存在
-            'msg' => 'Please reset pincode'
+            'msg' => 'Please try anthor pincode'
+        ],
+        'old_pincode_error' => [
+            'code' => 107,//pincode输入错误
+            'msg' => 'Old pincode is wrong!'
+        ],
+        'match_pincode' => [
+            'code' => 108,
+            'msg' => 'The pincode entered twice do not match'
         ],
     ]
 ];
