@@ -57,7 +57,7 @@ class Index extends AuthBase
         //2.查找该pincode是否在该供应商中存在
         $business_id = $this->getBusinessId();
         $map = "pincode=$pincode and (role=3 and id=$business_id or role=20 and user_belong_to_user=$business_id)";
-        $user = User::getOne($map, 'id,name,nickname,role,user_belong_to_user,pincode');
+        $user = User::getOne($map, 'id,name,nickname,password,role,user_belong_to_user,pincode');
         //如果未找到，记录pincode输入错误次数,错误此时大于6次，需要锁屏一分钟
         if (!$user) {
             $error = $this->getUserPincodeError();
@@ -105,6 +105,10 @@ class Index extends AuthBase
             return show(config('status.code')['param_error']['code'], $validate->getError());
         }
         $new_pincode = trim($param['new_pincode']);
+        $sure_pincode = trim($param['sure_pincode']);
+        if($new_pincode != $sure_pincode){
+            return show(config('status.code')['match_pincode']['code'],config('status.code')['match_pincode']['msg']);
+        }
 
         //2.查询该供应商下pincode是否已被占用
         $business_id = $this->getBusinessId();
@@ -140,13 +144,17 @@ class Index extends AuthBase
         }
         $pincode = trim($param['pincode']);
         $new_pincode = trim($param['new_pincode']);
+        $sure_pincode = trim($param['sure_pincode']);
+        if($new_pincode != $sure_pincode){
+            return show(config('status.code')['match_pincode']['code'],config('status.code')['match_pincode']['msg']);
+        }
 
         //2.查询原pincode是否正确
         $business_id = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
         $user = User::getOne(['id' => $user_id,'pincode' => $pincode], 'id,name,nickname,role,user_belong_to_user');
         if (!$user) {
-            return show(config('status.code')['pincode_error']['code'],config('status.code')['pincode_error']['msg']);
+            return show(config('status.code')['old_pincode_error']['code'],config('status.code')['old_pincode_error']['msg']);
         }
 
         //3.查询该供应商下pincode是否已被占用
@@ -208,6 +216,7 @@ class Index extends AuthBase
     {
         $Order = new Order();
         $businessId = $this->getBusinessId();
+        halt($businessId);
         $res = $Order->getDeliveryDate($businessId);
         dump($res);
     }
