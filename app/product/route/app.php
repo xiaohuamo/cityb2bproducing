@@ -17,6 +17,14 @@ Route::post('loginInfo', 'Index/loginInfo');
 Route::post('loginOut', 'Index/loginOut');
 //退出pincode登录
 Route::post('loginOutPincode', 'Index/loginOutPincode');
+//设置pincode
+Route::post('setPincode', 'Index/setPincode');
+//修改pincode
+Route::post('editPincode', 'Index/editPincode');
+//获取加工日期
+Route::post('deliveryDate', 'Index/deliveryDate');
+//获取初始化数据
+Route::post('inidata', 'Index/inidata');
 //test
 Route::post('test', 'Index/test');
 
