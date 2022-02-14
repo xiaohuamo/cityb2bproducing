@@ -69,3 +69,27 @@ if (!function_exists('redis_connect')) {
         return $res;
     }
 }
+
+if (!function_exists('date_day')) {
+    //获取标记时间为哪天
+    function date_day($second1, $second2){
+        $diffDays = ($second1 - $second2) / 86400;
+        switch( $diffDays ) {
+            case 0:
+                $date_day = "Today";
+                break;
+            case -1:
+                $date_day = "Yesterday";
+                break;
+            case +1:
+                $date_day = "Tomorrow";
+                break;
+            default:
+                $date_day = date('l',$second1);
+        }
+        return $date_day;
+    }
+}
+
+
+

@@ -216,9 +216,8 @@ class Index extends AuthBase
     {
         $Order = new Order();
         $businessId = $this->getBusinessId();
-        halt($businessId);
         $res = $Order->getDeliveryDate($businessId);
-        dump($res);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 
     //根据筛选日期获取初始化数据
