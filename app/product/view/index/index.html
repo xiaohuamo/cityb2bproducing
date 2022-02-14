@@ -15,9 +15,9 @@
 				<span>City b2b</span>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
-				{{choseDate1?choseDate1:list[0]}}
+				{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0]}}
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
-					<div class="mb10" v-for="(item,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item}}</div>
+					<div class="mb10" v-for="(item,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(2)">
@@ -481,7 +481,7 @@
 				choseDate1:'',
 				choseDate2:'',
 				choseDate3:'',
-				list:['2021年11月28日昨天','2021年11月28日前天','2021年11月28日明天'],
+				list:[],
 				list2:['全部客户','团购客户','客户'],
 				list3:['司机1','司机2','司机3'],
 				num:20,
@@ -825,6 +825,11 @@
 						_this.pincodeType = 2 //默认显示创建pincode
 					}
 				});
+				//获取加工日期
+				getData('product/deliveryDate', '', function (res) {
+					_this.list = res.result.list
+					_this.choseDate1 = res.result.default
+				});
 			},
 			methods:{
 				// 定时刷新数据函数
@@ -875,6 +880,7 @@
 					this.currentHandlePop=index
 				},
 				Popcontinue(source,index){  // 变成待处理
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.currentHandlePop=-1
 					if(source==0){
 						this.handleList[index].status=1
@@ -885,6 +891,7 @@
 					}
 				},
 				Popreturn(index){
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.currentHandlePop=-1
 				},
 				clickGoods(item,index){
@@ -894,6 +901,7 @@
 					}
 				},
 				tab(index){
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.currentTab=index
 					this.currentHandlePop=-1
 				},
@@ -972,6 +980,7 @@
 					this.whichPopShow=-1
 				},
 				chose(index){
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.whichPopShow=index
 				},
 				returnPage(index){
@@ -994,6 +1003,7 @@
 				},
 				//点击pincode键盘，显示输入pincode
 				clickNum(number){
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					switch(this.focusDatype){
 						case 10:
 							if(this.psd.length<4){
@@ -1035,6 +1045,7 @@
 				},
 				//弹出修改pincode
 				editPincode(){
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.isShowTypePincode1=!this.isShowTypePincode1
 					this.isShowTypePincode3=!this.isShowTypePincode3
 					if(this.isShowTypePincode1){
@@ -1054,6 +1065,7 @@
 				},
 				//pincode登录
 				save(){
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					var _this = this
 					if (_this.isDisable) {
 						return
@@ -1202,6 +1214,7 @@
 				},
 				//删除code
 				deletePsd(){
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					switch(this.focusDatype){
 						case 10:
 							this.psd=this.psd.substr(0, this.psd.length - 1);
