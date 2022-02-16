@@ -9,7 +9,8 @@ use think\facade\Cookie;
 use think\facade\View;
 use app\model\{
     User,
-    Order
+    Order,
+    ProducingProgressSummery
 };
 
 class Index extends AuthBase
@@ -223,12 +224,51 @@ class Index extends AuthBase
     //根据筛选日期获取初始化数据
     public function iniData()
     {
-        //1.获取对应日期的客户
-
-        //2.获取对应配送日期的司机
-
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_driver_no','product_id','guige1_id']);
+        $param['logistic_driver_no'] = $param['logistic_driver_no']??'';
+        $Order = new Order();
+        $ProducingProgressSummery = new ProducingProgressSummery();
+        //1.获取对应日期的客户（目前默认先获取当前的商家）
+        $businessId = $this->getBusinessId();
+        $nickname = User::getVal(['id' => $businessId],'nickname');
+        //2.获取对应日期的配送司机
+        $all_drivers = $Order->getDrivers($businessId,$param['logistic_delivery_date']);
         //3.获取对应日期默认全部的司机的已加工订单数量和总的加工订单数量
+        $driver_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_driver_no']);
         //4.获取对应日期全部的已加工订单数量和总的加工订单数量
+        $all_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date']);
+        //5.获取对应日期加工的商品信息
+        $user_id = $this->getMemberUserId();
+        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_driver_no']);
+        //6.获取对应日期的加工订单
+        $order = $Order->getOrderList($businessId,$param['logistic_delivery_date'],$param['logistic_driver_no'],$param['product_id'],$param['guige1_id']);
+        $data = [
+            'all_customers' => [$nickname],
+            'all_drivers' => $all_drivers,
+            'goods' => $goods,
+            'driver_order_count' => $driver_order_count,
+            'all_order_count' => $all_order_count,
+            'order' => $order
+        ];
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
+    }
+
+    //切换商品获取对应的二级类目和订单数据
+    public function changeGoods()
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_driver_no','product_id']);
+        $businessId = $this->getBusinessId();
+        $ProducingProgressSummery = new ProducingProgressSummery();
+        //5.获取对应日期加工的商品信息
+        $user_id = $this->getMemberUserId();
+        $goods = $ProducingProgressSummery->getGoodsTwoCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_driver_no'],$param['product_id']);
+        //6.获取对应日期的加工订单
+        $data = [
+            'goods_two_cate' => $goods,
+        ];
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
 

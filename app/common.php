@@ -91,5 +91,35 @@ if (!function_exists('date_day')) {
     }
 }
 
+if (!function_exists('writeLog')) {
+    /**
+     * @param $param
+     * @param string $file 文件夹
+     * @describe:生成日志
+     */
+    function writeLog($param, $file = '')
+    {
+        $filename = date("Y_m_d", time());
+        $root = app()->getRootPath();
+        if (empty($root)) {
+            $myfile = $filename . ".txt";
+        } else {
+            $f = app()->getRootPath() . 'Logs/' . $file . "/";
+            if (!is_dir($f)) {
+                @mkdir($f, 0777, true);
+            }
+            $myfile = $root . 'Logs/' . $file . "/" . $filename . ".txt";
+        }
+        if (is_array($param)) {
+            $param = json_encode($param, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE);
+        }
+        @file_put_contents(
+            $myfile,
+            "执行日期：" . "\r\n" . date('Y-m-d H:i:s', time()) . ' ' . "\n" . $param . "\r\n",
+            FILE_APPEND
+        );
+    }
+}
+
 
 

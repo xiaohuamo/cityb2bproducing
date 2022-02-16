@@ -5,5 +5,6 @@
 return [
     // 指令定义
     'commands' => [
+        'producingprogresssummary' => 'app\command\ProducingProgressSummary',//实时更新生产进程数据
     ],
 ];

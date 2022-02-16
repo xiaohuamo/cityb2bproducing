@@ -25,6 +25,8 @@ Route::post('editPincode', 'Index/editPincode');
 Route::post('deliveryDate', 'Index/deliveryDate');
 //获取初始化数据
 Route::post('inidata', 'Index/inidata');
+//切换商品时获取对应的数据
+Route::post('changeGoods', 'Index/changeGoods');
 //test
 Route::post('test', 'Index/test');
 

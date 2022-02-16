@@ -15,7 +15,7 @@
 				<span>City b2b</span>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
-				{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0]}}
+				{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
 					<div class="mb10" v-for="(item,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
@@ -28,36 +28,32 @@
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(3)">
-				{{choseDate3?choseDate3:list3[0]}}
+				{{choseDate3?choseDate3.name:list3[0].name}}
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox" v-show="whichPopShow==3">
-					<div class="mb10" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">{{item}}</div>
+					<div class="mb10" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">{{item.name}}</div>
 				</div>
 			</div>
 
-			<div class="btn bgFD6921">12/17</div>
-			<div class="btn bg34C079">178/139</div>
+			<div class="btn bgFD6921">{{driverOrderDoneNum}}/{{driverOrderNum}}</div>
+			<div class="btn bg34C079">{{orderDoneNum}}/{{orderNum}}</div>
 		</div>
 
 		<div class="flexbox3" style="min-height:100%;">
 			<div class="left bgfff">
 				<div class="colfff f32 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-show="currentPage==1">
 					<img src="__STATIC__/product/img/goodsIcon.png" class="goodsIcon"/>
-					货物列表&nbsp;
+					Product List
 					<img src="__STATIC__/product/img/arrow.png" class="arrIcon"/>
 				</div>
 				<div class="colfff f32 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-show="currentPage==2">
 					<img src="__STATIC__/product/img/return.png" class="returnIcon"/>
-					返回
+					Return
 				</div>
 				<div class="f35 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
-					<!-- <span class="col000" v-show="isHandle==0">序号</span> -->
-					<span class="colFD6921" v-if="isHandle">待处理</span>
-					<span class="col34C079" v-else>已处理</span>
-					<img src="__STATIC__/product/img/updown.png" class="updown"/>
-				</div>
-				<div class="f35 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
-					<span class="col000">序号</span>
+					<span class="colFD6921" v-if="isHandle==0">waitting-process</span>
+					<span class="col34C079" v-else-if="isHandle==1">processed</span>
+					<span class="col000" v-else>number</span>
 					<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				</div>
 				<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="f35 lbtn relative hand" v-show="currentPage==2" @click="clickMenu(index)">
@@ -65,50 +61,54 @@
 					<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
 				</div>
 
-				<div v-show="currentPage==1" class="hand">
-					<div :class="item.status==0?'bgFD6921':'bg34C079'" class="colfff f35 lbtn2 relative" v-for="(item,index) in menudata2" @click="clickGoods(item,index)">
-						<span :class="item.isBlink?'blink':''">猪肉</span>
-						<div :class="item.isBlink?'blink':''">324324</div>
+				<div v-show="currentPage==1" class="hand leftMenu">
+					<div :class="item.status==0?'bgFD6921':item.status==3?'bg34C079':'bgFD6921'" class="colfff f35 lbtn2 relative" v-for="(item,index) in menudata2" @click="clickGoods(item,index)">
+						<span :class="item.staus==2?'blink':''">{{item.menu_en_name}}</span>
+						<div :class="item.staus==2?'blink':''">{{item.product_id}}</div>
 					</div>
-					<div class="colfff f35 bgB5B5B5 lbtn2 relative">
-						猪肉
-						<div>324324</div>
-						<img src="__STATIC__/product/img/suo.png" class="suo"/>
-					</div>
+<!--					<div class="colfff f35 bgB5B5B5 lbtn2 relative">-->
+<!--						猪肉-->
+<!--						<div>324324</div>-->
+<!--						<img src="__STATIC__/product/img/suo.png" class="suo"/>-->
+<!--					</div>-->
 
 				</div>
 			</div>
 			<div class="right pa20">
 				<div v-show="currentPage==1">
-					<div v-if="currentContent==0">
+					<div>
 						<div class="flexbox2 rsection1">
-							<div class="bgGrey colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
+							<div :class="item.status==0?'bgOrange':item.status==3?'bgGreen':'bgOrange'" class="colfff rbtn" v-for="(item,index) in menudataTwoCate">
+								<div :class="item.staus==2?'blink':''">{{item.guige_name}}</div>
+								<div :class="item.staus==2?'blink':''">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 							</div>
-							<div class="bgdarkGrey colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
-							</div>
-							<div class="bgOrange colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
-							</div>
-							<div class="bgGreen colfff rbtn">
-								<div class="blink">
-									<div class="textLeft f25">5mm</div>
-									<div class="textCenter maT10 f30">15/78kg</div>
-								</div>
-							</div>
+<!--							<div class="bgGrey colfff rbtn">-->
+<!--								<div class="textLeft f25">5mm</div>-->
+<!--								<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--							</div>-->
+<!--							<div class="bgdarkGrey colfff rbtn">-->
+<!--								<div class="textLeft f25">5mm</div>-->
+<!--								<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--							</div>-->
+<!--							<div class="bgOrange colfff rbtn">-->
+<!--								<div class="textLeft f25">5mm</div>-->
+<!--								<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--							</div>-->
+<!--							<div class="bgGreen colfff rbtn">-->
+<!--								<div class="blink">-->
+<!--									<div class="textLeft f25">5mm</div>-->
+<!--									<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--								</div>-->
+<!--							</div>-->
 						</div>
-						<div class="flexbox2 rsection2">
-							<div class="rbtn2 bgdarkGrey">
-								1kg
-							</div>
-							<div class="rbtn2 bgOrange">
-								1kg
-							</div>
-						</div>
+<!--						<div class="flexbox2 rsection2">-->
+<!--							<div class="rbtn2 bgdarkGrey">-->
+<!--								1kg-->
+<!--							</div>-->
+<!--							<div class="rbtn2 bgOrange">-->
+<!--								1kg-->
+<!--							</div>-->
+<!--						</div>-->
 						<!-- 下面开始 -->
 						<div class="rsection3 bgfff">
 							<!-- 头部 -->
@@ -241,175 +241,6 @@
 						</div>
 						<!-- 下面结束 -->
 					</div>
-					<div v-if="currentContent==1">
-						<div class="flexbox2 rsection1">
-							<div class="bgGrey colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
-							</div>
-							<div class="bgdarkGrey colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
-							</div>
-							<div class="bgOrange colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
-							</div>
-							<div class="bgOrange colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
-							</div>
-							<div class="bgOrange colfff rbtn">
-								<div class="textLeft f25">5mm</div>
-								<div class="textCenter maT10 f30">15/78kg</div>
-							</div>
-						</div>
-						<div class="flexbox2 rsection2">
-							<div class="rbtn2 bgdarkGrey">
-								1kg
-							</div>
-							<div class="rbtn2 bgOrange">
-								1kg
-							</div>
-							<div class="rbtn2 bgOrange">
-								1kg
-							</div>
-							<div class="rbtn2 bgOrange">
-								1kg
-							</div>
-							<div class="rbtn2 bgOrange">
-								1kg
-							</div>
-						</div>
-						<!-- 下面开始 -->
-						<div class="rsection3 bgfff">
-							<!-- 头部 -->
-							<div class="flexbox1 pa20">
-								<div class="flexbox2">
-									<div class="flexbox1 xxBox" @click.stop="tab(0)">
-										物流号<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
-									</div>
-									<div class="flexbox1 xxBox" @click.stop="tab(1)">
-										处理中<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
-									</div>
-									<div class="flexbox1 xxBox" @click.stop="tab(2)">
-										已处理<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
-									</div>
-								</div>
-								<div class="flexbox2 relative hand" @click="popKeyboard">
-									<span>i am jason</span>&nbsp;&nbsp;
-									<img src="__STATIC__/product/img/suo2.png" class="suo2"/>
-								</div>
-							</div>
-							<!-- 主体部分 -->
-							<div class="mainBox" v-show="currentTab==0">
-								<div class="flexbox1 mb15" v-for="(item,index) in handleList">
-									<div class="flexbox1 pa5-10 w70" :class="item.bg">
-										<div class="flexbox2">
-											<div class="col666 F36" style="width: 50px;">16</div>
-											<div class="col666 f25" style="width: 350px;">zhonghua001</div>
-										</div>
-										<div class="flexbox2">
-											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,0)" v-else/>
-											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,0)"/>
-										</div>
-									</div>
-									<div class="flexbox1 pa5-10" :class="item.bg">
-										<div class="flexbox2">
-											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,1)" v-else/>
-											<input class="inputW" v-model="item.num1"/>
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,1)"/>
-										</div>
-										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(0,item.status,index)"/>
-									</div>
-									<div class="rbtn3 bg34C079 relative" v-if="item.status==0" @click="handle(index)">
-										已处理
-										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
-											<div class="colFD6921" @click.stop="Popcontinue(0,index)">继续处理</div>
-											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
-										</div>
-									</div>
-									<div class="rbtn3 bgFD6921" v-else @click="changeStatus(0,item.status,index)">
-										待处理
-									</div>
-								</div>
-							</div>
-							<div class="mainBox" v-show="currentTab==1">
-								<div class="flexbox1 mb15" v-for="(item,index) in handleList1">
-									<div class="flexbox1 pa5-10 w70" :class="item.bg">
-										<div class="flexbox2">
-											<div class="col666 F36" style="width: 50px;">16</div>
-											<div class="col666 f35" style="width: 350px;">zhonghua001</div>
-										</div>
-										<div class="flexbox2">
-											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(1,index,0)" v-else/>
-											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(1,index,0)"/>
-										</div>
-									</div>
-									<div class="flexbox1 pa5-10" :class="item.bg">
-										<div class="flexbox2">
-											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(1,index,1)" v-else/>
-											<input class="inputW" v-model="item.num1"/>
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(1,index,1)"/>
-										</div>
-										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(1,item.status,index)"/>
-									</div>
-									<div class="rbtn3 bgFD6921" v-if="item.status==1" @click="changeStatus(0,item.status,index)">
-										待处理
-									</div>
-									<div class="rbtn3 bg34C079 relative" v-else @click="handle(index)">
-										已处理
-										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
-											<div class="colFD6921" @click.stop="Popcontinue(1,index)">继续处理</div>
-											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="mainBox" v-show="currentTab==2">
-								<div class="flexbox1 mb15" v-for="(item,index) in handleList2">
-									<div class="flexbox1 pa5-10 w70" :class="item.bg">
-										<div class="flexbox2">
-											<div class="col666 F36" style="width: 50px;">16</div>
-											<div class="col666 f35" style="width: 350px;">zhonghua001</div>
-										</div>
-										<div class="flexbox2">
-											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(2,index,0)" v-else/>
-											<input class="inputW" v-model="item.num"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(2,index,0)"/>
-										</div>
-									</div>
-									<div class="flexbox1 pa5-10" :class="item.bg">
-										<div class="flexbox2">
-											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(2,index,1)" v-else/>
-											<input class="inputW" v-model="item.num1"/>
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(2,index,1)"/>
-										</div>
-										<img src="__STATIC__/product/img/echo.png" class="echo" @click="changeStatus(2,item.status,index)"/>
-									</div>
-									<div class="rbtn3 bg34C079 relative" v-if="item.status==0" @click="handle(index)">
-										已处理
-										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
-											<div class="colFD6921" @click.stop="Popcontinue(2,index)">继续处理</div>
-											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
-										</div>
-									</div>
-									<div class="rbtn3 bgFD6921" v-else @click="changeStatus(2,item.status,index)">
-										待处理
-									</div>
-								</div>
-							</div>
-						</div>
-						<!-- 下面结束 -->
-					</div>
 				</div>
 				<div v-show="currentPage==2">
 					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter f35 colFD6921 relative hand" @click="returnPage(1)">
@@ -481,30 +312,21 @@
 				choseDate1:'',
 				choseDate2:'',
 				choseDate3:'',
+				logistic_delivery_date:'',//筛选日期
+				logistic_driver_no:'',//筛选司机
 				list:[],
-				list2:['全部客户','团购客户','客户'],
-				list3:['司机1','司机2','司机3'],
+				list2:['All customers'],
+				list3:[{"logistic_driver_no":"","name":"All drivers","nickname":""}],
+				driverOrderDoneNum:0,//对应司机已完成订单数
+				driverOrderNum:0,//对应司机全部订单数
+				orderDoneNum:0,//订单已完成数
+				orderNum:0,//订单总数
 				num:20,
 				whichPopShow:-1,
 				currentPage:1,  // 1表示1级页面 2是2级页面
 				menudata:['当前备货','置顶','猪肉','牛肉','羊肉'],
-				menudata2:[
-					{
-						name:'猪肉',
-						status:0,
-						isBlink:false
-					},
-					{
-						name:'猪肉',
-						status:1,
-						isBlink:false
-					},
-					{
-						name:'猪肉',
-						status:2,
-						isBlink:false
-					}
-				],
+				menudata2:[],//加工产品
+				menudataTwoCate:[],//二级产品类目
 				currentTab:0,
 				handleList:[
 					{
@@ -770,8 +592,8 @@
 					}
 				],
 				currentMenu:0,
-				isHandle:false,
-				goods:['','','','','','','','','','','','','','','','','','','',''],
+				isHandle:0,
+				goods:[],
 				numberList:[1,2,3,4,5,6,7,8,9,'.',0],
 				isPsdCorrect:false,
 				iskeyboardShow:false,
@@ -827,11 +649,50 @@
 				});
 				//获取加工日期
 				getData('product/deliveryDate', '', function (res) {
+					console.log(res);
 					_this.list = res.result.list
 					_this.choseDate1 = res.result.default
+					_this.currentDay = res.result.default_k
+					_this.logistic_delivery_date = _this.choseDate1.logistic_delivery_date
+					//获取初始化数据
+					if(_this.logistic_delivery_date){
+						_this.inidata(_this.logistic_delivery_date)
+					}
 				});
 			},
 			methods:{
+				//获取初始化数据
+				inidata(logistic_delivery_date) {
+					var _this = this
+					getData('product/iniData', {"logistic_delivery_date":logistic_delivery_date}, function (res) {
+						res = res.result
+						console.log(res,res.all_customers)
+						_this.splideData(res.all_customers,res.all_drivers)
+						_this.driverOrderDoneNum = res.driver_order_count.order_done_count
+						_this.driverOrderNum = res.driver_order_count.order_count
+						_this.orderDoneNum = res.all_order_count.order_done_count
+						_this.orderNum = res.all_order_count.order_count
+						_this.menudata2 = res.goods
+						if(_this.menudata2.length>0){
+							_this.twoCateGoods(_this.menudata2[0].product_id)
+						}
+					});
+				},
+				//获取二级类目
+				twoCateGoods(product_id){
+					var _this = this
+					var data = {
+						"logistic_delivery_date":_this.logistic_delivery_date,
+						"logistic_driver_no":_this.logistic_driver_no,
+						"product_id":product_id
+					}
+					console.log('获取二级类目参数---',data);
+					getData('product/changeGoods', data, function (res) {
+						res = res.result
+						_this.menudataTwoCate = res.goods_two_cate
+						console.log('二级类目产品数据-----',_this.menudataTwoCate)
+					});
+				},
 				// 定时刷新数据函数
 				dataRefreh() {
 					// 计时器正在进行中，退出函数
@@ -840,7 +701,7 @@
 					}
 					// 计时器为空，操作
 					this.intervalId = setInterval(() => {
-						console.log("刷新" + new Date());
+						console.log("刷新",new Date());
 						this.currentTime = new Date().getTime();
 						if(this.currentTime - this.lastTime > this.timeOut) {  //判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
 							//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
@@ -863,7 +724,7 @@
 				//判断用户10分钟内是否有操作，无操作则需要上锁，弹出pincode登录框
 				isDo() {
 					this.lastTime = new Date().getTime(); //如果在10分钟内点击，则把这次点击的时间记录覆盖掉之前存的最后一次点击的时间
-					console.log('最后一次点击时间----'+this.lastTime);
+					console.log('最后一次点击时间----',this.lastTime);
 				},
 				changeStatus(source,status,index){
 					if(status==1){
@@ -899,6 +760,8 @@
 					if(item.status==0){
 						this.menudata2[index].isBlink=true
 					}
+					//获取二级类目
+					this.twoCateGoods(item.product_id)
 				},
 				tab(index){
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
@@ -961,10 +824,13 @@
 				    m = Math.pow(10, Math.max(r1, r2));
 				    return (arg1 * m + arg2 * m) / m;
 				},
+				//切换日期
 				choseDay(item,index){
 					this.choseDate1=item
 					this.currentDay=index
 					this.whichPopShow=-1
+					this.logistic_delivery_date=item.logistic_delivery_date
+					this.inidata(this.logistic_delivery_date)
 				},
 				choseCus(item,index){
 					this.choseDate2=item
@@ -975,6 +841,7 @@
 					this.choseDate3=item
 					this.current3=index
 					this.whichPopShow=-1
+					this.logistic_driver_no=item.logistic_driver_no
 				},
 				closePop(){
 					this.whichPopShow=-1
@@ -990,7 +857,11 @@
 					this.currentMenu=index
 				},
 				clickHandle(){
-					this.isHandle=!this.isHandle
+					if(this.isHandle==2){
+						this.isHandle=0
+					}else{
+						this.isHandle=this.isHandle+1
+					}
 				},
 				cancelZD(index){
 					this.goods.splice(index,1)
@@ -1245,6 +1116,13 @@
 							}
 						}, 1000)
 					}
+				},
+				//拼接数据
+				splideData(all_customers,all_drivers){
+					all_customers.unshift("All customers")
+					all_drivers.unshift({"logistic_driver_no":"","name":"All drivers","nickname":""})
+					this.list2 = all_customers
+					this.list3 = all_drivers
 				}
 			},
 			created(){

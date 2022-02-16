@@ -12,10 +12,10 @@ function isButtonLoading(isLoading, button) {
 }
 
 let common = {
-    apiUrl: 'http://product.cooltechsolution.com/',//api接口地址
-    webUrl: 'http://product.cooltechsolution.com/',//web访问地址
-    // apiUrl: 'http://192.168.50.105/',//api接口地址
-    // webUrl: 'http://192.168.50.105/',//web访问地址
+    // apiUrl: 'http://product.cooltechsolution.com/',//api接口地址
+    // webUrl: 'http://product.cooltechsolution.com/',//web访问地址
+    apiUrl: 'http://192.168.50.105/',//api接口地址
+    webUrl: 'http://192.168.50.105/',//web访问地址
 }
 
 function getData(url,data,callback){
