@@ -70,21 +70,25 @@ class Order extends Model
         $map = 'status=1 or accountPay=1';
         $where = [
             ['business_userId', '=', $businessId],
-            ['coupon_status', '=', 'c01']
+            ['coupon_status', '=', 'c01'],
+            ['logistic_truck_No', '>', 0]
         ];
         if($logistic_delivery_date){
             $where[] = ['logistic_delivery_date','=',$logistic_delivery_date];
         }
-        $logistic_driver_no_arr = Db::name('order')->where($where)->where($map)->group('logistic_truck_No')->column('logistic_truck_No');
+        $logistic_truck_No_arr = Db::name('order')->where($where)->where($map)->group('logistic_truck_No')->column('logistic_truck_No');
         //获取对应的司机信息
         $drivers = [];
-        if($logistic_driver_no_arr){
-            $logistic_driver_no_arr = array_filter($logistic_driver_no_arr);
+        if($logistic_truck_No_arr){
+            $logistic_truck_No_arr = array_filter($logistic_truck_No_arr);
             $drivers = Truck::alias('t')
-                ->field('t.id logistic_driver_no,t.truck_name,t.plate_number,t.current_driver,u.name,u.nickname')
+                ->field('t.id logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
                 ->leftjoin('user u','u.id=t.current_driver')
-                ->where([['t.id','in',$logistic_driver_no_arr]])
+                ->where([['t.id','in',$logistic_truck_No_arr]])
                 ->select();
+            foreach ($drivers as &$v){
+                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];
+            }
         }
         return $drivers;
     }
@@ -93,10 +97,10 @@ class Order extends Model
      * 获取订单数（已加工订单数/总订单数）
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
-     * @param string $logistic_driver_no 配送司机id
+     * @param string $logistic_truck_No 配送司机id
      * @return array
      */
-    public function getOrderCount($businessId,$logistic_delivery_date='',$logistic_driver_no='')
+    public function getOrderCount($businessId,$logistic_delivery_date='',$logistic_truck_No='')
     {
         $map = 'status=1 or accountPay=1';
         $where = [
@@ -106,13 +110,13 @@ class Order extends Model
         if($logistic_delivery_date){
             $where[] = ['logistic_delivery_date','=',$logistic_delivery_date];
         }
-        if($logistic_driver_no){
-            $where[] = ['logistic_driver_no','=',$logistic_driver_no];
+        if($logistic_truck_No){
+            $where[] = ['logistic_truck_No','=',$logistic_truck_No];
         }
         //获取订单总数
-        $order_count = Db::name('order')->where($where)->count();
+        $order_count = Db::name('order')->where($where)->where($map)->count();
         //获取已加工的订单总数
-        $order_done_count = Db::name('order')->where($where)->where(['is_producing_done' => 1])->count();
+        $order_done_count = Db::name('order')->where($where)->where($map)->where(['is_producing_done' => 1])->count();
         return [
 //            'order' => $order,
             'order_done_count' => $order_done_count,
@@ -121,13 +125,13 @@ class Order extends Model
     }
 
     /**
-     * 获取加工订单
+     * 获取产品加工订单
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
-     * @param string $logistic_driver_no 配送司机id
+     * @param string $logistic_truck_No 配送司机id
      * @return array
      */
-    public function getOrderList($businessId,$logistic_delivery_date='',$logistic_driver_no='',$product_id='',$guige1_id='')
+    public function getProductOrderList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$guige1_id='')
     {
         $map = 'o.status=1 or o.accountPay=1';
         $where = [
@@ -137,11 +141,36 @@ class Order extends Model
         if ($logistic_delivery_date) {
             $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
         }
-        if ($logistic_driver_no) {
-            $where[] = ['o.logistic_driver_no', '=', $logistic_driver_no];
+        if ($logistic_truck_No) {
+            $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
         }
-        //获取订单数据
-        $order = Db::name('order')->field('id,orderId,logistic_truck_No,is_producing_done')->where($where)->where($map)->order('is_producing_done asc')->select()->toArray();
+        if ($product_id > 0) {
+            $where[] = ['wcc.restaurant_menu_id','=',$product_id];
+        }
+        if ($guige1_id > 0) {
+            $where[] = ['wcc.guige1_id','=',$guige1_id];
+        }
+        //获取加工明细单数据
+        $order = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,o.logistic_sequence_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,pps.operator_user_id')
+            ->leftJoin('order o','wcc.order_id = o.orderId')
+            ->leftJoin('user_factory uf','uf.user_id = o.userId')
+            ->leftJoin('producing_progress_summery pps',"pps.delivery_date = o.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id")
+            ->where($where)
+            ->where($map)
+            ->select()->toArray();
+        foreach($order as &$v){
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            //判断当前加工明细是否被锁定
+            if($v['operator_user_id'] > 0){
+                $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                $v['lock_type'] = $user_id == $v['operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
+            }else{
+                $v['is_lock'] = 0;
+                $v['lock_type'] = 0;
+            }
+        }
         return $order;
     }
 

@@ -27,6 +27,18 @@ Route::post('deliveryDate', 'Index/deliveryDate');
 Route::post('inidata', 'Index/inidata');
 //切换商品时获取对应的数据
 Route::post('changeGoods', 'Index/changeGoods');
+//切换商品时获取对应的加工明细单
+Route::post('productOrderList', 'Index/productOrderList');
+//锁定加工状态
+Route::post('lockProduct', 'Index/lockProduct');
+//获取锁定结果
+Route::post('lockProductResult', 'Index/lockProductResult');
+//解锁
+Route::post('unlockProduct', 'Index/unlockProduct');
+//修改加工数量
+Route::post('editBuyingQuantity', 'Index/editBuyingQuantity');
+//加工状态变更
+Route::post('changeProductOrderStatus', 'Index/changeProductOrderStatus');
 //test
 Route::post('test', 'Index/test');
 

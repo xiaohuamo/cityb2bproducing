@@ -44,6 +44,7 @@ class RedisService
         $this->port        =    $config['port'] ? $config['port'] : 6379;
         $this->host        =    $config['host'];
         $this->redis->connect($this->host, $this->port, $this->attr['timeout']);
+//        $this->redis->setOption(\Redis::OPT_READ_TIMEOUT, -1);
 
         if($config['auth'])
         {
