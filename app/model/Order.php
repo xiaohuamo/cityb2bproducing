@@ -24,7 +24,7 @@ class Order extends Model
         $date_arr = Db::name('order')->where([
             ['business_userId', '=', $businessId],
             ['coupon_status', '=', 'c01'],
-            ['logistic_delivery_date','>',time()-3600*24*14]
+            ['logistic_delivery_date','>',time()-3600*24*7]
         ])->where($map)->field("logistic_delivery_date,FROM_UNIXTIME(logistic_delivery_date,'%Y-%m-%d') date,2 as is_default")->group('logistic_delivery_date')->order('logistic_delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
