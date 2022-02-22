@@ -1,0 +1,195 @@
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385482,"guige1_id":0,"sum_quantities":"41.00","proucing_center_id":0,"id":"1"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385485,"guige1_id":0,"sum_quantities":"6.00","proucing_center_id":0,"id":"2"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385486,"guige1_id":0,"sum_quantities":"96.00","proucing_center_id":0,"id":"3"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385490,"guige1_id":0,"sum_quantities":"21.00","proucing_center_id":0,"id":"4"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385494,"guige1_id":753,"sum_quantities":"4.00","proucing_center_id":0,"id":"5"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385496,"guige1_id":0,"sum_quantities":"9.00","proucing_center_id":0,"id":"6"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385499,"guige1_id":0,"sum_quantities":"4.00","proucing_center_id":0,"id":"7"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385577,"guige1_id":0,"sum_quantities":"10.00","proucing_center_id":0,"id":"8"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385584,"guige1_id":0,"sum_quantities":"1.00","proucing_center_id":0,"id":"9"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385682,"guige1_id":0,"sum_quantities":"16.00","proucing_center_id":0,"id":"10"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385777,"guige1_id":0,"sum_quantities":"5.00","proucing_center_id":0,"id":"11"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385782,"guige1_id":0,"sum_quantities":"20.00","proucing_center_id":0,"id":"12"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385785,"guige1_id":453,"sum_quantities":"10.00","proucing_center_id":0,"id":"13"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385885,"guige1_id":452,"sum_quantities":"15.00","proucing_center_id":0,"id":"14"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385885,"guige1_id":454,"sum_quantities":"60.00","proucing_center_id":0,"id":"15"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385886,"guige1_id":454,"sum_quantities":"10.00","proucing_center_id":0,"id":"16"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385889,"guige1_id":601,"sum_quantities":"55.00","proucing_center_id":0,"id":"17"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385891,"guige1_id":0,"sum_quantities":"12.00","proucing_center_id":0,"id":"18"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387078,"guige1_id":0,"sum_quantities":"20.00","proucing_center_id":0,"id":"19"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387201,"guige1_id":0,"sum_quantities":"4.00","proucing_center_id":0,"id":"20"}
+执行日期：
+2022-02-15 15:45:08 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387380,"guige1_id":654,"sum_quantities":"50.00","proucing_center_id":0,"id":"21"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387381,"guige1_id":652,"sum_quantities":"8.00","proucing_center_id":0,"id":"22"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387382,"guige1_id":654,"sum_quantities":"40.00","proucing_center_id":0,"id":"23"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387383,"guige1_id":554,"sum_quantities":"10.00","proucing_center_id":0,"id":"24"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387387,"guige1_id":702,"sum_quantities":"50.00","proucing_center_id":0,"id":"25"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387388,"guige1_id":501,"sum_quantities":"40.00","proucing_center_id":0,"id":"26"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387390,"guige1_id":501,"sum_quantities":"9.00","proucing_center_id":0,"id":"27"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387404,"guige1_id":702,"sum_quantities":"6.00","proucing_center_id":0,"id":"28"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387405,"guige1_id":501,"sum_quantities":"126.00","proucing_center_id":0,"id":"29"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387479,"guige1_id":0,"sum_quantities":"4.00","proucing_center_id":0,"id":"30"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387485,"guige1_id":0,"sum_quantities":"6.00","proucing_center_id":0,"id":"31"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387486,"guige1_id":0,"sum_quantities":"6.00","proucing_center_id":0,"id":"32"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387490,"guige1_id":901,"sum_quantities":"4.00","proucing_center_id":0,"id":"33"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387493,"guige1_id":901,"sum_quantities":"20.00","proucing_center_id":0,"id":"34"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387500,"guige1_id":0,"sum_quantities":"50.00","proucing_center_id":0,"id":"35"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387579,"guige1_id":0,"sum_quantities":"72.40","proucing_center_id":0,"id":"36"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387584,"guige1_id":0,"sum_quantities":"77.00","proucing_center_id":0,"id":"37"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387585,"guige1_id":0,"sum_quantities":"25.00","proucing_center_id":0,"id":"38"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387587,"guige1_id":0,"sum_quantities":"7.00","proucing_center_id":0,"id":"39"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387588,"guige1_id":0,"sum_quantities":"6.00","proucing_center_id":0,"id":"40"}
+执行日期：
+2022-02-15 15:45:09 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":387601,"guige1_id":0,"sum_quantities":"7.00","proucing_center_id":0,"id":"41"}
+执行日期：
+2022-02-15 15:45:57 
+{"business_userId":319188,"delivery_date":1644854400,"product_id":385481,"guige1_id":0,"sum_quantities":"43.00","proucing_center_id":0,"id":"42"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":385885,"guige1_id":454,"sum_quantities":"168.00","proucing_center_id":0,"id":"43"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":385885,"guige1_id":456,"sum_quantities":"20.00","proucing_center_id":0,"id":"44"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":385885,"guige1_id":457,"sum_quantities":"25.00","proucing_center_id":0,"id":"45"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":385885,"guige1_id":458,"sum_quantities":"50.00","proucing_center_id":0,"id":"46"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":385886,"guige1_id":452,"sum_quantities":"40.00","proucing_center_id":0,"id":"47"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":385889,"guige1_id":601,"sum_quantities":"170.00","proucing_center_id":0,"id":"48"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":386476,"guige1_id":556,"sum_quantities":"40.00","proucing_center_id":0,"id":"49"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387380,"guige1_id":654,"sum_quantities":"120.00","proucing_center_id":0,"id":"50"}
+执行日期：
+2022-02-15 17:06:14 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387383,"guige1_id":551,"sum_quantities":"5.00","proucing_center_id":0,"id":"51"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387383,"guige1_id":552,"sum_quantities":"20.00","proucing_center_id":0,"id":"52"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387387,"guige1_id":701,"sum_quantities":"2.00","proucing_center_id":0,"id":"53"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387387,"guige1_id":702,"sum_quantities":"26.00","proucing_center_id":0,"id":"54"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387388,"guige1_id":501,"sum_quantities":"40.00","proucing_center_id":0,"id":"55"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387390,"guige1_id":501,"sum_quantities":"10.00","proucing_center_id":0,"id":"56"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387392,"guige1_id":503,"sum_quantities":"5.00","proucing_center_id":0,"id":"57"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387393,"guige1_id":553,"sum_quantities":"20.00","proucing_center_id":0,"id":"58"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387396,"guige1_id":503,"sum_quantities":"3.00","proucing_center_id":0,"id":"59"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387404,"guige1_id":702,"sum_quantities":"2.00","proucing_center_id":0,"id":"60"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387405,"guige1_id":501,"sum_quantities":"375.00","proucing_center_id":0,"id":"61"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387493,"guige1_id":901,"sum_quantities":"5.00","proucing_center_id":0,"id":"62"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":387602,"guige1_id":1002,"sum_quantities":"20.00","proucing_center_id":0,"id":"63"}
+执行日期：
+2022-02-15 17:06:15 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":396043,"guige1_id":806,"sum_quantities":"6.00","proucing_center_id":0,"id":"64"}
+执行日期：
+2022-02-15 17:06:54 
+{"business_userId":319188,"delivery_date":1644768000,"product_id":385686,"guige1_id":702,"sum_quantities":"34.00","proucing_center_id":0,"id":"65"}

@@ -50,5 +50,57 @@ return [
             'code' => 108,
             'msg' => 'The pincode entered twice do not match'
         ],
+        'order_error' => [
+            'code' => 109,
+            'msg' => 'Parameter error'
+        ],
+        'summary_error' => [
+            'code' => 110,
+            'msg' => 'Parameter error'
+        ],
+        'summary_process_error' => [
+            'code' => 111,
+            'msg' => 'This product has not yet been processed'
+        ],
+        'summary_done_error' => [
+            'code' => 112,
+            'msg' => 'This product has been processed'
+        ],
+        'repeat_done_error' => [
+            'code' => 113,
+            'msg' => 'Do not click repeatedly'
+        ],
+        'lock_error' => [
+            'code' => 114,
+            'msg' => 'The server is busy, please try again later'
+        ],
+        'lock_processed_error' => [
+            'code' => 115,
+            'msg' => 'This product has been processed'
+        ],
+        'lock_processed_error' => [
+            'code' => 116,
+            'msg' => 'This product has been processed'
+        ],
+        'lock_other_error' => [
+            'code' => 117,
+            'msg' => 'This product has been locked by someone else'
+        ],
+        'lock_own_error' => [
+            'code' => 118,
+            'msg' => 'You have locked this product'
+        ],
+        'lock_result_error' => [//获取队列结果，需要轮询获取
+            'code' => 119,
+            'msg' => 'Please get the result again'
+        ],
+        'unlock_user_error' => [//解锁失败
+            'code' => 120,
+            'msg' => 'You do not have permission to unlock'
+        ],
+        'lock_user_deal_error' => [//点击已处理时，该员工没有权限
+            'code' => 121,
+            'msg' => 'Someone is currently working on it and you cannot click'
+        ],
     ]
 ];

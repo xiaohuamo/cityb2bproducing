@@ -108,7 +108,7 @@ body{
   cursor: pointer;
 }
 .xxBox{
-	width: 80px;
+	max-width: 110px;
 	height: 32px;
 	background: #FFF7F3;
 	border-radius: 3px;
@@ -238,7 +238,7 @@ body{
 }
 
 .left{
-	width: 125px;
+	width: 200px;
 	box-sizing: border-box;
 	min-height: 100%;
 }
@@ -262,18 +262,19 @@ body{
 	font-weight: bold;
 	margin-bottom: 8px;
 	margin: 0 12px 8px;
-	height: 76px;
+	min-height: 76px;
 	box-sizing: border-box;
 	padding-top: 15px;
 }
 
 .rbtn{
-	width: 83px;
-	height: 57px;
+	max-width: 300px;
+	height: 67px;
 	border-radius: 3px;
-	padding: 5px;
+	padding: 15px;
 	box-sizing: border-box;
 	margin-right: 10px;
+	text-align: center;
 }
 
 .rbtn2{
@@ -329,7 +330,7 @@ body{
 }
 .mainBox{
 	padding:0 20px 1px;
-	height: 400px;
+	height: 450px;
 	overflow: auto;
 }
 
@@ -349,7 +350,7 @@ body{
 .choseCustomerBox{
 	padding: 15px 0;
 	position: absolute;
-	width: 90px;
+	width: 300px;
 	top: 0px;
 	background: #FFFFFF;
 	text-align: center;
@@ -369,6 +370,10 @@ body{
 
 .hand{
 	cursor: pointer;
+}
+.leftMenu{
+	height: 477px;
+	overflow: auto;
 }
 
 .menuItem{
