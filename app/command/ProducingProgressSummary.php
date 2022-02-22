@@ -25,7 +25,7 @@ class ProducingProgressSummary extends Command
     {
         $Order = new Order();
         //默认获取当天所有的加工订单
-        $today_time = strtotime('2022-02-14');//strtotime(date('Y-m-d',time()));
+        $today_time = strtotime(date('Y-m-d',time()));
         //供应商id目前先写死，后期优化
         $businessId = 319188;
         $Order = $Order->addOrderGoodsToProgress($businessId,$today_time);
