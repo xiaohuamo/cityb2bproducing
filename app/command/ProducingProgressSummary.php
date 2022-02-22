@@ -28,7 +28,16 @@ class ProducingProgressSummary extends Command
         $today_time = strtotime(date('Y-m-d',time()));
         //供应商id目前先写死，后期优化
         $businessId = 319188;
-        $Order = $Order->addOrderGoodsToProgress($businessId,$today_time);
+        //获取订单加工的最新日期
+        $logistic_delivery_date = Order::where(['business_userId'=>$businessId])->order('logistic_delivery_date desc')->value('logistic_delivery_date');
+        //获取两个日期的差值
+        $diffDays = ($logistic_delivery_date - $today_time) / 86400;
+        if($diffDays >= 0){
+            for($i=0;$i<=$diffDays;$i++){
+                $time = strtotime("+$diffDays day");
+                $Order = $Order->addOrderGoodsToProgress($businessId,$time);
+            }
+        }
         // 指令输出
         $output->writeln('producingprogresssummary');
     }
