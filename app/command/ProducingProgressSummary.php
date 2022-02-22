@@ -34,8 +34,8 @@ class ProducingProgressSummary extends Command
         $diffDays = ($logistic_delivery_date - $today_time) / 86400;
         if($diffDays >= 0){
             for($i=0;$i<=$diffDays;$i++){
-                $time = strtotime("+$diffDays day");
-                $Order = $Order->addOrderGoodsToProgress($businessId,$time);
+                $time = strtotime("+$i day",$today_time);
+                $Order->addOrderGoodsToProgress($businessId,$time);
             }
         }
         // 指令输出
