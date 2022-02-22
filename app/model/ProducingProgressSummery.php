@@ -43,16 +43,25 @@ class ProducingProgressSummery extends Model
      * @param string $logistic_truck_No 配送司机id
      * @return array
      */
-    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='')
+    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0)
     {
         $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
+        switch($goods_sort){
+            case 1:
+                $order_by = 'isDone desc,rm.menu_id asc';
+                break;
+            case 2:
+                $order_by = 'rm.menu_id asc';
+                break;
+            default:$order_by = 'isDone asc,rm.menu_id asc';
+        }
         $goods_one_cate = Db::name('producing_progress_summery')
             ->alias('pps')
             ->field('pps.product_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id')
             ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
             ->where($where)
             ->group('product_id')
-            ->order('isDone asc,rm.menu_id asc')
+            ->order($order_by)
             ->select()->toArray();
         foreach($goods_one_cate as &$v){
             $v['sum_quantities'] = floatval($v['sum_quantities']);

@@ -24,7 +24,7 @@ class Order extends Model
         $date_arr = Db::name('order')->where([
             ['business_userId', '=', $businessId],
             ['coupon_status', '=', 'c01'],
-            ['logistic_delivery_date','>',time()-3600*24*7]
+            ['logistic_delivery_date','>',time()-3600*24*14]
         ])->where($map)->field("logistic_delivery_date,FROM_UNIXTIME(logistic_delivery_date,'%Y-%m-%d') date,2 as is_default")->group('logistic_delivery_date')->order('logistic_delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
@@ -131,7 +131,7 @@ class Order extends Model
      * @param string $logistic_truck_No 配送司机id
      * @return array
      */
-    public function getProductOrderList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$guige1_id='')
+    public function getProductOrderList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$guige1_id='',$wcc_sort=0)
     {
         $map = 'o.status=1 or o.accountPay=1';
         $where = [
@@ -150,6 +150,15 @@ class Order extends Model
         if ($guige1_id > 0) {
             $where[] = ['wcc.guige1_id','=',$guige1_id];
         }
+        switch ($wcc_sort){
+            case 1:
+                $order_by = 'is_producing_done asc';
+                break;
+            case 2:
+                $order_by = 'is_producing_done desc';
+                break;
+            default:$order_by = 'id asc';
+        }
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
@@ -159,6 +168,7 @@ class Order extends Model
             ->leftJoin('producing_progress_summery pps',"pps.delivery_date = o.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id")
             ->where($where)
             ->where($map)
+            ->order($order_by)
             ->select()->toArray();
         foreach($order as &$v){
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];

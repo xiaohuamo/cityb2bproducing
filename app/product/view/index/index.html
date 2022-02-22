@@ -275,6 +275,7 @@
 				menudataTwoCateIndex:0,//默认获取的二级产品类目键值
 				handleList:[],
 				handleListSort:[],//加工明细数据，为保证初始化的数据不变
+				wccSort:0,//加工明细排序
 				handleList1:[
 					{
 						num:10,
@@ -516,17 +517,18 @@
 					_this.logistic_delivery_date = _this.choseDate1.logistic_delivery_date
 					//获取初始化数据
 					if(_this.logistic_delivery_date){
-						_this.inidata(_this.logistic_delivery_date)
+						_this.inidata()
 					}
 				});
 			},
 			methods:{
 				//获取初始化数据
-				inidata(logistic_delivery_date) {
+				inidata() {
 					var _this = this
 					var data = {
-						"logistic_delivery_date":logistic_delivery_date,
-						"logistic_truck_No":_this.logistic_truck_No
+						"logistic_delivery_date":_this.logistic_delivery_date,
+						"logistic_truck_No":_this.logistic_truck_No,
+						"goods_sort":_this.isHandle
 					}
 					console.log('初始化参数---',data)
 					getData('product/iniData', data, function (res) {
@@ -578,7 +580,8 @@
 						"logistic_delivery_date":_this.logistic_delivery_date,
 						"logistic_truck_No":_this.logistic_truck_No,
 						"product_id":product_id,
-						"guige1_id":guige1_id
+						"guige1_id":guige1_id,
+						"wcc_sort":_this.wccSort
 					}
 					console.log('获取产品加工明细单参数-----',data)
 					getData('product/productOrderList', data, function (res) {
@@ -621,6 +624,14 @@
 									} else {
 										_this.menudata2Sort[index]['status'] = 0
 										_this.menudata2Sort[index]['is_lock'] = 0
+										//修改原数组的值
+										for(var i in _this.menudata2){
+											if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+												_this.menudata2[i]['status']=0
+												_this.menudata2[i]['is_lock']=0
+												break;
+											}
+										}
 									}
 									//修改对应的加工明细单为可处理
 									$.each(_this.handleListSort,function(i,n){
@@ -662,6 +673,14 @@
 								}else{
 									_this.menudata2Sort[index]['status'] = 1
 									_this.menudata2Sort[index]['is_lock'] = 1
+									//修改原数组的值
+									for(var i in _this.menudata2){
+										if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+											_this.menudata2[i]['status']=1
+											_this.menudata2[i]['is_lock']=1
+											break;
+										}
+									}
 								}
 								//修改对应的加工明细单为可处理
 								$.each(_this.handleListSort,function(i,n){
@@ -701,7 +720,12 @@
 					this.intervalId = setInterval(() => {
 						console.log("刷新",new Date());
 						this.currentTime = new Date().getTime();
-						if(this.currentTime - this.lastTime > this.timeOut) {  //判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
+						//更新数据
+						if(this.logistic_delivery_date) {
+							this.inidata()
+						}
+						//判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
+						if(this.currentTime - this.lastTime > this.timeOut) {
 							//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
 							var _this = this
 							getData('product/loginOutPincode', '', function (res) {
@@ -740,7 +764,14 @@
 					getData('product/changeProductOrderStatus', data, function (res) {
 						console.log('处理状态结果----',res)
 						if (res.status == 200) {
-							_this.handleList[index].is_producing_done = data.is_producing_done
+							_this.handleListSort[index].is_producing_done = data.is_producing_done
+							//修改原数组的值
+							for(var i in _this.handleList){
+								if(_this.handleList[i]['id'] == _this.handleListSort[index].id){
+									_this.handleList[i].is_producing_done = data.is_producing_done
+									break;
+								}
+							}
 							_this.currentHandlePop=-1
 							//修改司机对应的订单数量
 							_this.driverOrderDoneNum = _this.driverOrderDoneNum+res.result.driver_order_inc_num
@@ -771,16 +802,43 @@
 								}else{
 									_this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities'] = _this.numSub(_this.menudata2Sort[index]['finish_quantities'],item.customer_buying_quantity)
 								}
+								//修改原数组的值
+								for(var i in _this.menudata2){
+									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+										_this.menudata2[i].finish_quantities = _this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities']
+										break;
+									}
+								}
 							}
 							//如果当前产品的所有规格的加工明细都加工完，则需要将该产品状态变为绿色
 							if(res.result.is_product_all_done == 1){
 								_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 3
 								_this.menudata2Sort[_this.menudata2SortIndex]['is_lock'] = 0
+								_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 1
+								//修改原数组的值
+								for(var i in _this.menudata2){
+									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[_this.menudata2SortIndex].product_id){
+										_this.menudata2[i]['status']=3
+										_this.menudata2[i]['is_lock']=0
+										_this.menudata2[i]['isDone']=1
+										break;
+									}
+								}
 							}
 							//如果产品状态为已处理完成，还原时将原状态还原
 							if(data.is_producing_done==0&&_this.menudata2Sort[_this.menudata2SortIndex]['status'] == 3){
 								_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 0
 								_this.menudata2Sort[_this.menudata2SortIndex]['is_lock'] = 0
+								_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 0
+								//修改原数组的值
+								for(var i in _this.menudata2){
+									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+										_this.menudata2[i]['status']=0
+										_this.menudata2[i]['is_lock']=0
+										_this.menudata2[i]['isDone']=1
+										break;
+									}
+								}
 							}
 						} else {
 							alert(res.message);
@@ -830,6 +888,7 @@
 					this.currentHandlePop=-1
 					//将产品加工明细进行排序
 					this.handleListSort=JSON.parse(JSON.stringify(this.handleList));
+					this.wccSort=index
 					switch(index){
 						case 0:this.sortData(this.handleListSort,'logistic_sequence_No',1);break;
 						case 1:this.sortData(this.handleListSort,'is_producing_done',1);break;
@@ -838,13 +897,16 @@
 				},
 				//对数据进行排序
 				//data:需要排序的数组 sort_field:排序字段  sort_type:排序方式 1升序 2降序
-				sortData(data,sort_field,sort_type){
+				sortData(data,sort_field,sort_type,sort_field2=''){
 					return data.sort(
 						function(a, b) {
 							var value1 = a[sort_field]
 							var value2 = b[sort_field]
 							// console.log(value1,value2)
 							if($.type(value1) == 'number'){
+								if(sort_field2){
+									if(value1 == value2) return a[sort_field2]-b[sort_field2]
+								}
 								if (sort_type == 1) {
 									return value1 - value2
 								} else {
@@ -887,7 +949,7 @@
 							for(var i in _this.handleList){
 								if(_this.handleList[i]['id'] == _this.handleListSort[index].id){
 									_this.handleList[i].new_customer_buying_quantity=_this.handleListSort[index].new_customer_buying_quantity
-									return;
+									break;
 								}
 							}
 						} else {
@@ -997,10 +1059,13 @@
 					this.menudata2Sort=JSON.parse(JSON.stringify(this.menudata2))
 					console.log('产品排序---',this.isHandle);
 					switch(this.isHandle){
-						case 0:this.sortData(this.menudata2Sort,'isDone',1);break;
-						case 1:this.sortData(this.menudata2Sort,'isDone',2);break;
+						case 0:this.sortData(this.menudata2Sort,'isDone',1,'menu_id');break;
+						case 1:this.sortData(this.menudata2Sort,'isDone',2,'menu_id');break;
 						case 2:this.sortData(this.menudata2Sort,'menu_id',1);break;
 					}
+					//默认选中索引值归0
+					this.menudata2SortIndex=0
+					this.menudataTwoCateIndex=0
 					//获取默认显示的二级类目
 					this.twoCateGoods(this.menudata2Sort[0].product_id)
 				},

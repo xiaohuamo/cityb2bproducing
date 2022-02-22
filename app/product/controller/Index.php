@@ -231,8 +231,9 @@ class Index extends AuthBase
     public function iniData()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','goods_sort']);
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param['goods_sort'] = $param['goods_sort']??0;
         $Order = new Order();
         $ProducingProgressSummery = new ProducingProgressSummery();
         //1.获取对应日期的客户（目前默认先获取当前的商家）
@@ -246,7 +247,7 @@ class Index extends AuthBase
         $all_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date']);
         //5.获取对应日期加工的商品信息
         $user_id = $this->getMemberUserId();
-        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['goods_sort']);
 //        //6.获取对应日期的加工明细信息
 //        $order = $Order->getProductOrderList($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
         $data = [
@@ -285,8 +286,9 @@ class Index extends AuthBase
     public function productOrderList()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','wcc_sort']);
         $param['guige1_id'] = $param['guige1_id']??'';
+        $param['wcc_sort'] = $param['wcc_sort']??0;
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();//当前操作用户
@@ -294,7 +296,7 @@ class Index extends AuthBase
         $Order = new Order();
 
         //获取对应日期的加工订单
-        $order = $Order->getProductOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id']);
+        $order = $Order->getProductOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['wcc_sort']);
         $data = [
             'order' => $order
         ];
