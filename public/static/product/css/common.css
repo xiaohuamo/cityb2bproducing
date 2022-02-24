@@ -10,6 +10,10 @@ body{
 	background: #f2f2f2;
 }
 
+a{
+	text-decoration: none;
+}
+
 .max1440{
 	max-width: 1024px;
 	margin: 0 auto;
@@ -76,9 +80,6 @@ body{
 .xxx{
 	width: 10px;
 }
-.checkedStyle{
-	border: 5px solid #3c3a3a;
-}
 
 .zdBox{
   position: relative;
@@ -125,6 +126,7 @@ body{
 }
 .arrIcon{
 	width: 6px;
+	margin-left: 5px;
 }
 .goodsMenu{
 	padding:15px 10px;
@@ -386,7 +388,7 @@ body{
 }
 .menusj{
 	width: 9px;
-	right: -21px;
+	right: -12px;
 	top: 30px;
 	position: absolute;
 }
