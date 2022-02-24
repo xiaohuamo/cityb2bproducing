@@ -14,6 +14,9 @@ use app\model\{
     User,
     Order,
     WjCustomerCoupon,
+    RestaurantMenuTop,
+    RestaurantCategory,
+    ProducingBehaviorLog,
     ProducingProgressSummery
 };
 
@@ -231,9 +234,10 @@ class Index extends AuthBase
     public function iniData()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','goods_sort']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','goods_sort','product_id']);
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['goods_sort'] = $param['goods_sort']??0;
+        $param['product_id'] = $param['product_id']??0;
         $Order = new Order();
         $ProducingProgressSummery = new ProducingProgressSummery();
         //1.获取对应日期的客户（目前默认先获取当前的商家）
@@ -327,10 +331,6 @@ class Index extends AuthBase
         if (!$pps_info) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
         }
-        //如果该产品已加工完，不可重复点击加工
-        if ($pps_info['isDone'] == 1) {
-            return show(config('status.code')['lock_processed_error']['code'], config('status.code')['lock_processed_error']['msg']);
-        }
 
         //添加队列
         $uniqid = uniqid(time().mt_rand(1,1000000), true);
@@ -407,6 +407,8 @@ class Index extends AuthBase
             'operator_user_id' => 0
         ]);
         if ($res) {
+            $ProducingBehaviorLog = new ProducingBehaviorLog();
+            $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,2,$param['logistic_delivery_date'],$param);
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
         } else {
             return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
@@ -454,27 +456,26 @@ class Index extends AuthBase
             if(!$pps_info){
                 return show(config('status.code')['summary_error']['code'], config('status.code')['summary_error']['msg']);
             }
-            //如果当前操作员工处理员工是否是同一个人
-            if($pps_info['operator_user_id'] > 0 && $pps_info['operator_user_id'] != $user_id){
-                return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
-            }
             //一.已处理流程
             if($param['is_producing_done'] == 1){
                 //1-1.判断该产品是否有人加工，无人加工不可点击已处理
                 if(!($pps_info['operator_user_id'] > 0)){
                     return show(config('status.code')['summary_process_error']['code'], config('status.code')['summary_process_error']['msg']);
                 }
+                //如果当前操作员工处理员工是否是同一个人
+                if($pps_info['operator_user_id'] != $user_id){
+                    return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
+                }
                 //1-2.该产品已处理完成，不可重复处理
                 if($pps_info['isDone'] == $param['is_producing_done']){
                     return show(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
                 }
                 //2.更新该产品加工数量和状态
-                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['is_producing_done'=>1]);
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['operator_user_id'=>$user_id,'is_producing_done'=>1]);
                 $finish_quantities = $pps_info['finish_quantities']+$wcc_info['customer_buying_quantity'];
                 $pps_data['finish_quantities'] = $finish_quantities;
                 if($finish_quantities == $pps_info['sum_quantities']){
                     $pps_data['isDone'] = 1;
-                    $pps_data['operator_user_id'] = 0;//清空最后的加工人,因为是根据加工人id判断是否锁定
                     $is_product_guige1_done = 1;
                 }
                 ProducingProgressSummery::getUpdate(['id' => $pps_info['id']],$pps_data);
@@ -498,6 +499,11 @@ class Index extends AuthBase
                     }
                 }
                 Db::commit();
+                $ProducingBehaviorLog = new ProducingBehaviorLog();
+                $log_data = [
+                    "wj_customer_coupon_id" => $param['id']
+                ];
+                $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,3,$wcc_info['logistic_delivery_date'],$log_data);
                 $data = [
                     'driver_order_inc_num' => $driver_order_inc_num,//对应司机的订单数是否增加
                     'order_inc_num' => $order_inc_num,//订单总数是否增加
@@ -509,9 +515,10 @@ class Index extends AuthBase
             //二.返回继续处理流程
             if($param['is_producing_done'] == 0){
                 //2.更新该产品加工数量和状态
-                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['is_producing_done'=>0]);
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['operator_user_id'=>$user_id,'is_producing_done'=>0]);
                 $finish_quantities = $pps_info['finish_quantities']-$wcc_info['customer_buying_quantity'];
                 $pps_data['finish_quantities'] = $finish_quantities;
+                $pps_data['operator_user_id'] = $user_id;
                 //判断之前是否已加工完成，若加工完成，需要修改状态
                 if($pps_info['finish_quantities'] == $pps_info['sum_quantities']){
                     $pps_data['isDone'] = 0;
@@ -532,13 +539,18 @@ class Index extends AuthBase
                     'is_product_guige1_done' => $is_product_guige1_done,//当前加工产品对应的规格（没有规格即当前产品）是否加工完毕
                     'is_product_all_done' => $is_product_all_done //当前产品（包括所有规格）是否全部加工完毕
                 ];
+                $ProducingBehaviorLog = new ProducingBehaviorLog();
+                $log_data = [
+                    "wj_customer_coupon_id" => $param['id']
+                ];
+                $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,4,$wcc_info['logistic_delivery_date'],$log_data);
                 return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
             }
 
         } catch (\Exception $e) {
             // 回滚事务
             Db::rollback();
-            return show(config('status.code')['system_error'], '',[],$e->getMessage());
+            return show(config('status.code')['system_error']['code'], $e->getMessage());
         }
     }
 
@@ -553,6 +565,7 @@ class Index extends AuthBase
         }
 
         $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();//当前操作用户
 
         //1.获取加工明细信息
         $WjCustomerCoupon = new WjCustomerCoupon();
@@ -565,6 +578,12 @@ class Index extends AuthBase
         if($wcc_info['new_customer_buying_quantity'] != $param['new_customer_buying_quantity']){
             $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
             if ($res) {
+                $ProducingBehaviorLog = new ProducingBehaviorLog();
+                $log_data = [
+                    "wj_customer_coupon_id" => $param['id'],
+                    "new_customer_buying_quantity" => $param['new_customer_buying_quantity']
+                ];
+                $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,5,$wcc_info['logistic_delivery_date'],$log_data);
                 return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
             } else {
                 return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
@@ -572,6 +591,102 @@ class Index extends AuthBase
         } else {
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
         }
+    }
+
+    //获取当前备货产品
+    public function currentStockProduct()
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No']);
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $ProducingProgressSummery = new ProducingProgressSummery();
+
+        //1.获取对应日期加工的商品信息
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$goods);
+    }
+
+    //获取置顶产品信息
+    public function topProduct()
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No']);
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        $RestaurantMenuTop = new RestaurantMenuTop();
+        $data = $RestaurantMenuTop->getTopProduct($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
+    }
+
+    //设置产品置顶
+    public function setTopProduct()
+    {
+        $param = $this->request->only(['product_id','action_type']);
+        //1.验证数据
+        //validate验证机制
+        $validate = new IndexValidate();
+        if (!$validate->scene('setProductTop')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        if($param['action_type'] == 1){
+            $data = [
+                'userId' => $user_id,
+                'business_userId' => $businessId,
+                'product_id' => $param['product_id'],
+                'created_at' => time()
+            ];
+            $res = RestaurantMenuTop::createData($data);
+        } else {
+            $where = [
+                'userId' => $user_id,
+                'business_userId' => $businessId,
+                'product_id' => $param['product_id'],
+            ];
+            $info = RestaurantMenuTop::getOne($where);
+            if($info){
+                $res = RestaurantMenuTop::deleteAll(['id' => $info['id']]);
+            }
+        }
+        if($res !== false){
+            return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+        } else {
+            return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
+        }
+
+    }
+
+    //获取加工产品类目
+    public function category()
+    {
+        $businessId = $this->getBusinessId();
+        $RestaurantCategory = new RestaurantCategory();
+        $cate = $RestaurantCategory->getCategory($businessId);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$cate);
+    }
+
+    //获取对应大类的产品
+    public function categoryProduct()
+    {
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','goods_sort','category_id']);
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param['goods_sort'] = $param['goods_sort']??0;
+        $param['category_id'] = $param['category_id']??0;
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        $ProducingProgressSummery = new ProducingProgressSummery();
+        $data = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['goods_sort'],$param['category_id']);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
 

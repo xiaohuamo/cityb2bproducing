@@ -39,6 +39,16 @@ Route::post('unlockProduct', 'Index/unlockProduct');
 Route::post('editBuyingQuantity', 'Index/editBuyingQuantity');
 //加工状态变更
 Route::post('changeProductOrderStatus', 'Index/changeProductOrderStatus');
+//获取当前加工产品
+Route::post('currentStockProduct', 'Index/currentStockProduct');
+//获取一级加工类目
+Route::post('category', 'Index/category');
+//获取一级加工类目产品信息
+Route::post('categoryProduct', 'Index/categoryProduct');
+//获取置顶
+Route::post('topProduct', 'Index/topProduct');
+//设置置顶
+Route::post('setTopProduct', 'Index/setTopProduct');
 //test
 Route::post('test', 'Index/test');
 

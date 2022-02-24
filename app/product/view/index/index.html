@@ -59,26 +59,22 @@
 					<span class="col000" v-else>number</span>
 					<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				</div>
-				<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="f35 lbtn relative hand" v-show="currentPage==2" @click="clickMenu(index)">
-					{{item}}
-					<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
+				<div v-show="currentPage==2" class="leftMenu">
+					<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="f35 lbtn relative hand" @click="clickMenu(item,index)">
+						{{item.category_en_name}}
+						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
+					</div>
 				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu">
-						<div :class="item.status==-1||item.status==0?'bgFD6921':item.status==3?'bg34C079':'bgFD6921'" class="colfff f35 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);item.is_has_two_cate==2&&gtouchstart(item,index);item.is_has_two_cate==2&&gtouchmove(item,index);gtouchend(item,index)" @touchstart="item.is_has_two_cate==2&&gtouchstart(item,index);item.is_has_two_cate==2&&gtouchend(item,index)" @touchmove="item.is_has_two_cate==2&&gtouchmove(item,index)" @touchend="item.is_has_two_cate==2&&gtouchend(item,index)">
-							<div :class="item.staus==2?'blink':''">
-								<div>{{item.menu_en_name}}</div>
-								<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
-								<div>{{item.menu_id}}</div>
-								<img v-if="item.is_has_two_cate==2 && item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
-							</div>
+					<div :class="{'bgFD6921':item.status==-1||item.status==0||item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2,'checkedStyle':currentContent==index}" class="colfff f35 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);item.is_has_two_cate==2&&gtouchstart(item,index);item.is_has_two_cate==2&&gtouchmove(item,index);gtouchend(item,index)" @touchstart="item.is_has_two_cate==2&&gtouchstart(item,index);item.is_has_two_cate==2&&gtouchend(item,index)" @touchmove="item.is_has_two_cate==2&&gtouchmove(item,index)" @touchend="item.is_has_two_cate==2&&gtouchend(item,index)">
+						<div :class="item.status==1||item.status==2?'blink':''">
+							<div>{{item.menu_en_name}}</div>
+							<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
+							<div>{{item.menu_id}}</div>
+							<img v-if="item.is_has_two_cate==2&&item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
 						</div>
-<!--					<div class="colfff f35 bgB5B5B5 lbtn2 relative">-->
-<!--						猪肉-->
-<!--						<div>324324</div>-->
-<!--						<img src="__STATIC__/product/img/suo.png" class="suo"/>-->
-<!--					</div>-->
-
+					</div>
 				</div>
 			</div>
 			<div class="right pa20">
@@ -86,7 +82,7 @@
 					<div>
 						<div class="flexbox2 rsection1">
 							<div :class="item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" class="colfff rbtn relative" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);gtouchstart(item,index);gtouchmove(item,index);gtouchend(item,index)"  @touchstart="gtouchstart(item,index)" @touchmove="gtouchmove(item,index)" @touchend="gtouchend(item,index)">
-								<div :class="item.status==1||item.staus==2?'blink':''">
+								<div :class="item.status==1||item.status==2?'blink':''">
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 									<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -152,9 +148,9 @@
 										</div>
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="item.is_lock==1&&editQuantity(item,index,'-')" v-else/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="item.is_lock==1&&item.lock_type==1&&editQuantity(item,index,'-')" v-else/>
 											<input class="inputW" v-model="item.new_customer_buying_quantity"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="item.is_lock==1&&editQuantity(item,index,'+')"/>
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="item.is_lock==1&&item.lock_type==1&&editQuantity(item,index,'+')"/>
 										</div>
 									</div>
 									<div class="flexbox1 pa18-0" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
@@ -167,14 +163,14 @@
 										<img src="__STATIC__/product/img/echo.png" class="echo"/>
 									</div>
 									<div class="rbtn3 bg34C079 relative" v-if="item.is_producing_done==1" @click="handle(index)">
-										已处理
+										processed
 										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
-											<div class="colFD6921" @click.stop="changeStatus(item,index)">继续处理</div>
-											<div class="mb10 col000" @click.stop="Popreturn">返回</div>
+											<div class="colFD6921" @click.stop="changeStatus(item,index)">continue processing</div>
+											<div class="mb10 col000" @click.stop="Popreturn">return</div>
 										</div>
 									</div>
 									<div class="rbtn3" :class="item.lock_type==0||item.lock_type==1?'bgFD6921':'bgGrey'" v-else @click="item.is_lock==1&&item.lock_type==1&&changeStatus(item,index)">
-										待处理
+										waitting process
 									</div>
 								</div>
 							</div>
@@ -183,24 +179,27 @@
 					</div>
 				</div>
 				<div v-show="currentPage==2">
-					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter f35 colFD6921 relative hand" @click="returnPage(1)">
+					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter f35 colFD6921 relative hand" @click="returnPage(1)" v-show="currentMenu>1">
 						<img src="__STATIC__/product/img/return2.png" style="width:11px;position:absolute;left:15px;"/>
-						返回该类别
+						Back to this category
 					</div>
-					<div class="flexbox2">
+					<div class="flexbox2 J_set_top">
 						<div v-for="(item,index) in goods">
-							<div class="rbtn2 bgOrange">
-								猪肉
+							<div class="rbtn2" :class="item.status==-1||item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'">
+								<div :class="item.status==1||item.status==2?'blink':''">{{item.menu_en_name}}</div>
 							</div>
-							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu==1&&currentPage==2" @click="cancelZD(index)">
+							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu==1&&currentPage==2" @click="cancelZD(item,index,2,'top')">
 								<img src="__STATIC__/product/img/zd.png" class="zd"/>
-								 取消置顶
+								unpin
 							</div>
-							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu==2&&currentPage==2" @click="cancelZD(index)">
+							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu>1&&currentPage==2&&item.is_set_top==0" @click="cancelZD(item,index,1)">
 								 <img src="__STATIC__/product/img/zd2.png" class="zd"/>
-								 置顶
+								top
 							</div>
-
+							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu>1&&currentPage==2&&item.is_set_top==1" @click="cancelZD(item,index,2)">
+								<img src="__STATIC__/product/img/zd.png" class="zd"/>
+								unpin
+							</div>
 						</div>
 					</div>
 				</div>
@@ -245,7 +244,7 @@
 			el:"#main",
 			data:{
 				currentHandlePop:-1,
-				currentContent:0,
+				currentContent:0,//当前选中的产品索引id
 				currentDay:0,
 				current2:0,
 				current3:0,
@@ -266,7 +265,7 @@
 				num:20,
 				whichPopShow:-1,
 				currentPage:1,  // 1表示1级页面 2是2级页面
-				menudata:['当前备货','置顶','猪肉','牛肉','羊肉'],
+				menudata:[{"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"}],
 				menudata2:[],//加工产品
 				menudata2Index:0,//默认获取的产品键值
 				menudata2Sort:[],//排序后的加工产品，为保证初始化的数据不变
@@ -528,7 +527,7 @@
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
 						"logistic_truck_No":_this.logistic_truck_No,
-						"goods_sort":_this.isHandle
+						"goods_sort":_this.isHandle,
 					}
 					console.log('初始化参数---',data)
 					getData('product/iniData', data, function (res) {
@@ -543,10 +542,20 @@
 						_this.menudata2 = res.goods
 						_this.menudata2Sort = res.goods
 						if(_this.menudata2.length > 0){
-							_this.product_id = _this.menudata2[0].product_id
-							if(_this.menudata2[0].is_has_two_cate == 1){
+							//获取当前默认选中的产品id
+							if(_this.product_id==0){
+								_this.product_id=_this.menudata2[0].product_id
+								_this.currentContent=0
+							}else{
+								for(var i in _this.menudata2){
+									if(_this.menudata2[i]['product_id']==_this.product_id){
+										_this.currentContent=i
+									}
+								}
+							}
+							if(_this.menudata2[_this.currentContent].is_has_two_cate == 1){
 								//获取默认显示的二级类目
-								_this.twoCateGoods(_this.menudata2[0].product_id)
+								_this.twoCateGoods(_this.product_id)
 							}else{
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(_this.product_id)
@@ -835,7 +844,7 @@
 									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
 										_this.menudata2[i]['status']=0
 										_this.menudata2[i]['is_lock']=0
-										_this.menudata2[i]['isDone']=1
+										_this.menudata2[i]['isDone']=0
 										break;
 									}
 								}
@@ -880,6 +889,7 @@
 				clickGoodsTwoCate(item,index){
 					//记录当前点击的产品键值
 					this.menudataTwoCateIndex=index
+					this.guige1_id = item.guige1_id
 					//获取二级类目对应的订单
 					this.productOrder(item.product_id,item.guige1_id)
 				},
@@ -1045,9 +1055,44 @@
 				},
 				returnPage(index){
 					this.currentPage=index
+					//获取大类
+					var _this=this
+					getData('product/category', '', function (res) {
+						res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
+						_this.menudata = res.result
+						console.log('获取产品大类目---',_this.menudata)
+						//获取默认的展示产品
+						_this.cetegoryProduct(_this.menudata[0]['id']);
+					});
 				},
-				clickMenu(index){
+				clickMenu(item,index){
 					this.currentMenu=index
+					console.log(item)
+					this.cetegoryProduct(item.id);
+				},
+				//获取对应类别的产品
+				cetegoryProduct(cate_id){
+					//调取获取当前备货接口
+					var data = {
+						"logistic_delivery_date":this.logistic_delivery_date,
+						"logistic_truck_No":this.logistic_truck_No,
+						"category_id":cate_id
+					}
+					switch(cate_id){
+						case -1:
+							var url = 'product/currentStockProduct'
+							break;
+						case 0:
+							var url = 'product/topProduct'
+							break;
+						default:
+							var url = 'product/categoryProduct'
+					}
+					var _this=this
+					getData(url, data, function (res) {
+						console.log('获取大类产品----',res)
+						_this.goods = res.result
+					});
 				},
 				clickHandle(){
 					if(this.isHandle==2){
@@ -1069,8 +1114,27 @@
 					//获取默认显示的二级类目
 					this.twoCateGoods(this.menudata2Sort[0].product_id)
 				},
-				cancelZD(index){
-					this.goods.splice(index,1)
+				//设置或取消置顶
+				cancelZD(item,index,action_type,source=''){
+					var data = {
+						"product_id":item.product_id,
+						"action_type":action_type
+					}
+					var _this=this
+					getData('product/setTopProduct', data, function (res) {
+						if(res.status == 200){
+							if(action_type == 1){
+								_this.goods[index]['is_set_top'] = 1
+							}else{
+								_this.goods[index]['is_set_top'] = 0;
+							}
+							if(source=='top'&&action_type==2){
+								$('.J_set_top>div').eq(index).remove();
+							}
+						}else{
+							alert(res.message)
+						}
+					});
 				},
 				//光标移入div样式
 				focusData(e,type,pincodeType){

@@ -43,23 +43,29 @@ class ProducingProgressSummery extends Model
      * @param string $logistic_truck_No 配送司机id
      * @return array
      */
-    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0)
+    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0,$category_id='')
     {
         $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
+        $map = [];
+        if($category_id){
+            $map[] = ['rm.restaurant_category_id','=',$category_id];
+        }
         switch($goods_sort){
             case 1:
-                $order_by = 'isDone desc,rm.menu_id asc';
+                $order_by = 'isDone desc,rc.category_sort_id asc,rm.menu_order_id asc';
                 break;
             case 2:
                 $order_by = 'rm.menu_id asc';
                 break;
-            default:$order_by = 'isDone asc,rm.menu_id asc';
+            default:$order_by = 'isDone asc,rc.category_sort_id asc,rm.menu_order_id asc';
         }
         $goods_one_cate = Db::name('producing_progress_summery')
             ->alias('pps')
             ->field('pps.product_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id')
             ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
+            ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
             ->where($where)
+            ->where($map)
             ->group('product_id')
             ->order($order_by)
             ->select()->toArray();
@@ -75,7 +81,10 @@ class ProducingProgressSummery extends Model
             $v['is_has_two_cate'] = count($two_cate_done)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
             //判断加工状态 -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done);
-            $v['is_lock'] = $v['operator_user_id']>0 ? 1 : 0;
+            $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
+            //获取该产品是否设置置顶
+            $top_info = Db::name('restaurant_menu_top')->where(['userId'=>$userId,'business_userId'=>$businessId,'product_id'=>$v['product_id']])->find();
+            $v['is_set_top'] = $top_info ? 1 : 0;//是否设置置顶 1设置 0未设置
         }
         return $goods_one_cate;
     }
@@ -104,7 +113,7 @@ class ProducingProgressSummery extends Model
             $v['sum_quantities'] = floatval($v['sum_quantities']);
             $v['finish_quantities'] = floatval($v['finish_quantities']);
             $v['status'] = $this->getProcessStatus($v,$userId,2);
-            $v['is_lock'] = $v['operator_user_id']>0 ? 1 : 0;
+            $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
         }
         return $goods_two_cate;
     }
@@ -127,6 +136,7 @@ class ProducingProgressSummery extends Model
         }
         if($product_id){
             $where[] = ['pps.product_id','=',$product_id];
+            $where[] = ['pps.guige1_id','>',0];
         }
         if($logistic_truck_No){
             $map = 'o.status=1 or o.accountPay=1';
