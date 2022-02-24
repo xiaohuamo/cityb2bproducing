@@ -13,13 +13,15 @@ class IndexValidate extends Validate
         'is_producing_done'  =>  'require|in:0,1',//是否已处理 1已处理 0未处理
         'product_id' => 'require',//产品id
         'logistic_delivery_date' => 'require',//配送日期
-        'new_customer_buying_quantity' => 'require|float'
+        'new_customer_buying_quantity' => 'require|float',
+        'action_type' => 'require|in:1,2',//设置置顶操作 1-设置置顶 2-取消置顶
     ];
 
     protected $scene = [
         'changeProductOrderStatus' => ['id','is_producing_done'],//修改加工状态
         'lockProduct' => ['logistic_delivery_date','product_id'],//锁定产品
-        'editBuyingQuantity' => ['id','new_customer_buying_quantity']
+        'editBuyingQuantity' => ['id','new_customer_buying_quantity'],//修改加工数量
+        'setProductTop' => ['product_id','action_type'],//设置置顶
     ];
 
     /**

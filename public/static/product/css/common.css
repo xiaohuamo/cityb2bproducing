@@ -76,6 +76,9 @@ body{
 .xxx{
 	width: 10px;
 }
+.checkedStyle{
+	border: 5px solid #3c3a3a;
+}
 
 .zdBox{
   position: relative;
@@ -278,7 +281,7 @@ body{
 }
 
 .rbtn2{
-	min-width: 82px;
+	max-width: 180px;
 	height: 40px;
 	border-radius: 3px;
 	margin-right: 10px;
@@ -286,10 +289,11 @@ body{
 	text-align: center;
 	line-height: 40px;
 	color: #FFFFFF;
+	padding: 0 10px;
 }
 
 .rbtn3{
-	width: 85px;
+	width: 155px;
 	height: 57px;
 	border-radius: 3px;
 	text-align: center;
