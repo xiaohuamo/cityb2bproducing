@@ -231,14 +231,14 @@ class ProducingProgressSummery extends Model
     {
         if(count($operator_user_id_arr) > 0){//有人正在操作
             //如果当前用户正在加工该产品，状态为：正在加工中2
-            //如果当前用户没加工该产品，判断所有规格是否都有人在加工，所有规格都被其他人加工，状态为：其他人加工中3。否则，状态为：待加工0
+            //如果当前用户没加工该产品，判断所有规格是否都有人在加工，所有规格都被其他人加工，状态为：其他人加工中2。否则，状态为：待加工0
             if(in_array($userId,$operator_user_id_arr)){
                 $status = 1;//表示正在加工中
             }else{
                 if(in_array(0,$operator_user_id_arr)){
                     $status = 0;//表示待加工
                 }else{
-                    $status = 3;//其他人加工中
+                    $status = 2;//其他人加工中
                 }
             }
         }else{//所有规格都无人加工

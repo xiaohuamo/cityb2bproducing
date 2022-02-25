@@ -1479,13 +1479,15 @@
 					}
 				},
 				//拼接数据
-				splideData(all_customers,all_drivers){
+				//type值，是否需要重置司机数据 1-是 2-否
+				splideData(all_customers,all_drivers,type){
 					this.list2 = ["All customers"]
 					this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
 					this.choseDate2=this.list2[0]
 					this.current2=0
 					this.choseDate3=this.list[0].name
 					this.current3=0
+					this.logistic_truck_No=''
 					this.list2 = this.list2.concat(all_customers)
 					this.list3 = this.list3.concat(all_drivers)
 				}
