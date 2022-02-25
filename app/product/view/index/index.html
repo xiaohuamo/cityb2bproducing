@@ -66,17 +66,15 @@
 					</div>
 				</div>
 
-				<div v-show="currentPage==1" class="hand leftMenu">
-					<div :class="{'bgFD6921':item.status==-1||item.status==0||item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2}" class="colfff f35 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);item.is_has_two_cate==2&&gtouchstart(item,index);item.is_has_two_cate==2&&gtouchmove(item,index);gtouchend(item,index)" @touchstart="item.is_has_two_cate==2&&gtouchstart(item,index);item.is_has_two_cate==2&&gtouchend(item,index)" @touchmove="item.is_has_two_cate==2&&gtouchmove(item,index)" @touchend="item.is_has_two_cate==2&&gtouchend(item,index)">
-						<a id="item.product_id">
-						<div :class="item.status==1||item.status==2?'blink':''">
+				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
+					<div :class="{'bgFFF7F3':item.status==-1||item.status==0,'bgFD6921':item.status==1||item.status==4,'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f35 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="item.is_has_two_cate==2&&gtouchstart(item,index);" v-bind:id="item.product_id">
+						<div :class="{'blink':item.status==1||item.status==2}">
 							<div>{{item.menu_en_name}}</div>
 							<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 							<div>{{item.menu_id}}</div>
 							<img v-if="item.is_has_two_cate==2&&item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
 						</div>
 						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentContent==index"/>
-						</a>
 					</div>
 				</div>
 			</div>
@@ -84,7 +82,7 @@
 				<div v-show="currentPage==1">
 					<div>
 						<div class="flexbox2 rsection1">
-							<div :class="item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" class="colfff rbtn relative" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);gtouchstart(item,index);gtouchmove(item,index);gtouchend(item,index)"  @touchstart="gtouchstart(item,index)" @touchmove="gtouchmove(item,index)" @touchend="gtouchend(item,index)">
+							<div :class="item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" class="colfff rbtn relative" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="gtouchstart(item,index)">
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -239,13 +237,14 @@
 				</div>
 			</div>
 		</div>
-
+		<img v-if="isLoading" src="__STATIC__/product/img/loading.gif" class="loading"/>
 	</div>
 	</body>
 	<script>
 		new Vue({
 			el:"#main",
 			data:{
+				isLoading:false,
 				currentHandlePop:-1,
 				currentContent:0,//当前选中的产品索引id
 				currentDay:0,
@@ -270,7 +269,6 @@
 				currentPage:1,  // 1表示1级页面 2是2级页面
 				menudata:[{"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"}],
 				menudata2:[],//加工产品
-				menudata2Index:0,//默认获取的产品键值
 				menudata2Sort:[],//排序后的加工产品，为保证初始化的数据不变
 				menudata2SortIndex:0,//默认获取的产品键值
 				menudataTwoCate:[],//二级产品类目
@@ -491,6 +489,7 @@
 			mounted: function () {
 				//获取pincode显示得到样式
 				var _this = this
+				_this.isLoading=true
 				getData('product/loginInfo', '', function (res) {
 					//获取登录信息
 					if (res.result.user_name) {
@@ -509,8 +508,10 @@
 						_this.isShowTypePincode2 = true
 						_this.pincodeType = 2 //默认显示创建pincode
 					}
+					_this.isLoading=false
 				});
 				//获取加工日期
+				_this.isLoading=true
 				getData('product/deliveryDate', '', function (res) {
 					console.log(res);
 					_this.list = res.result.list
@@ -521,6 +522,7 @@
 					if(_this.logistic_delivery_date){
 						_this.inidata()
 					}
+					_this.isLoading=false
 				});
 			},
 			methods:{
@@ -550,10 +552,12 @@
 							if(_this.product_id==0){
 								_this.product_id=_this.menudata2[0].product_id
 								_this.currentContent=0
+								_this.menudata2SortIndex=0
 							}else{
 								for(var i in _this.menudata2){
 									if(_this.menudata2[i]['product_id']==_this.product_id){
 										_this.currentContent=i
+										_this.menudata2SortIndex=i
 										break;
 									}
 								}
@@ -607,12 +611,13 @@
 						_this.handleList = res.order
 						_this.handleListSort = res.order
 						console.log('获取产品加工明细单2222-----',_this.handleList)
+						_this.isLoading=false
 					});
 				},
 				//goods_cate 产品类目 1一级类目  2二级类目
 				gtouchstart(item,index){
-					this.timeOutEvent = setTimeout(()=>{
-						this.timeOutEvent = 0;
+					// this.timeOutEvent = setTimeout(()=>{
+					// 	this.timeOutEvent = 0;
 						//真正长按后应该执行的内容
 						var data = {
 							"logistic_delivery_date":this.logistic_delivery_date,
@@ -622,12 +627,14 @@
 						console.log('获取锁定参数-----',data)
 						var _this = this
 						//产品的锁定状态,status -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
+						_this.isLoading=true
 						if(item.status == 0){
 							getData('product/lockProduct', data, function (res) {
 								console.log('获取锁定结果-----',res)
 								if(res.status == 200){
 									_this.lockProductRes(res.result,item,index)
 								} else {
+									_this.isLoading=false
 									alert(res.message)
 								}
 							});
@@ -661,9 +668,10 @@
 								} else {
 									alert(res.message)
 								}
+								_this.isLoading=false
 							});
 						}
-					},2000);//这里设置定时器，定义长按2000毫秒触发长按事件
+					// },2000);//这里设置定时器，定义长按2000毫秒触发长按事件
 					return false;
 				},
 				//获取锁定结果
@@ -676,10 +684,11 @@
 					getData('product/lockProductResult', data, function (res) {
 						console.log('获取队列结果----',res);
 						if (res.status == 119) {
+							_this.isLoading=true
 							this.timeOutLock = setTimeout(() => {
 								// console.log('定时获取结果------');
 								_this.lockProductRes(result,item,index)
-							}, 500);
+							}, 100);
 						} else {
 							clearTimeout(_this.timeOutLock);
 							//锁定成功--上锁
@@ -710,6 +719,7 @@
 							}else{
 								alert(res.message)
 							}
+							_this.isLoading=false
 						}
 					})
 				},
@@ -779,6 +789,7 @@
 					}
 					console.log('处理状态参数----',data)
 					var _this = this
+					_this.isLoading=true
 					getData('product/changeProductOrderStatus', data, function (res) {
 						console.log('处理状态结果----',res)
 						if (res.status == 200) {
@@ -812,6 +823,20 @@
 								if(data.is_producing_done==0&&_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3){
 									_this.menudataTwoCate[_this.menudataTwoCateIndex]['status'] = 0
 									_this.menudataTwoCate[_this.menudataTwoCateIndex]['is_lock'] = 0
+								}
+								if(data.is_producing_done==0&&_this.menudata2Sort[_this.menudata2SortIndex]['status']==3){
+									_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 0
+									_this.menudata2Sort[_this.menudata2SortIndex]['is_lock'] = 0
+									_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 0
+									//修改原数组的值
+									for(var i in _this.menudata2){
+										if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+											_this.menudata2[i]['status']=0
+											_this.menudata2[i]['is_lock']=0
+											_this.menudata2[i]['isDone']=0
+											break;
+										}
+									}
 								}
 							}else{
 								//增加加工数量
@@ -861,6 +886,7 @@
 						} else {
 							alert(res.message);
 						}
+						_this.isLoading=false
 					});
 				},
 				handle(index){  // 点击已处理
@@ -883,6 +909,7 @@
 				},
 				//切换一级类目
 				clickGoods(item,index){
+					this.isLoading=true
 				   	this.currentContent=index
 					// if(item.status==0){
 					// 	this.menudata2[index].isBlink=true
@@ -896,13 +923,14 @@
 				},
 				//切换二级类目
 				clickGoodsTwoCate(item,index){
+					this.isLoading=true
 					//记录当前点击的产品键值
 					this.menudataTwoCateIndex=index
 					this.guige1_id = item.guige1_id
 					//获取二级类目对应的订单
-					this.productOrder(item.product_id,item.guige1_id)
 				},
 				tab(index){
+					this.isLoading=true
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.currentHandlePop=-1
 					//将产品加工明细进行排序
@@ -913,6 +941,7 @@
 						case 1:this.sortData(this.handleListSort,'is_producing_done',1);break;
 						case 2:this.sortData(this.handleListSort,'is_producing_done',2);break;
 					}
+					this.isLoading=false
 				},
 				//对数据进行排序
 				//data:需要排序的数组 sort_field:排序字段  sort_type:排序方式 1升序 2降序
@@ -960,6 +989,7 @@
 					}
 					console.log('修改加工数量参数----',data)
 					var _this=this
+					_this.isLoading=true
 					getData('product/editBuyingQuantity', data, function (res) {
 						console.log('修改加工数量结果----',res)
 						if (res.status == 200) {
@@ -976,6 +1006,7 @@
 							_this.handleList[index].new_customer_buying_quantity=customer_buying_quantity
 							_this.handleListSort[index].new_customer_buying_quantity=customer_buying_quantity
 						}
+						_this.isLoading=false
 					});
 				},
 				add(source,index,sec){
@@ -1043,11 +1074,13 @@
 					this.currentContent=0
 					this.product_id=0
 					this.guige1_id=''
+					this.isLoading=true
 					this.inidata(this.logistic_delivery_date)
 					if(this.currentPage==2){
 						var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct(cate_id)
 					}
+					this.isLoading=false
 				},
 				choseCus(item,index){
 					this.choseDate2=item
@@ -1056,11 +1089,13 @@
 					this.currentContent=0
 					this.product_id=0
 					this.guige1_id=''
+					this.isLoading=true
 					this.inidata(this.logistic_delivery_date)
 					if(this.currentPage==2){
 						var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct(cate_id)
 					}
+					this.isLoading=false
 				},
 				//切换司机
 				choseDriver(item,index){
@@ -1071,11 +1106,13 @@
 					this.currentContent=0
 					this.product_id=0
 					this.guige1_id=''
+					this.isLoading=true
 					this.inidata(this.logistic_delivery_date)
 					if(this.currentPage==2){
 						var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct(cate_id)
 					}
+					this.isLoading=false
 				},
 				closePop(){
 					this.whichPopShow=-1
@@ -1128,7 +1165,8 @@
 				//类目页面跳转到加工页面对应的产品位置
 				goto(item){
 					this.currentPage=1
-					$("html,body").animate({scrollTop:$('#'+item.product_id).offset().top},1000)
+					console.log('ddddd',$(".J_left_menu_1").find('#387404').offsetTop)
+					$(".J_left_menu_1").animate({scrollTop:$('#387404').offset().top},1000)
 				},
 				clickHandle(){
 					if(this.isHandle==2){
