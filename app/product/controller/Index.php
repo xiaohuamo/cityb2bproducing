@@ -252,7 +252,7 @@ class Index extends AuthBase
         //5.获取对应日期加工的商品信息
         $user_id = $this->getMemberUserId();
         $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['goods_sort']);
-//        //6.获取对应日期的加工明细信息
+        //        //6.获取对应日期的加工明细信息
 //        $order = $Order->getProductOrderList($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
         $data = [
             'all_customers' => [$nickname],

@@ -65,6 +65,7 @@ class ProducingProgressSummery extends Model
             ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
             ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
             ->where($where)
+            ->where(['rm.proucing_item'=>1])
             ->where($map)
             ->group('product_id')
             ->order($order_by)
@@ -79,7 +80,7 @@ class ProducingProgressSummery extends Model
             ];
             $two_cate_done_info = Db::name('producing_progress_summery')->alias('pps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
             $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
-            //判断加工状态 -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
+            //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);
             $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
             //获取该产品是否设置置顶
@@ -106,10 +107,11 @@ class ProducingProgressSummery extends Model
             ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
             ->leftJoin('restaurant_menu_option rmo','pps.guige1_id = rmo.id')
             ->where($where)
+            ->where(['rm.proucing_item'=>1])
             ->group('product_id,guige1_id')
             ->select()->toArray();
         foreach($goods_two_cate as &$v){
-            //判断加工状态 -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
+            //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['sum_quantities'] = floatval($v['sum_quantities']);
             $v['finish_quantities'] = floatval($v['finish_quantities']);
             $v['status'] = $this->getProcessStatus($v,$userId,2);
@@ -181,7 +183,7 @@ class ProducingProgressSummery extends Model
      */
     public function getProcessStatus($data,$userId,$type=1,$two_cate_done_info=[])
     {
-        $status = -1;//判断加工状态 -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
+        //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
         if($type==1 && $data['is_has_two_cate'] == 2 || $type==2){
             if($data['isDone'] == 0){
                 if($data['operator_user_id'] > 0){
@@ -197,22 +199,50 @@ class ProducingProgressSummery extends Model
             if($type==1 && $data['is_has_two_cate'] == 1){
                 //查询该产品所有的二级状态
                 $two_cate_done_unique = array_unique(array_column($two_cate_done_info,'isDone'));
-                $operator_user_id_arr = array_filter(array_unique(array_column($two_cate_done_info,'operator_user_id')));
+                $operator_user_id_arr = array_column($two_cate_done_info,'operator_user_id');
 //                dump($two_cate_done_unique);
                 if(count($two_cate_done_unique) == 1){
                     if($two_cate_done_unique[0] == 0){
-                        if(count($operator_user_id_arr)>0){
-                            $status = 4;//表示正在加工中
-                        }else{
-                            $status = 0;
-                        }
+                        $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr);
                     }else{
                         $status = 3;
                     }
                 }else{
-                    $status = 4;//表示正在加工中
+                    //判断未完成的规格中加工状态
+                    $operator_user_id_arr = [];
+                    foreach($two_cate_done_info as $v){
+                        if($v['isDone'] == 0){
+                            $operator_user_id_arr[] = $v['operator_user_id'];
+                        }
+                    }
+                    $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr);
                 }
             }
+        }
+        return $status;
+    }
+
+    /**
+     * 根据规格加工状态，判断当前产品显示的状态
+     * @param $user_id
+     * @param $operator_user_id_arr
+     */
+    public function productStatusAccordGuige($userId,$operator_user_id_arr)
+    {
+        if(count($operator_user_id_arr) > 0){//有人正在操作
+            //如果当前用户正在加工该产品，状态为：正在加工中2
+            //如果当前用户没加工该产品，判断所有规格是否都有人在加工，所有规格都被其他人加工，状态为：其他人加工中3。否则，状态为：待加工0
+            if(in_array($userId,$operator_user_id_arr)){
+                $status = 1;//表示正在加工中
+            }else{
+                if(in_array(0,$operator_user_id_arr)){
+                    $status = 0;//表示待加工
+                }else{
+                    $status = 3;//其他人加工中
+                }
+            }
+        }else{//所有规格都无人加工
+            $status = 0;
         }
         return $status;
     }

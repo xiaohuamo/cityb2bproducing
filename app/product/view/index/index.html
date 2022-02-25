@@ -67,7 +67,7 @@
 				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="{'bgFFF7F3':item.status==-1||item.status==0,'bgFD6921':item.status==1||item.status==4,'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f35 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="item.is_has_two_cate==2&&gtouchstart(item,index);" v-bind:id="item.product_id">
+					<div :class="{'bgFFF7F3':item.status==0&&currentContent!=index,'bgFD6921':item.status==1||(item.status==0&&currentContent==index),'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f35 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="item.is_has_two_cate==2&&gtouchstart(item,index);" v-bind:id="item.product_id">
 						<div :class="{'blink':item.status==1||item.status==2}">
 							<div>{{item.menu_en_name}}</div>
 							<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -186,8 +186,16 @@
 					</div>
 					<div class="flexbox2 J_set_top">
 						<div v-for="(item,index) in goods">
-							<div class="rbtn2" :class="item.status==-1||item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" @click="goto(item)">
+							<div v-if="currentMenu>0"  class="rbtn2" :class="item.status==-1||item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" @click="goto(item)">
 								<div :class="item.status==1||item.status==2?'blink':''">{{item.menu_en_name}}</div>
+							</div>
+							<div v-else :class="{'bgFFF7F3':item.status==0,'bgFD6921':item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f35 lbtn2 relative pdbtn" @click="goto(item)">
+								<div :class="{'blink':item.status==1||item.status==2}">
+									<div>{{item.menu_en_name}}</div>
+									<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
+									<div>{{item.menu_id}}</div>
+									<img v-if="item.is_has_two_cate==2&&item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
+								</div>
 							</div>
 							<div class="f24 col000 flexbox4 bgfff zdBox" v-show="currentMenu==1&&currentPage==2" @click="cancelZD(item,index,2,'top')">
 								<img src="__STATIC__/product/img/zd.png" class="zd"/>
@@ -587,7 +595,10 @@
 						_this.menudataTwoCate = res.goods_two_cate
 						console.log('二级类目产品数据-----',_this.menudataTwoCate)
 						if(_this.menudataTwoCate.length > 0){
-							_this.guige1_id = _this.menudataTwoCate[0].guige1_id
+							//获取当前默认选中的产品id
+							if(_this.guige1_id==''){
+								_this.guige1_id = _this.menudataTwoCate[0].guige1_id
+							}
 							//默认加载第一个产品的第一个规格的所有加工明细
 							_this.productOrder(product_id,_this.guige1_id)
 						}
@@ -697,16 +708,15 @@
 								if(item['guige1_id'] > 0){
 									_this.menudataTwoCate[index]['status'] = 1
 									_this.menudataTwoCate[index]['is_lock'] = 1
-								}else{
-									_this.menudata2Sort[index]['status'] = 1
-									_this.menudata2Sort[index]['is_lock'] = 1
-									//修改原数组的值
-									for(var i in _this.menudata2){
-										if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
-											_this.menudata2[i]['status']=1
-											_this.menudata2[i]['is_lock']=1
-											break;
-										}
+								}
+								_this.menudata2Sort[index]['status'] = 1
+								_this.menudata2Sort[index]['is_lock'] = 1
+								//修改原数组的值
+								for(var i in _this.menudata2){
+									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+										_this.menudata2[i]['status']=1
+										_this.menudata2[i]['is_lock']=1
+										break;
 									}
 								}
 								//修改对应的加工明细单为可处理
@@ -916,10 +926,14 @@
 					// }
 					this.product_id = item.product_id
 					this.menudata2SortIndex=index
+					this.guige1_id = ''
 					//获取二级类目
 					this.twoCateGoods(item.product_id)
-					//获取一级类目对应的订单
-					this.productOrder(item.product_id)
+					//如果没有二级类目，则直接获取订单
+					if(item.is_has_two_cate == 2){
+						//获取一级类目对应的订单
+						this.productOrder(item.product_id)
+					}
 				},
 				//切换二级类目
 				clickGoodsTwoCate(item,index){
@@ -928,6 +942,8 @@
 					this.menudataTwoCateIndex=index
 					this.guige1_id = item.guige1_id
 					//获取二级类目对应的订单
+					this.productOrder(item.product_id,this.guige1_id)
+					this.isLoading=false
 				},
 				tab(index){
 					this.isLoading=true
@@ -1464,10 +1480,10 @@
 				},
 				//拼接数据
 				splideData(all_customers,all_drivers){
-					all_customers.unshift("All customers")
-					all_drivers.unshift({"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""})
-					this.list2 = all_customers
-					this.list3 = all_drivers
+					this.list2 = ["All customers"]
+					this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
+					this.list2.concat(all_customers)
+					this.list3.concat(all_drivers)
 				}
 			},
 			created(){
