@@ -31,8 +31,6 @@ class Order extends Model
         $today_before_k = $today_k = $today_after_k = [];
         foreach($date_arr as $k=>$v){
             $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'],$today_time);
-        }
-        foreach($date_arr as $k=>$v){
             if($v['logistic_delivery_date']-$today_time <= 0){
                 $today_before_k = $k;
             }
@@ -52,10 +50,13 @@ class Order extends Model
             $date_arr[$today_after_k]['is_default'] = 1;
             $default = $date_arr[$today_after_k];
             $default_k = $today_after_k;
-        }else{
+        }elseif($today_before_k){
             $date_arr[$today_before_k]['is_default'] = 1;
             $default = $date_arr[$today_before_k];
             $default_k = $today_before_k;
+        }else{
+            $default = [];
+            $default_k = 0;
         }
         return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
     }
