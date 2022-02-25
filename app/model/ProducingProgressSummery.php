@@ -77,10 +77,10 @@ class ProducingProgressSummery extends Model
                 ['pps.product_id', '=', $v['product_id']],
                 ['pps.guige1_id', '>', 0],
             ];
-            $two_cate_done = Db::name('producing_progress_summery')->alias('pps')->where($where)->where($map)->column('isDone');
-            $v['is_has_two_cate'] = count($two_cate_done)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
+            $two_cate_done_info = Db::name('producing_progress_summery')->alias('pps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
+            $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
             //判断加工状态 -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
-            $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done);
+            $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);
             $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
             //获取该产品是否设置置顶
             $top_info = Db::name('restaurant_menu_top')->where(['userId'=>$userId,'business_userId'=>$businessId,'product_id'=>$v['product_id']])->find();
@@ -176,10 +176,10 @@ class ProducingProgressSummery extends Model
      * @param $data 产品数据
      * @param $userId 当前用户id
      * @param int $type 1-一级类目 2-二级类目
-     * @param array $two_cate_done 二级类目完成情况
+     * @param array $two_cate_done_info 二级类目完成情况
      * @return int
      */
-    public function getProcessStatus($data,$userId,$type=1,$two_cate_done=[])
+    public function getProcessStatus($data,$userId,$type=1,$two_cate_done_info=[])
     {
         $status = -1;//判断加工状态 -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
         if($type==1 && $data['is_has_two_cate'] == 2 || $type==2){
@@ -196,16 +196,21 @@ class ProducingProgressSummery extends Model
             //如果一级分类中，有二级分类，需要根据二级分类中的所有来判断一级的状态
             if($type==1 && $data['is_has_two_cate'] == 1){
                 //查询该产品所有的二级状态
-                $two_cate_done_unique = array_unique($two_cate_done);
+                $two_cate_done_unique = array_unique(array_column($two_cate_done_info,'isDone'));
+                $operator_user_id_arr = array_filter(array_unique(array_column($two_cate_done_info,'operator_user_id')));
 //                dump($two_cate_done_unique);
                 if(count($two_cate_done_unique) == 1){
                     if($two_cate_done_unique[0] == 0){
-                        $status = 0;
+                        if(count($operator_user_id_arr)>0){
+                            $status = 4;//表示正在加工中
+                        }else{
+                            $status = 0;
+                        }
                     }else{
                         $status = 3;
                     }
                 }else{
-                    $status = -1;
+                    $status = 4;//表示正在加工中
                 }
             }
         }

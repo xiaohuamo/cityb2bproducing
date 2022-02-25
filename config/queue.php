@@ -26,7 +26,7 @@ return [
             'queue'      => 'default',
             'host'       => '127.0.0.1',
             'port'       => 6379,
-            'password'   => 'Cooltechsolution123',
+            'password'   => 'cityb2b123',
             'select'     => 1,
             'timeout'    => 0,
             'persistent' => false,

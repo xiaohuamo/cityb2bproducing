@@ -273,7 +273,7 @@ a{
 }
 
 .rbtn{
-	max-width: 300px;
+	max-width: 308px;
 	height: 67px;
 	border-radius: 3px;
 	padding: 15px;
@@ -486,4 +486,12 @@ a{
 
 .delete{
 	width: 26px;
+}
+
+.loading {
+	width: 3rem;
+	height: 3rem;
+	position: absolute;
+	top:8.59rem;
+	left:calc(50% - 3rem);
 }
