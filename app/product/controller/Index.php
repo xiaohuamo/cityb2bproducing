@@ -290,9 +290,10 @@ class Index extends AuthBase
     public function productOrderList()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','wcc_sort']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','wcc_sort','wcc_sort_type']);
         $param['guige1_id'] = $param['guige1_id']??'';
-        $param['wcc_sort'] = $param['wcc_sort']??0;
+        $param['wcc_sort'] = $param['wcc_sort']??0;//排序字段
+        $param['wcc_sort_type'] = $param['wcc_sort_type']??1;//1-正向排序 2-反向排序
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();//当前操作用户
@@ -300,7 +301,7 @@ class Index extends AuthBase
         $Order = new Order();
 
         //获取对应日期的加工订单
-        $order = $Order->getProductOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['wcc_sort']);
+        $order = $Order->getProductOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['wcc_sort'],$param['wcc_sort_type']);
         $data = [
             'order' => $order
         ];
@@ -486,6 +487,17 @@ class Index extends AuthBase
                     Order::getUpdate(['orderId' => $wcc_info['order_id']],[
                         'is_producing_done'=>1
                     ]);
+                    $order_inc_num = 1;//待加工产品全部完工，订单数+1
+                    //判断对应司机的订单数，如果司机信息一致，则司机订单+1
+                    if($param['logistic_truck_No']>0){
+                        if($wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
+                            $driver_order_inc_num = 1;
+                        }else{
+                            $driver_order_inc_num = 0;
+                        }
+                    }else{
+                        $driver_order_inc_num = 1;
+                    }
                 }
                 //4.如果当前规格加工完毕，判断当前产品是否全部加工完毕
                 if($is_product_guige1_done == 1){
@@ -514,6 +526,10 @@ class Index extends AuthBase
             }
             //二.返回继续处理流程
             if($param['is_producing_done'] == 0){
+                //如果该产品被锁定时，判断当前操作员工处理员工是否是同一个人
+                if($pps_info['isDone'] == 0 && $pps_info['operator_user_id'] > 0 && $pps_info['operator_user_id'] != $user_id){
+                    return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
+                }
                 //2.更新该产品加工数量和状态
                 WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['operator_user_id'=>$user_id,'is_producing_done'=>0]);
                 $finish_quantities = $pps_info['finish_quantities']-$wcc_info['customer_buying_quantity'];
@@ -527,9 +543,22 @@ class Index extends AuthBase
                 ProducingProgressSummery::getUpdate(['id' => $pps_info['id']],$pps_data);
                 //3.判断该订单是否全部加工完毕
                 //如果该产品对应规则的产品全部加工完毕，则需还原更改订单加工状态
-                Order::getUpdate(['orderId' => $wcc_info['order_id']],[
-                    'is_producing_done'=>0
-                ]);
+                if($wcc_info['order_is_producing_done'] == 1){
+                    Order::getUpdate(['orderId' => $wcc_info['order_id']],[
+                        'is_producing_done'=>0
+                    ]);
+                    $order_inc_num = -1;
+                    //判断对应司机的订单数，如果司机信息一致，则司机订单-1
+                    if($param['logistic_truck_No']>0){
+                        if($wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
+                            $driver_order_inc_num = -1;
+                        }else{
+                            $driver_order_inc_num = 0;
+                        }
+                    }else{
+                        $driver_order_inc_num = -1;
+                    }
+                }
                 //4.还原当前产品加工状态，未加工完
                 $is_product_all_done = 0;
                 Db::commit();

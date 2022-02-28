@@ -10,7 +10,7 @@ use think\queue\job\Redis;
 
 class JobLockProduct
 {
-    //php think queue:work --queue lockProduct
+    //php think queue:listen --queue lockProduct
     public function fire(Job $job, $data){
         try{
             $redis = redis_connect();

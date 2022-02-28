@@ -8,7 +8,7 @@ use app\model\{
 
 class Job1
 {
-    //php think queue:work --queue producingProgressSummary
+    //php think queue:listen --queue producingProgressSummary
     public function fire(Job $job, $data){
         try{
             //这里执行具体的任务
