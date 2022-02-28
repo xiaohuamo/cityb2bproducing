@@ -22,7 +22,7 @@ class WjCustomerCoupon extends Model
     public function getWccInfo($id,$businessId)
     {
         $wcc_info = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,o.logistic_truck_No,o.logistic_delivery_date')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->where([
                 ['wcc.id','=',$id],

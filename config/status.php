@@ -58,7 +58,7 @@ return [
             'code' => 110,
             'msg' => 'Parameter error'
         ],
-        'summary_process_error' => [
+        'summary_process_error' => [//该产品尚未加工
             'code' => 111,
             'msg' => 'This product has not yet been processed'
         ],

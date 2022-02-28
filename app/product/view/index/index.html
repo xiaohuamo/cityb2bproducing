@@ -9,7 +9,7 @@
 	</head>
 	<body>
 	<div id="main" v-cloak @click="closePop();isDo()">
-		<div class="bgfff H120 head flexbox1 f35">
+		<div class="bgfff H120 head flexbox1 f30">
 			<div class="flexbox2">
 				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
 				<span>City b2b</span>
@@ -53,21 +53,21 @@
 					<img src="__STATIC__/product/img/return.png" class="returnIcon"/>
 					Return
 				</div>
-				<div class="f35 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
+				<div class="f30 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
 					<span class="colFD6921" v-if="isHandle==0">waitting-process</span>
 					<span class="col34C079" v-else-if="isHandle==1">processed</span>
 					<span class="col000" v-else>number</span>
 					<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				</div>
 				<div v-show="currentPage==2" class="leftMenu">
-					<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="f35 lbtn relative hand" @click="clickMenu(item,index)">
+					<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="f30 lbtn relative hand" @click="clickMenu(item,index)">
 						{{item.category_en_name}}
 						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
 					</div>
 				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="{'bgFFF7F3':item.status==0&&currentContent!=index,'bgFD6921':item.status==1||(item.status==0&&currentContent==index),'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f35 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="item.is_has_two_cate==2&&gtouchstart(item,index);" v-bind:id="item.product_id">
+					<div :class="{'bgFFF7F3':item.status==0&&currentContent!=index,'bgFD6921':item.status==1||(item.status==0&&currentContent==index),'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f30 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="item.is_has_two_cate==2&&gtouchstart(item,index);" v-bind:id="item.product_id">
 						<div :class="{'blink':item.status==1||item.status==2}">
 							<div>{{item.menu_en_name}}</div>
 							<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -140,25 +140,25 @@
 								</div>
 							</div>
 							<!-- 主体部分 -->
-							<div class="mainBox">
+							<div class="mainBox J_main_box">
 								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
 									<div class="flexbox1 pa5-10 w70" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
-											<div class="col666 f35" style="width: 350px;">{{item.nickname}}</div>
+											<div class="col666 f30" style="width: 350px;">{{item.nickname}}</div>
 										</div>
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
 											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="item.is_lock==1&&item.lock_type==1&&editQuantity(item,index,'-')" v-else/>
-											<input class="inputW" v-model="item.new_customer_buying_quantity"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="item.is_lock==1&&item.lock_type==1&&editQuantity(item,index,'+')"/>
+											<input class="inputW J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" v-bind:disabled="item.lock_type!=1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="item.is_lock==1&&item.lock_type==1&&editQuantity(item,index,'+',$event)"/>
 										</div>
 									</div>
 									<div class="flexbox1 pa18-0" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
 											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,1)" v-else/>
-											<input class="inputW" v-model="item.num1"/>
+											<input class="inputW J_edit_lable" v-model="item.num1" type="number" v-bind:disabled="item.lock_type!=1" @focus="focusEvent($event)" @keyup="handleInput"/>
 											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,1)"/>
 										</div>
 										<img src="__STATIC__/product/img/echo.png" class="echo"/>
@@ -180,7 +180,7 @@
 					</div>
 				</div>
 				<div v-show="currentPage==2">
-					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter f35 colFD6921 relative hand" @click="returnPage(1)" v-show="currentMenu>1">
+					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter f30 colFD6921 relative hand" @click="returnPage(1)" v-show="currentMenu>1">
 						<img src="__STATIC__/product/img/return2.png" style="width:11px;position:absolute;left:15px;"/>
 						Back to this category
 					</div>
@@ -189,7 +189,7 @@
 							<div v-if="currentMenu>0"  class="rbtn2" :class="item.status==-1||item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" @click="goto(item)">
 								<div :class="item.status==1||item.status==2?'blink':''">{{item.menu_en_name}}</div>
 							</div>
-							<div v-else :class="{'bgFFF7F3':item.status==0,'bgFD6921':item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f35 lbtn2 relative pdbtn" @click="goto(item)">
+							<div v-else :class="{'bgFFF7F3':item.status==0,'bgFD6921':item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f30 lbtn2 relative pdbtn" @click="goto(item)">
 								<div :class="{'blink':item.status==1||item.status==2}">
 									<div>{{item.menu_en_name}}</div>
 									<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -234,7 +234,7 @@
 				<div>
 					<div class="textRight w100 bgF7F7F7 save" :class="{'flexbox1':!isShowTypePincode2}">
 						<span v-if="!isShowTypePincode2" @click.stop="editPincode">{{editText}}</span>
-						<span @click.stop="save">Done</span>
+						<span @click.stop="save">login</span>
 					</div>
 					<div class="flexbox1 pa10" style="background: #F2F2F2;">
 						<div class="textCenter number" v-for="number in numberList" @click.stop="clickNum(number)">{{number}}</div>
@@ -283,7 +283,8 @@
 				menudataTwoCateIndex:0,//默认获取的二级产品类目键值
 				handleList:[],
 				handleListSort:[],//加工明细数据，为保证初始化的数据不变
-				wccSort:0,//加工明细排序
+				wccSort:0,//加工明细排序类型
+				wccSortType:1,//排序方向 1正向 2反向
 				handleList1:[
 					{
 						num:10,
@@ -499,6 +500,7 @@
 				var _this = this
 				_this.isLoading=true
 				getData('product/loginInfo', '', function (res) {
+					_this.isLoading=false
 					//获取登录信息
 					if (res.result.user_name) {
 						_this.userName = 'i am '+res.result.user_name
@@ -516,7 +518,6 @@
 						_this.isShowTypePincode2 = true
 						_this.pincodeType = 2 //默认显示创建pincode
 					}
-					_this.isLoading=false
 				});
 				//获取加工日期
 				_this.isLoading=true
@@ -534,8 +535,8 @@
 				});
 			},
 			methods:{
-				//获取初始化数据
-				inidata() {
+				//获取初始化数据 type:refresh来源与数据刷新
+				inidata(type='') {
 					var _this = this
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
@@ -546,15 +547,22 @@
 					getData('product/iniData', data, function (res) {
 						console.log('初始化结果---',res)
 						res = res.result
-						_this.menudata2=[]
-						_this.menudata2Sort=[]
 						_this.splideData(res.all_customers,res.all_drivers)
 						_this.driverOrderDoneNum = res.driver_order_count.order_done_count
 						_this.driverOrderNum = res.driver_order_count.order_count
 						_this.orderDoneNum = res.all_order_count.order_done_count
 						_this.orderNum = res.all_order_count.order_count
-						_this.menudata2 = res.goods
-						_this.menudata2Sort = res.goods
+						if(type == 'refresh'){
+							//更新数据时，保持原数据位置不变
+							_this.menudata2=_this.sortAccordingOtherData(res.goods,_this.menudata2,'product_id')
+							_this.menudata2Sort=_this.sortAccordingOtherData(res.goods,_this.menudata2Sort,'product_id')
+							console.log('刷新后产品数据-----',_this.menudata2Sort);
+						}else{
+							_this.menudata2=[]
+							_this.menudata2Sort=[]
+							_this.menudata2 = res.goods
+							_this.menudata2Sort = res.goods
+						}
 						if(_this.menudata2.length > 0){
 							//获取当前默认选中的产品id
 							if(_this.product_id==0){
@@ -572,17 +580,17 @@
 							}
 							if(_this.menudata2[_this.currentContent].is_has_two_cate == 1){
 								//获取默认显示的二级类目
-								_this.twoCateGoods(_this.product_id)
+								_this.twoCateGoods(_this.product_id,type)
 							}else{
 								_this.menudataTwoCate = []
 								//默认加载第一个产品的第一个规格的所有加工明细
-								_this.productOrder(_this.product_id)
+								_this.productOrder(_this.product_id,'',type)
 							}
 						}
 					});
 				},
 				//获取二级类目
-				twoCateGoods(product_id){
+				twoCateGoods(product_id,type=''){
 					var _this = this
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
@@ -591,8 +599,13 @@
 					}
 					getData('product/changeGoods', data, function (res) {
 						res = res.result
-						_this.menudataTwoCate = []
-						_this.menudataTwoCate = res.goods_two_cate
+						if(type == 'refresh'){
+							//更新数据时，保持原数据位置不变
+							_this.menudataTwoCate=_this.sortAccordingOtherData(res.goods_two_cate,_this.menudataTwoCate,'guige1_id')
+						}else {
+							_this.menudataTwoCate = []
+							_this.menudataTwoCate = res.goods_two_cate
+						}
 						console.log('二级类目产品数据-----',_this.menudataTwoCate)
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id
@@ -600,29 +613,36 @@
 								_this.guige1_id = _this.menudataTwoCate[0].guige1_id
 							}
 							//默认加载第一个产品的第一个规格的所有加工明细
-							_this.productOrder(product_id,_this.guige1_id)
+							_this.productOrder(product_id,_this.guige1_id,type)
 						}
 					});
 				},
 				//获取产品加工明细单
-				productOrder(product_id,guige1_id=''){
+				productOrder(product_id,guige1_id='',type=''){
 					var _this = this
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
 						"logistic_truck_No":_this.logistic_truck_No,
 						"product_id":product_id,
 						"guige1_id":guige1_id,
-						"wcc_sort":_this.wccSort
+						"wcc_sort":_this.wccSort,
+						"wcc_sort_type":_this.wccSortType
 					}
 					console.log('获取产品加工明细单参数-----',data)
 					getData('product/productOrderList', data, function (res) {
-						res = res.result
-						_this.handleList = []
-						_this.handleListSort = []
-						_this.handleList = res.order
-						_this.handleListSort = res.order
-						console.log('获取产品加工明细单2222-----',_this.handleList)
 						_this.isLoading=false
+						res = res.result
+						if(type == 'refresh'){
+							//更新数据时，保持原数据位置不变
+							_this.handleList=_this.sortAccordingOtherData(res.order,_this.handleList,'id')
+							_this.handleListSort=_this.sortAccordingOtherData(res.order,_this.handleListSort,'id')
+						}else{
+							_this.handleList = []
+							_this.handleListSort = []
+							_this.handleList = res.order
+							_this.handleListSort = res.order
+						}
+						console.log('获取产品加工明细单2222-----',_this.handleList)
 					});
 				},
 				//goods_cate 产品类目 1一级类目  2二级类目
@@ -653,6 +673,7 @@
 						if(item.status == 1){
 							getData('product/unlockProduct', data, function (res) {
 								console.log('获取解锁结果-----',res)
+								_this.isLoading=false
 								if(res.status == 200){
 									if(item['guige1_id'] > 0){
 										_this.menudataTwoCate[index]['status'] = 0
@@ -676,10 +697,12 @@
 										_this.handleListSort[i]['is_lock'] = 0
 										_this.handleListSort[i]['lock_type'] = 0
 									});
+									//修改可编辑数量和标签数量为可编辑状态
+									$('.J_edit_quantity').removeAttr("disabled")
+									$('.J_edit_lable').removeAttr("disabled")
 								} else {
 									alert(res.message)
 								}
-								_this.isLoading=false
 							});
 						}
 					// },2000);//这里设置定时器，定义长按2000毫秒触发长按事件
@@ -702,6 +725,7 @@
 							}, 100);
 						} else {
 							clearTimeout(_this.timeOutLock);
+							_this.isLoading=false
 							//锁定成功--上锁
 							if(res.status == 200){
 								//修改该产品的状态为锁定,status -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
@@ -726,10 +750,12 @@
 									_this.handleListSort[i]['is_lock'] = 1
 									_this.handleListSort[i]['lock_type'] = 1
 								});
+								//修改可编辑数量和标签数量为可编辑状态
+								$('.J_edit_quantity').removeAttr("disabled")
+								$('.J_edit_lable').removeAttr("disabled")
 							}else{
 								alert(res.message)
 							}
-							_this.isLoading=false
 						}
 					})
 				},
@@ -760,7 +786,7 @@
 						this.currentTime = new Date().getTime();
 						//更新数据
 						if(this.logistic_delivery_date) {
-							this.inidata()
+							this.inidata('refresh')
 						}
 						//判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
 						if(this.currentTime - this.lastTime > this.timeOut) {
@@ -802,6 +828,7 @@
 					_this.isLoading=true
 					getData('product/changeProductOrderStatus', data, function (res) {
 						console.log('处理状态结果----',res)
+						_this.isLoading=false
 						if (res.status == 200) {
 							_this.handleListSort[index].is_producing_done = data.is_producing_done
 							//修改原数组的值
@@ -813,9 +840,9 @@
 							}
 							_this.currentHandlePop=-1
 							//修改司机对应的订单数量
-							_this.driverOrderDoneNum = _this.driverOrderDoneNum+res.result.driver_order_inc_num
+							_this.driverOrderDoneNum = _this.numAdd(_this.driverOrderDoneNum,res.result.driver_order_inc_num)
 							//修改总订单数
-							_this.orderDoneNum = _this.orderDoneNum+res.result.order_inc_num
+							_this.orderDoneNum = _this.numAdd(_this.orderDoneNum,res.result.order_inc_num)
 							if(item.guige1_id>0){
 								//增加加工数量
 								if(data.is_producing_done == 1){
@@ -825,24 +852,24 @@
 								}
 								//如果当前规格的所有加工明细都加工完，则需要将该规格状态变为绿色
 								if(res.result.is_product_guige1_done == 1){
-									console.log('规格已全部加工完成---',_this.menudataTwoCate,_this.menudataTwoCateIndex)
+									// console.log('规格已全部加工完成---',_this.menudataTwoCate,_this.menudataTwoCateIndex)
 									_this.menudataTwoCate[_this.menudataTwoCateIndex]['status'] = 3
 									_this.menudataTwoCate[_this.menudataTwoCateIndex]['is_lock'] = 0
 								}
 								//如果产品规格状态为已处理完成，还原时将原状态还原
 								if(data.is_producing_done==0&&_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3){
-									_this.menudataTwoCate[_this.menudataTwoCateIndex]['status'] = 0
-									_this.menudataTwoCate[_this.menudataTwoCateIndex]['is_lock'] = 0
+									_this.menudataTwoCate[_this.menudataTwoCateIndex]['status'] = 1
+									_this.menudataTwoCate[_this.menudataTwoCateIndex]['is_lock'] = 1
 								}
 								if(data.is_producing_done==0&&_this.menudata2Sort[_this.menudata2SortIndex]['status']==3){
-									_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 0
-									_this.menudata2Sort[_this.menudata2SortIndex]['is_lock'] = 0
+									_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 1
+									_this.menudata2Sort[_this.menudata2SortIndex]['is_lock'] = 1
 									_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 0
 									//修改原数组的值
 									for(var i in _this.menudata2){
 										if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
-											_this.menudata2[i]['status']=0
-											_this.menudata2[i]['is_lock']=0
+											_this.menudata2[i]['status']=1
+											_this.menudata2[i]['is_lock']=1
 											_this.menudata2[i]['isDone']=0
 											break;
 										}
@@ -851,13 +878,13 @@
 							}else{
 								//增加加工数量
 								if(data.is_producing_done == 1){
-									_this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities'] = _this.numAdd(_this.menudata2Sort[index]['finish_quantities'],item.customer_buying_quantity)
+									_this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities'] = _this.numAdd(_this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities'],item.customer_buying_quantity)
 								}else{
-									_this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities'] = _this.numSub(_this.menudata2Sort[index]['finish_quantities'],item.customer_buying_quantity)
+									_this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities'] = _this.numSub(_this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities'],item.customer_buying_quantity)
 								}
 								//修改原数组的值
 								for(var i in _this.menudata2){
-									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[_this.menudata2SortIndex].product_id){
 										_this.menudata2[i].finish_quantities = _this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities']
 										break;
 									}
@@ -880,14 +907,14 @@
 							}
 							//如果产品状态为已处理完成，还原时将原状态还原
 							if(data.is_producing_done==0&&_this.menudata2Sort[_this.menudata2SortIndex]['status'] == 3){
-								_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 0
-								_this.menudata2Sort[_this.menudata2SortIndex]['is_lock'] = 0
+								_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 1
+								_this.menudata2Sort[_this.menudata2SortIndex]['is_lock'] = 1
 								_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 0
 								//修改原数组的值
 								for(var i in _this.menudata2){
 									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
-										_this.menudata2[i]['status']=0
-										_this.menudata2[i]['is_lock']=0
+										_this.menudata2[i]['status']=1
+										_this.menudata2[i]['is_lock']=1
 										_this.menudata2[i]['isDone']=0
 										break;
 									}
@@ -896,7 +923,6 @@
 						} else {
 							alert(res.message);
 						}
-						_this.isLoading=false
 					});
 				},
 				handle(index){  // 点击已处理
@@ -921,12 +947,14 @@
 				clickGoods(item,index){
 					this.isLoading=true
 				   	this.currentContent=index
-					// if(item.status==0){
-					// 	this.menudata2[index].isBlink=true
-					// }
 					this.product_id = item.product_id
 					this.menudata2SortIndex=index
 					this.guige1_id = ''
+					this.menudataTwoCateIndex = 0
+					//重置加工明细排序信息-start
+					this.wccSort=0
+					this.wccSortType=1
+					//重置加工明细排序信息-end
 					//获取二级类目
 					this.twoCateGoods(item.product_id)
 					//如果没有二级类目，则直接获取订单
@@ -941,6 +969,10 @@
 					//记录当前点击的产品键值
 					this.menudataTwoCateIndex=index
 					this.guige1_id = item.guige1_id
+					//重置加工明细排序信息-start
+					this.wccSort=0
+					this.wccSortType=1
+					//重置加工明细排序信息-end
 					//获取二级类目对应的订单
 					this.productOrder(item.product_id,this.guige1_id)
 					this.isLoading=false
@@ -951,11 +983,29 @@
 					this.currentHandlePop=-1
 					//将产品加工明细进行排序
 					this.handleListSort=JSON.parse(JSON.stringify(this.handleList));
+					if(this.wccSort != index){
+						this.wccSortType = 1
+					}else{
+						if(this.wccSortType == 1){
+							this.wccSortType = 2
+						}else{
+							this.wccSortType = 1
+						}
+					}
 					this.wccSort=index
 					switch(index){
-						case 0:this.sortData(this.handleListSort,'logistic_sequence_No',1);break;
-						case 1:this.sortData(this.handleListSort,'is_producing_done',1);break;
-						case 2:this.sortData(this.handleListSort,'is_producing_done',2);break;
+						case 0:
+							var sort_type = this.wccSortType
+							this.sortData(this.handleListSort,'logistic_sequence_No',sort_type);
+							break;
+						case 1:
+							var sort_type = this.wccSortType
+							this.sortData(this.handleListSort,'is_producing_done',sort_type);
+							break;
+						case 2:
+							var sort_type = this.wccSortType==1?2:1
+							this.sortData(this.handleListSort,'is_producing_done',sort_type);
+							break;
 					}
 					this.isLoading=false
 				},
@@ -990,14 +1040,30 @@
 						}
 					);
 				},
+				//在另一个数组的基础上排序，保证新数组的排序与原数组保持一致
+				sortAccordingOtherData(newData,oldData,sort_field){
+					//存储排序字段
+					var sortOldData = []
+					for(var i in oldData){
+						sortOldData.push(oldData[i][sort_field]);
+					}
+					newData.sort((a,b)=>{
+						var value1 = a[sort_field]
+						var value2 = b[sort_field]
+						return sortOldData.indexOf(value1)-sortOldData.indexOf(value2);
+					});
+					return newData
+				},
 				//修改购买数量
-				editQuantity(item,index,addType){
+				editQuantity(item,index,addType,e){
 					console.log(index,this.handleListSort[index])
 					var customer_buying_quantity = this.handleListSort[index].new_customer_buying_quantity
 					if(addType == '+'){
 						this.handleListSort[index].new_customer_buying_quantity=this.numAdd(customer_buying_quantity,0.1)
-					}else{
+					}else if(addType == '-'){
 						this.handleListSort[index].new_customer_buying_quantity=this.numSub(customer_buying_quantity,0.1)
+					}else if(addType == 'enter'){
+						this.handleListSort[index].new_customer_buying_quantity=e.target.value
 					}
 					var data={
 						"id":item.id,
@@ -1008,6 +1074,7 @@
 					_this.isLoading=true
 					getData('product/editBuyingQuantity', data, function (res) {
 						console.log('修改加工数量结果----',res)
+						_this.isLoading=false
 						if (res.status == 200) {
 							_this.handleListSort[index].new_customer_buying_quantity=_this.handleListSort[index].new_customer_buying_quantity
 							//修改原数组的值
@@ -1022,7 +1089,6 @@
 							_this.handleList[index].new_customer_buying_quantity=customer_buying_quantity
 							_this.handleListSort[index].new_customer_buying_quantity=customer_buying_quantity
 						}
-						_this.isLoading=false
 					});
 				},
 				add(source,index,sec){
@@ -1087,11 +1153,26 @@
 					this.currentDay=index
 					this.whichPopShow=-1
 					this.logistic_delivery_date=item.logistic_delivery_date
+					//重置客户默认信息-start
+					this.choseDate2=this.list2[0]
+					this.current2=0
+					//重置司机默认信息-end
+					//重置司机默认信息-start
+					this.choseDate3=this.list3[0].name
+					this.current3=0
+					this.logistic_truck_No=''
+					//重置司机默认信息-end
+					//重置产品默认信息-start
 					this.currentContent=0
 					this.product_id=0
 					this.guige1_id=''
+					//重置产品默认信息-end
+					//重置加工明细排序信息-start
+					this.wccSort=0
+					this.wccSortType=1
+					//重置加工明细排序信息-end
 					this.isLoading=true
-					this.inidata(this.logistic_delivery_date)
+					this.inidata()
 					if(this.currentPage==2){
 						var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct(cate_id)
@@ -1102,11 +1183,22 @@
 					this.choseDate2=item
 					this.current2=index
 					this.whichPopShow=-1
+					//重置司机默认信息-start
+					this.choseDate3=this.list3[0].name
+					this.current3=0
+					this.logistic_truck_No=''
+					//重置司机默认信息-end
+					//重置产品默认信息-start
 					this.currentContent=0
 					this.product_id=0
 					this.guige1_id=''
+					//重置产品默认信息-end
+					//重置加工明细排序信息-start
+					this.wccSort=0
+					this.wccSortType=1
+					//重置加工明细排序信息-end
 					this.isLoading=true
-					this.inidata(this.logistic_delivery_date)
+					this.inidata()
 					if(this.currentPage==2){
 						var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct(cate_id)
@@ -1119,11 +1211,17 @@
 					this.current3=index
 					this.whichPopShow=-1
 					this.logistic_truck_No=item.logistic_truck_No
+					//重置产品默认信息-start
 					this.currentContent=0
 					this.product_id=0
 					this.guige1_id=''
+					//重置产品默认信息-end
+					//重置加工明细排序信息-start
+					this.wccSort=0
+					this.wccSortType=1
+					//重置加工明细排序信息-end
 					this.isLoading=true
-					this.inidata(this.logistic_delivery_date)
+					this.inidata()
 					if(this.currentPage==2){
 						var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct(cate_id)
@@ -1181,7 +1279,6 @@
 				//类目页面跳转到加工页面对应的产品位置
 				goto(item){
 					this.currentPage=1
-					console.log('ddddd',$(".J_left_menu_1").find('#387404').offsetTop)
 					$(".J_left_menu_1").animate({scrollTop:$('#387404').offset().top},1000)
 				},
 				clickHandle(){
@@ -1479,18 +1576,33 @@
 					}
 				},
 				//拼接数据
-				//type值，是否需要重置司机数据 1-是 2-否
-				splideData(all_customers,all_drivers,type){
-					this.list2 = ["All customers"]
-					this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
-					this.choseDate2=this.list2[0]
-					this.current2=0
-					this.choseDate3=this.list[0].name
-					this.current3=0
-					this.logistic_truck_No=''
-					this.list2 = this.list2.concat(all_customers)
-					this.list3 = this.list3.concat(all_drivers)
-				}
+				splideData(all_customers,all_drivers){
+					//如果当前未选中司机，则初始化时更新司机信息
+					if(this.logistic_truck_No == ''){
+						this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
+						this.choseDate3=this.list[0].name
+						this.current3=0
+						this.list3 = this.list3.concat(all_drivers)
+					}
+					//如果未切换客户信息，则更新客户信息
+					if(this.current2 == 0){
+						this.list2 = ["All customers"]
+						this.choseDate2=this.list2[0]
+						this.current2=0
+						this.list2 = this.list2.concat(all_customers)
+					}
+				},
+				//聚焦时，默认全部选中文本框
+				focusEvent: function (e) {
+					e.currentTarget. select();
+				},
+				handleInput2(e) {
+					// 通过正则过滤小数点后两位
+					e.target.value = e.target.value.match(/\d+\.?\d{0,2}/)
+				},
+				handleInput(e) {
+					e.target.value=e.target.value.replace(/[^\d]/g,'');
+				},
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间

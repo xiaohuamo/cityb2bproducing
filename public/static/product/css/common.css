@@ -195,6 +195,9 @@ a{
 .f24{
 	font-size: 12px;
 }
+.F24{
+	font-size: 24px;
+}
 .f25{
 	font-size: 13px;
 }
@@ -204,11 +207,11 @@ a{
 .f30{
 	font-size: 15px;
 }
+.F30{
+	font-size: 30px;
+}
 .f32{
 	font-size: 16px;
-}
-.f35{
-	font-size: 17px;
 }
 .f36{
 	font-size: 18px;

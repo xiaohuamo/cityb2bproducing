@@ -103,21 +103,37 @@ class Order extends Model
      */
     public function getOrderCount($businessId,$logistic_delivery_date='',$logistic_truck_No='')
     {
-        $map = 'status=1 or accountPay=1';
+        $map = 'o.status=1 or o.accountPay=1';
         $where = [
-            ['business_userId', '=', $businessId],
-            ['coupon_status', '=', 'c01']
+            ['o.business_userId', '=', $businessId],
+            ['o.coupon_status', '=', 'c01'],
+            ['rm.proucing_item', '=', 1]
         ];
         if($logistic_delivery_date){
-            $where[] = ['logistic_delivery_date','=',$logistic_delivery_date];
+            $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
         }
         if($logistic_truck_No){
-            $where[] = ['logistic_truck_No','=',$logistic_truck_No];
+            $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
         }
-        //获取订单总数
-        $order_count = Db::name('order')->where($where)->where($map)->count();
+        //获取需要加工的订单总数
+        $order_count = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->leftJoin('order o','wcc.order_id = o.orderId')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+            ->where($where)
+            ->where($map)
+            ->group('wcc.order_id')
+            ->count();
         //获取已加工的订单总数
-        $order_done_count = Db::name('order')->where($where)->where($map)->where(['is_producing_done' => 1])->count();
+        $where[] = ['o.is_producing_done','=',1];
+        $order_done_count = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->leftJoin('order o','wcc.order_id = o.orderId')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+            ->where($where)
+            ->where($map)
+            ->group('wcc.order_id')
+            ->count();
         return [
 //            'order' => $order,
             'order_done_count' => $order_done_count,
@@ -132,7 +148,7 @@ class Order extends Model
      * @param string $logistic_truck_No 配送司机id
      * @return array
      */
-    public function getProductOrderList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$guige1_id='',$wcc_sort=0)
+    public function getProductOrderList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$guige1_id='',$wcc_sort=0,$wcc_sort_type=1)
     {
         $map = 'o.status=1 or o.accountPay=1';
         $where = [
@@ -153,12 +169,25 @@ class Order extends Model
         }
         switch ($wcc_sort){
             case 1:
-                $order_by = 'is_producing_done asc';
+                if($wcc_sort_type == 1){
+                    $order_by = 'is_producing_done asc,id asc';
+                }else{
+                    $order_by = 'is_producing_done desc,id asc';
+                }
                 break;
             case 2:
-                $order_by = 'is_producing_done desc';
+                if($wcc_sort_type == 1) {
+                    $order_by = 'is_producing_done desc,id asc';
+                }else{
+                    $order_by = 'is_producing_done asc,id asc';
+                }
                 break;
-            default:$order_by = 'id asc';
+            default:
+                if($wcc_sort_type == 1) {
+                    $order_by = 'id asc,is_producing_done asc';
+                }else{
+                    $order_by = 'id desc,is_producing_done asc';
+                }
         }
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
