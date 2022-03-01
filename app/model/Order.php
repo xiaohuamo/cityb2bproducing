@@ -20,12 +20,10 @@ class Order extends Model
      */
     public function getDeliveryDate($businessId)
     {
-        $map = 'status=1 or accountPay=1';
-        $date_arr = Db::name('order')->where([
+        $date_arr = Db::name('producing_progress_summery')->where([
             ['business_userId', '=', $businessId],
-            ['coupon_status', '=', 'c01'],
-            ['logistic_delivery_date','>',time()-3600*24*7]
-        ])->where($map)->field("logistic_delivery_date,FROM_UNIXTIME(logistic_delivery_date,'%Y-%m-%d') date,2 as is_default")->group('logistic_delivery_date')->order('logistic_delivery_date asc')->select()->toArray();
+            ['delivery_date','>',time()-3600*24*7]
+        ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
         $today_before_k = $today_k = $today_after_k = [];
