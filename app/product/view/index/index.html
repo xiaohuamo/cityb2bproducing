@@ -16,7 +16,7 @@
 				<span>City b2b</span>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
-				{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}
+				<span class="blink">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
 					<div class="mb10 F24" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
