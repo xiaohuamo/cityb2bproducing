@@ -2,14 +2,15 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
 		<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common.css"/>
 		<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="__STATIC__/product/js/vue.min.js"></script>
 		<script src="__STATIC__/product/js/common.js"></script>
 	</head>
-	<body>
+	<body onselectstart="return false">
 	<div id="main" v-cloak @click="closePop();isDo()">
-		<div class="bgfff H120 head flexbox1 f30">
+		<div class="bgfff H120 head flexbox1 F30">
 			<div class="flexbox2">
 				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
 				<span>City b2b</span>
@@ -17,21 +18,21 @@
 		    <div class="relative hand" @click.stop="chose(1)">
 				{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
-					<div class="mb10" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
+					<div class="mb10 F24" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(2)">
 				{{choseDate2?choseDate2:list2[0]}}
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox" v-show="whichPopShow==2">
-					<div class="mb10" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item}}</div>
+					<div class="mb10 F24" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(3)">
 				{{choseDate3?choseDate3:list3[0].name}}
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox" v-show="whichPopShow==3">
-					<div class="mb10" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">
+					<div class="mb10 F24" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">
 						<span v-if="index == 0">{{item.name}}</span>
 						<span v-else>{{item.name}} {{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
 					</div>
@@ -44,31 +45,31 @@
 
 		<div class="flexbox3" style="min-height:100%;">
 			<div class="left bgfff">
-				<div class="colfff f32 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-show="currentPage==1">
+				<div class="colfff F24 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-show="currentPage==1">
 					<img src="__STATIC__/product/img/goodsIcon.png" class="goodsIcon"/>
 					Product List
 					<img src="__STATIC__/product/img/arrow.png" class="arrIcon"/>
 				</div>
-				<div class="colfff f32 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-show="currentPage==2">
+				<div class="colfff F24 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-show="currentPage==2">
 					<img src="__STATIC__/product/img/return.png" class="returnIcon"/>
 					Return
 				</div>
-				<div class="f30 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
-					<span class="colFD6921" v-if="isHandle==0">waitting-process</span>
+				<div class="F24 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
+					<span class="colFD6921" v-if="isHandle==0">waitting process</span>
 					<span class="col34C079" v-else-if="isHandle==1">processed</span>
 					<span class="col000" v-else>number</span>
 					<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				</div>
 				<div v-show="currentPage==2" class="leftMenu">
-					<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="f30 lbtn relative hand" @click="clickMenu(item,index)">
+					<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="F24 lbtn relative hand" @click="clickMenu(item,index)">
 						{{item.category_en_name}}
 						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
 					</div>
 				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="{'bgFFF7F3':item.status==0&&currentContent!=index,'bgFD6921':item.status==1||(item.status==0&&currentContent==index),'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f30 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="item.is_has_two_cate==2&&gtouchstart(item,index);" v-bind:id="item.product_id">
-						<div :class="{'blink':item.status==1||item.status==2}">
+					<div :class="{'bgFFF7F3 col5e5656':item.status==0&&currentContent!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&currentContent==index,'bgFD6921':item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2}" class="F24 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="item.is_has_two_cate==2&&gtouchstart(item,index);" v-bind:id="item.product_id">
+						<div :class="{'blink':item.status==1||item.status==2||item.status==3}">
 							<div>{{item.menu_en_name}}</div>
 							<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 							<div>{{item.menu_id}}</div>
@@ -81,9 +82,9 @@
 			<div class="right pa20">
 				<div v-show="currentPage==1">
 					<div>
-						<div class="flexbox2 rsection1">
-							<div :class="item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" class="colfff rbtn relative" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="gtouchstart(item,index)">
-								<div :class="item.status==1||item.status==2?'blink':''">
+						<div class="flexbox2 rsection1 F24">
+							<div :class="{'bgFFF7F3 col5e5656':item.status==0&&menudataTwoCateIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudataTwoCateIndex==index,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==3}" class="colfff rbtn relative" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="gtouchstart(item,index)">
+								<div :class="item.status==1||item.status==2||item.status==3?'blink':''">
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 									<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -91,20 +92,20 @@
 							</div>
 <!--							<div class="bgGrey colfff rbtn">-->
 <!--								<div class="textLeft f25">5mm</div>-->
-<!--								<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--								<div class="textCenter maT10 F30">15/78kg</div>-->
 <!--							</div>-->
 <!--							<div class="bgdarkGrey colfff rbtn">-->
 <!--								<div class="textLeft f25">5mm</div>-->
-<!--								<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--								<div class="textCenter maT10 F30">15/78kg</div>-->
 <!--							</div>-->
 <!--							<div class="bgOrange colfff rbtn">-->
 <!--								<div class="textLeft f25">5mm</div>-->
-<!--								<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--								<div class="textCenter maT10 F30">15/78kg</div>-->
 <!--							</div>-->
 <!--							<div class="bgGreen colfff rbtn">-->
 <!--								<div class="blink">-->
 <!--									<div class="textLeft f25">5mm</div>-->
-<!--									<div class="textCenter maT10 f30">15/78kg</div>-->
+<!--									<div class="textCenter maT10 F30">15/78kg</div>-->
 <!--								</div>-->
 <!--							</div>-->
 						</div>
@@ -117,17 +118,17 @@
 <!--							</div>-->
 <!--						</div>-->
 						<!-- 下面开始 -->
-						<div class="rsection3 bgfff">
+						<div class="rsection3 bgfff F24">
 							<!-- 头部 -->
 							<div class="flexbox1 pa20">
 								<div class="flexbox2">
-									<div class="flexbox1 xxBox" @click.stop="tab(0)">
+									<div class="flexbox1 xxBox" :class="{'bgFD6921':wccSort==0}" @click.stop="tab(0)">
 										SEQ No<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
 									</div>
-									<div class="flexbox1 xxBox" @click.stop="tab(1)">
+									<div class="flexbox1 xxBox" :class="{'bgFD6921':wccSort==1}" @click.stop="tab(1)">
 										Processing<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
 									</div>
-									<div class="flexbox1 xxBox" @click.stop="tab(2)">
+									<div class="flexbox1 xxBox" :class="{'bgFD6921':wccSort==2}" @click.stop="tab(2)">
 										Processed<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
 									</div>
 								</div>
@@ -140,37 +141,37 @@
 								</div>
 							</div>
 							<!-- 主体部分 -->
-							<div class="mainBox J_main_box">
+							<div class="mainBox J_main_box F24">
 								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
 									<div class="flexbox1 pa5-10 w70" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
-											<div class="col666 f30" style="width: 350px;">{{item.nickname}}</div>
+											<div class="col666" style="width: 350px;">{{item.nickname}}</div>
 										</div>
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
 											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="item.is_lock==1&&item.lock_type==1&&editQuantity(item,index,'-')" v-else/>
-											<input class="inputW J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" v-bind:disabled="item.lock_type!=1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666 f25">kg</span>&nbsp;&nbsp;
+											<input class="inputW F24 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" v-bind:disabled="item.lock_type!=1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
 											<img src="__STATIC__/product/img/add.png" class="numicon" @click="item.is_lock==1&&item.lock_type==1&&editQuantity(item,index,'+',$event)"/>
 										</div>
 									</div>
-									<div class="flexbox1 pa18-0" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+									<div class="flexbox1 pa18-0 F24" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
 											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="reduce(0,index,1)" v-else/>
-											<input class="inputW J_edit_lable" v-model="item.num1" type="number" v-bind:disabled="item.lock_type!=1" @focus="focusEvent($event)" @keyup="handleInput"/>
+											<input class="inputW F24 J_edit_lable" v-model="item.num1" type="number" v-bind:disabled="item.lock_type!=1" @focus="focusEvent($event)" @keyup="handleInput"/>
 											<img src="__STATIC__/product/img/add.png" class="numicon" @click="add(0,index,1)"/>
 										</div>
 										<img src="__STATIC__/product/img/echo.png" class="echo"/>
 									</div>
-									<div class="rbtn3 bg34C079 relative" v-if="item.is_producing_done==1" @click="handle(index)">
+									<div class="rbtn3 F24 bg34C079 relative" v-if="item.is_producing_done==1" @click="handle(index)">
 										processed
-										<div class="choseCustomerBox" style="width:90%;left:5%;padding:10px 0;" v-show="currentHandlePop==index">
+										<div class="choseCustomerBox" style="width:250px;left:-85%;padding:10px 0;" v-show="currentHandlePop==index">
 											<div class="colFD6921" @click.stop="changeStatus(item,index)">continue processing</div>
 											<div class="mb10 col000" @click.stop="Popreturn">return</div>
 										</div>
 									</div>
-									<div class="rbtn3" :class="item.lock_type==0||item.lock_type==1?'bgFD6921':'bgGrey'" v-else @click="item.is_lock==1&&item.lock_type==1&&changeStatus(item,index)">
+									<div class="rbtn3 F22" :class="item.lock_type==0||item.lock_type==1?'bgFD6921':'bgGrey'" v-else @click="item.is_lock==1&&item.lock_type==1&&changeStatus(item,index)">
 										waitting process
 									</div>
 								</div>
@@ -180,16 +181,16 @@
 					</div>
 				</div>
 				<div v-show="currentPage==2">
-					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter f30 colFD6921 relative hand" @click="returnPage(1)" v-show="currentMenu>1">
+					<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter F30 colFD6921 relative hand" @click="returnPage(1)" v-show="currentMenu>1">
 						<img src="__STATIC__/product/img/return2.png" style="width:11px;position:absolute;left:15px;"/>
 						Back to this category
 					</div>
-					<div class="flexbox2 J_set_top">
+					<div class="flexbox2 F24 J_set_top">
 						<div v-for="(item,index) in goods">
-							<div v-if="currentMenu>0"  class="rbtn2" :class="item.status==-1||item.status==0||item.status==1?'bgOrange':item.status==3?'bgGreen':'bgGrey'" @click="goto(item)">
-								<div :class="item.status==1||item.status==2?'blink':''">{{item.menu_en_name}}</div>
+							<div v-if="currentMenu>0"  class="rbtn2" :class="{'bgFFF7F3 col5e5656':item.status==0&&currentContent!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&currentContent==index,'bgFD6921':item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2}" @click="goto(item)">
+								<div :class="item.status==1||item.status==2||item.status==3?'blink':''">{{item.menu_en_name}}</div>
 							</div>
-							<div v-else :class="{'bgFFF7F3':item.status==0,'bgFD6921':item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2,'colfff':item.status>0}" class="f30 lbtn2 relative pdbtn" @click="goto(item)">
+							<div v-else :class="{'bgFFF7F3 col5e5656':item.status==0&&currentContent!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&currentContent==index,'bgFD6921':item.status==1,'bg34C079':item.status==3,'bgGrey':item.status==2}" class="lbtn2 cateHeight relative pdbtn" @click="goto(item)">
 								<div :class="{'blink':item.status==1||item.status==2}">
 									<div>{{item.menu_en_name}}</div>
 									<div v-if="item.is_has_two_cate==2">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -634,6 +635,29 @@
 						res = res.result
 						if(type == 'refresh'){
 							//更新数据时，保持原数据位置不变
+							//1.更新数据时判断修改加工数量和打印标签是否获取焦点，获取焦点时加工数量不更新
+							var eq_length = $('.J_main_box .J_edit_quantity').length
+							for(var i=0;i<eq_length;i++){
+								var isFocus=$('.J_main_box .J_edit_quantity').eq(i).is(":focus")
+								if(isFocus){
+									for(var j in res.order){
+										if(res.order[j]['id'] == _this.handleListSort[i]['id']){
+											res.order[j]['new_customer_buying_quantity'] = $('.J_main_box .J_edit_quantity').eq(i).val()
+										}
+									}
+								}
+							}
+							var lq_length = $('.J_main_box .J_edit_lable').length
+							for(var i=0;i<lq_length;i++){
+								var isFocus=$('.J_main_box .J_edit_lable').eq(i).is(":focus")
+								if(isFocus){
+									for(var j in res.order){
+										if(res.order[j]['id'] == _this.handleListSort[i]['id']){
+											res.order[j]['num1'] = $('.J_main_box .J_edit_lable').eq(i).val()
+										}
+									}
+								}
+							}
 							_this.handleList=_this.sortAccordingOtherData(res.order,_this.handleList,'id')
 							_this.handleListSort=_this.sortAccordingOtherData(res.order,_this.handleListSort,'id')
 						}else{
