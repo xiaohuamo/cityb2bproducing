@@ -24,25 +24,27 @@ class RestaurantMenuTop extends Model
     public function getTopProduct($businessId, $userId, $logistic_delivery_date, $logistic_truck_No='')
     {
         //获取置顶产品id
-        $product_id_arr = Db::name('restaurant_menu_top')->where(['userId'=>$userId,'business_userId'=>$businessId])->column('product_id');
-        $product_top = [];
+        $product_top = Db::name('restaurant_menu_top')
+            ->alias('rmt')
+            ->field('rmt.product_id,rm.menu_en_name,rm.unit_en,rm.menu_id')
+            ->leftJoin('restaurant_menu rm','rmt.product_id = rm.id')
+            ->where(['rmt.userId'=>$userId,'rmt.business_userId'=>$businessId])
+            ->order('rm.menu_order_id asc')
+            ->select()->toArray();
+        $product_id_arr = array_column($product_top,'product_id');
         if($product_id_arr){
+            //1.查询当前置顶的产品对应筛选条件下的加工状态
             $ProducingProgressSummery = new ProducingProgressSummery();
             $where = $ProducingProgressSummery->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
             $where[] = ['pps.product_id','in',$product_id_arr];
-            $order_by = 'isDone asc,rc.category_sort_id asc,rm.menu_order_id asc';
-            $product_top = Db::name('producing_progress_summery')
+            $product_top_progress = Db::name('producing_progress_summery')
                 ->alias('pps')
-                ->field('pps.product_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id')
-                ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
-                ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
                 ->where($where)
                 ->group('product_id')
-                ->order($order_by)
-                ->select()->toArray();
-            foreach($product_top as &$v){
-                $v['sum_quantities'] = floatval($v['sum_quantities']);
-                $v['finish_quantities'] = floatval($v['finish_quantities']);
+                ->column('pps.product_id,pps.isDone,pps.operator_user_id','pps.product_id');
+            $product_top_progress_id_arr = array_keys($product_top_progress);
+            foreach($product_top_progress as &$v){
+                $v['is_progress'] = 1;//判断当前筛选条件下是否是需要加工产品，若没加工需要置灰
                 //获取是否有二级分类
                 $map = [
                     ['pps.product_id', '=', $v['product_id']],
@@ -53,6 +55,14 @@ class RestaurantMenuTop extends Model
                 //判断加工状态 -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
                 $v['status'] = $ProducingProgressSummery->getProcessStatus($v,$userId,1,$two_cate_done);
                 $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
+            }
+            foreach($product_top as &$v){
+                if(in_array($v['product_id'],$product_top_progress_id_arr)){
+                    $v['is_progress'] = 1;//判断当前筛选条件下是否是需要加工产品，若没加工需要置灰 1-有 2-没有
+                    $v = array_merge($v,$product_top_progress[$v['product_id']]);
+                }else{
+                    $v['is_progress'] = 2;
+                }
             }
         }
         return $product_top;

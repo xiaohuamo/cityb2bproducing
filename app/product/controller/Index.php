@@ -13,6 +13,7 @@ use think\facade\View;
 use app\model\{
     User,
     Order,
+    RestaurantMenu,
     WjCustomerCoupon,
     RestaurantMenuTop,
     RestaurantCategory,
@@ -713,8 +714,10 @@ class Index extends AuthBase
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
 
-        $ProducingProgressSummery = new ProducingProgressSummery();
-        $data = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['goods_sort'],$param['category_id']);
+//        $ProducingProgressSummery = new ProducingProgressSummery();
+//        $data = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['goods_sort'],$param['category_id']);
+        $RestaurantMenu = new RestaurantMenu();
+        $data = $RestaurantMenu->getCateProduct($businessId,$user_id,$param['category_id']);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 

@@ -56,12 +56,12 @@ a{
 .btn{
 	/*width: 70px;*/
 	/*height: 20px;*/
-	min-width: 6.25rem;
-	height: 2.5rem;
+	min-width: 90px;
+	height: 35px;
 	border-radius: 7px;
 	color: #fff;
 	/*font-size: 17px;*/
-	font-size: 30px;
+	font-size: 26px;
 	text-align: center;
 }
 .pdbtn{
@@ -97,7 +97,8 @@ a{
   cursor: pointer;
 }
 .zd{
-	width: 8px;
+	/*width: 8px;*/
+	width: 12px;
 }
 .numicon{
 	cursor: pointer;
@@ -199,7 +200,13 @@ a{
 .jbBG{
 	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
 }
-
+.bgf2f2f2{
+	background: #f2f2f2;
+	/*box-shadow: 0px 6px 11px 0px rgba(113, 113, 113, 0.31);*/
+}
+.F20{
+	font-size: 20px;
+}
 .F22{
 	font-size: 22px;
 }
@@ -212,14 +219,11 @@ a{
 .f25{
 	font-size: 13px;
 }
+.F26{
+	font-size: 26px;
+}
 .f28{
 	font-size: 14px;
-}
-.f30{
-	font-size: 15px;
-}
-.F30{
-	font-size: 30px;
 }
 .f32{
 	font-size: 16px;
@@ -258,6 +262,7 @@ a{
 .col5e5656{
 	color: #5e5656;
 }
+
 .checkStyle{
 	border-style: solid;
 	border-width: 1px;
@@ -319,7 +324,7 @@ a{
 	margin-bottom: 10px;
 	text-align: center;
 	line-height: 40px;
-	color: #FFFFFF;
+	/*color: #FFFFFF;*/
 	padding: 0 10px;
 }
 
@@ -390,8 +395,7 @@ a{
 .choseCustomerBox{
 	padding: 15px 0;
 	position: absolute;
-	/*width: 300px;*/
-	width: 25rem;
+	width: 310px;
 	top: 0px;
 	background: #FFFFFF;
 	text-align: center;
@@ -414,7 +418,13 @@ a{
 	cursor: pointer;
 }
 .leftMenu{
-	height: 477px;
+	/*height: 477px;*/
+	height: calc(100vh - 229px);
+	overflow: auto;
+}
+.leftMenu2{
+	/*height: 477px;*/
+	height: calc(100vh - 147px);
 	overflow: auto;
 }
 
@@ -442,6 +452,22 @@ a{
 	background: rgba(0,0,0,0.6);
 	left: 0;
 	top: 0;
+}
+.popMessage{
+	width: 25.69rem;
+	height: 4.125rem;
+	line-height: 4.125rem;
+	background: #FFFFFF;
+	border-radius: 15px;
+	color: #333;
+	font-size:1.34rem;
+	text-align:center;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	margin-left:-12.845rem;
+	margin-top:-2.06rem;
+	font-weight:500;
 }
 
 
