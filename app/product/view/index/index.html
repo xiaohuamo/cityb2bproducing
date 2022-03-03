@@ -118,7 +118,7 @@
 <!--							</div>-->
 <!--						</div>-->
 						<!-- 下面开始 -->
-						<div class="rsection3 bgfff F20">
+						<div class="rsection3 bgfff F20 J_main_order" style="display: flex;flex-direction: column;" :style="mainOrderHeight">
 							<!-- 头部 -->
 							<div class="flexbox1 pa20">
 								<div class="flexbox2">
@@ -141,7 +141,7 @@
 								</div>
 							</div>
 							<!-- 主体部分 -->
-							<div class="mainBox J_main_box F20">
+							<div class="mainBox J_main_box F20" style="flex: auto;">
 								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
 									<div class="flexbox1 pa5-10 w70" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
@@ -150,8 +150,8 @@
 										</div>
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-')" v-else/>
-											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" :disabled="item.is_lock!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-',$event)" v-else/>
+											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
 											<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+',$event)"/>
 										</div>
 									</div>
@@ -159,7 +159,7 @@
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.num1==0"/>
 											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="printLable(item,index,'-',$event)" v-else/>
-											<input class="inputW F20 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>
+											<input class="inputW F20 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>
 											<img src="__STATIC__/product/img/add.png" class="numicon" @click="printLable(item,index,'+',$event)"/>
 										</div>
 										<img src="__STATIC__/product/img/echo.png" class="echo" @click="print(item,index)"/>
@@ -508,6 +508,7 @@
 				timeOutLock:0,//获取锁定结果
 				lockData:[],//锁定参数
 				lockReturnData:null,//上锁参数
+				mainOrderHeight:''
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -596,6 +597,11 @@
 								//获取默认显示的二级类目
 								_this.twoCateGoods(_this.product_id,type)
 							}else{
+								//vue获取顶部位置方法
+								_this.$nextTick(()=> {
+									var order_top = $('.J_main_order').offset().top+'px'
+									_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
+								})
 								_this.menudataTwoCate = []
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(_this.product_id,'',type)
@@ -621,6 +627,11 @@
 							_this.menudataTwoCate = res.goods_two_cate
 						}
 						console.log('二级类目产品数据-----',_this.menudataTwoCate)
+						//vue获取顶部位置和左侧位置的方法
+						_this.$nextTick(()=> {
+							var order_top = $('.J_main_order').offset().top+'px'
+							_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
+						})
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id
 							if(_this.guige1_id==''){
@@ -662,14 +673,14 @@
 							}
 							var lq_length = $('.J_main_box .J_edit_lable').length
 							for(var i=0;i<lq_length;i++){
-								var isFocus=$('.J_main_box .J_edit_lable').eq(i).is(":focus")
-								if(isFocus){
+								// var isFocus=$('.J_main_box .J_edit_lable').eq(i).is(":focus")
+								// if(isFocus){
 									for(var j in res.order){
 										if(res.order[j]['id'] == _this.handleListSort[i]['id']){
 											res.order[j]['num1'] = $('.J_main_box .J_edit_lable').eq(i).val()
 										}
 									}
-								}
+								// }
 							}
 							_this.handleList=_this.sortAccordingOtherData(res.order,_this.handleList,'id')
 							_this.handleListSort=_this.sortAccordingOtherData(res.order,_this.handleListSort,'id')
@@ -685,13 +696,23 @@
 				//goods_cate 产品类目 1一级类目  2二级类目
 				gtouchstart(item,index,goods_cate){
 					if(goods_cate == 1){
-						if(item.is_has_two_cate==1 && item.status == 0){
-							this.popBox('Please select a specification to lock')
-							return
+						if(item.is_has_two_cate==1){
+							if(item.status == 0){
+								this.popBox('Please select a specification to lock')
+								return
+							}
+							if(item.status == 1){
+								this.popBox('you are processing this product')
+								return
+							}
 						}
 					}
+					if(item.status == 2){
+						this.popBox('This product has been locked by someone else')
+						return
+					}
 					if(item.status == 3){
-						this.popBox('This product has been processed.')
+						this.popBox('This product has been processed')
 						return
 					}
 					// this.timeOutEvent = setTimeout(()=>{
@@ -726,7 +747,16 @@
 									if(item['guige1_id'] > 0){
 										_this.menudataTwoCate[index]['status'] = 0
 										_this.menudataTwoCate[index]['is_lock'] = 0
-									} else {
+										//判断该用户是否还有其他再加工的二级规格，若没有，则将一级产品状态还原
+										var is_has_product=0//0-没有 1-有正在加工的其他产品
+										for(var i in _this.menudataTwoCate){
+											if(_this.menudataTwoCate[i]['status'] == 1){
+												is_has_product=1
+												break;
+											}
+										}
+									}
+									if(item['guige1_id']>0&&is_has_product==0||item['guige1_id']==0){
 										_this.menudata2Sort[index]['status'] = 0
 										_this.menudata2Sort[index]['is_lock'] = 0
 										//修改原数组的值
@@ -746,8 +776,8 @@
 										_this.handleListSort[i]['lock_type'] = 0
 									});
 									//修改可编辑数量和标签数量为可编辑状态
-									$('.J_edit_quantity').removeAttr("disabled")
-									$('.J_edit_lable').removeAttr("disabled")
+									$('.J_edit_quantity').setAttribute("disabled","disabled")
+									$('.J_edit_lable').setAttribute("disabled","disabled")
 								} else {
 									_this.popBox(res.message)
 									return
@@ -864,19 +894,19 @@
 				},
 				//修改处理状态
 				changeStatus(item,index){
-					if(item.is_lock!=1){
-						this.popBox('Please lock the product')
-						return
-					}
-					if(item.lock_type!=1){
-						this.popBox('Product has been locked by someone else')
-						return
-					}
 				    console.log(item)
 					var data = {
 						"id": item.id
 					}
 					if(item.is_producing_done == 0){
+						if(item.is_lock!=1){
+							this.popBox('Please lock the product')
+							return
+						}
+						if(item.lock_type!=1){
+							this.popBox('Product has been locked by someone else')
+							return
+						}
 						data.is_producing_done = 1;
 					} else {
 						data.is_producing_done = 0;
@@ -1128,6 +1158,7 @@
 						this.popBox('Inoperable completed')
 						return
 					}
+					e.currentTarget.parentElement.children.item(1).focus()
 					console.log(index,this.handleListSort[index])
 					var customer_buying_quantity = this.handleListSort[index].new_customer_buying_quantity
 					if(addType == '+'){
@@ -1179,6 +1210,7 @@
 						this.popBox('Inoperable completed')
 						return
 					}
+					e.currentTarget.parentElement.children.item(1).focus()
 					if(addType == '+'){
 						this.handleListSort[index].num1++
 					}else if(addType == '-'){
@@ -1395,7 +1427,11 @@
 				//类目页面跳转到加工页面对应的产品位置
 				goto(selector){
 					this.currentPage=1
-					$(".J_left_menu_1").animate({scrollTop:$(selector).offset().top},1000)
+					this.$nextTick(()=> {
+						var h = $(selector).offset().top-$(selector).height()-150
+						// console.log('计算出滚动的高度---',$(selector).offset().top,$(selector).height())
+						$(".J_left_menu_1").animate({scrollTop:h},1000)
+					})
 				},
 				clickHandle(){
 					if(this.isHandle==2){
