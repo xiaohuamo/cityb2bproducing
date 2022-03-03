@@ -6,7 +6,7 @@
 	padding: 0;
 }
 
-body{
+html,body{
 	background: #f2f2f2;
 }
 
@@ -306,7 +306,7 @@ a{
 }
 
 .rbtn{
-	max-width: 308px;
+	max-width: 380px;
 	/*height: 67px;*/
 	height: 87px;
 	border-radius: 3px;
@@ -454,7 +454,7 @@ a{
 	top: 0;
 }
 .popMessage{
-	width: 25.69rem;
+	min-width: 25.69rem;
 	height: 4.125rem;
 	line-height: 4.125rem;
 	background: #FFFFFF;
@@ -468,6 +468,7 @@ a{
 	margin-left:-12.845rem;
 	margin-top:-2.06rem;
 	font-weight:500;
+	padding: 0 0.5rem;
 }
 
 
