@@ -329,6 +329,7 @@ class Index extends AuthBase
             'delivery_date' => $param['logistic_delivery_date'],
             'product_id' => $param['product_id'],
             'guige1_id' => $param['guige1_id'],
+            'isdeleted' => 0
         ]);
         if (!$pps_info) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
@@ -392,6 +393,7 @@ class Index extends AuthBase
             'delivery_date' => $param['logistic_delivery_date'],
             'product_id' => $param['product_id'],
             'guige1_id' => $param['guige1_id'],
+            'isdeleted' => 0
         ]);
         if (!$pps_info) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
@@ -453,7 +455,8 @@ class Index extends AuthBase
                 ['business_userId','=',$businessId],
                 ['delivery_date','=',$wcc_info['logistic_delivery_date']],
                 ['product_id','=',$wcc_info['product_id']],
-                ['guige1_id','=',$wcc_info['guige1_id']]
+                ['guige1_id','=',$wcc_info['guige1_id']],
+                ['isdeleted','=',0],
             ],'id,finish_quantities,sum_quantities,operator_user_id,isDone');
             if(!$pps_info){
                 return show(config('status.code')['summary_error']['code'], config('status.code')['summary_error']['msg']);
@@ -506,6 +509,7 @@ class Index extends AuthBase
                         ['business_userId','=',$wcc_info['business_userId']],
                         ['delivery_date','=',$wcc_info['logistic_delivery_date']],
                         ['product_id','=',$wcc_info['product_id']],
+                        ['isdeleted','=',0],
                     ])->column('isDone');
                     if(!in_array(0,$isDone_arr)){
                         $is_product_all_done = 1;
