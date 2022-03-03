@@ -22,7 +22,8 @@ class Order extends Model
     {
         $date_arr = Db::name('producing_progress_summery')->where([
             ['business_userId', '=', $businessId],
-            ['delivery_date','>',time()-3600*24*10]
+            ['delivery_date','>',time()-3600*24*10],
+            ['isdeleted','=',0]
         ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
@@ -151,7 +152,8 @@ class Order extends Model
         $map = 'o.status=1 or o.accountPay=1';
         $where = [
             ['o.business_userId', '=', $businessId],
-            ['o.coupon_status', '=', 'c01']
+            ['o.coupon_status', '=', 'c01'],
+            ['rm.proucing_item', '=', 1]
         ];
         if ($logistic_delivery_date) {
             $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
@@ -191,6 +193,7 @@ class Order extends Model
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
             ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,o.logistic_sequence_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId')
             ->leftJoin('producing_progress_summery pps',"pps.delivery_date = o.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id")
@@ -217,7 +220,7 @@ class Order extends Model
      * @param $businessId 供应商id
      * @return array
      */
-    public function addOrderGoodsToProgress($businessId,$logistic_delivery_date='')
+    public function addOrderGoodsToProgress($businessId,$logistic_delivery_date)
     {
         $map = 'o.status=1 or o.accountPay=1';
         $where = [
@@ -238,6 +241,24 @@ class Order extends Model
             ->where($map)
             ->group('wcc.restaurant_menu_id,wcc.guige1_id')
             ->select();
+        //查询当天已加入汇总表的商品
+        $pps_list = ProducingProgressSummery::getAll(['business_userId'=>$businessId,'delivery_date'=>$logistic_delivery_date,'isdeleted'=>0]);
+        //判断是否汇总信息是否有变动
+        $pps_has_list = [];//比对汇总表中仍然存在的信息
+        foreach($pps_list as $v){
+            foreach($order_goods as $vv) {
+                if($v['product_id'] == $vv['product_id'] && $v['guige1_id'] == $vv['guige1_id']){
+                    $pps_has_list[] = $v;
+                    break;
+                }
+            }
+        }
+        if(count($pps_list) > 0 && count($pps_has_list) != count($pps_list)){
+            $pps_has_id_arr = array_column($pps_has_list,'id');
+            $pps_id_arr = array_column($pps_list,'id');
+            $result = array_diff($pps_id_arr,$pps_has_id_arr);
+            ProducingProgressSummery::getUpdate([['id','in',$result]],['isdeleted'=>1]);
+        }
         //将商品信息加入队列依次插入数据库
         foreach($order_goods as $k=>$v){
             $v['proucing_center_id'] = 0;

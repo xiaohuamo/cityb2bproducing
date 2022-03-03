@@ -132,6 +132,7 @@ class ProducingProgressSummery extends Model
     {
         $where = [
             ['pps.business_userId', '=', $businessId],
+            ['pps.isdeleted', '=', 0]
         ];
         if($logistic_delivery_date){
             $where[] = ['pps.delivery_date','=',$logistic_delivery_date];
