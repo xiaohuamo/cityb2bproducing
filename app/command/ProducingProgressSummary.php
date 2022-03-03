@@ -32,18 +32,17 @@ class ProducingProgressSummary extends Command
         $logistic_delivery_date = Order::where(['business_userId'=>$businessId])->order('logistic_delivery_date desc')->value('logistic_delivery_date');
         //获取两个日期的差值
         $diffDays = ($logistic_delivery_date - $today_time) / 86400;
-        $Order->addOrderGoodsToProgress($businessId,1645545600);
-//        if($diffDays >= 0){
-//            for($i=0;$i<=$diffDays;$i++){
-//                $time = strtotime("+$i day",$today_time);
-//                $Order->addOrderGoodsToProgress($businessId,$time);
-//            }
-//            //加载前7天的数据
-//            for($i=0;$i<=7;$i++){
-//                $time = strtotime("-$i day",$today_time);
-//                $Order->addOrderGoodsToProgress($businessId,$time);
-//            }
-//        }
+        if($diffDays >= 0){
+            for($i=0;$i<=$diffDays;$i++){
+                $time = strtotime("+$i day",$today_time);
+                $Order->addOrderGoodsToProgress($businessId,$time);
+            }
+            //加载前7天的数据
+            for($i=0;$i<=7;$i++){
+                $time = strtotime("-$i day",$today_time);
+                $Order->addOrderGoodsToProgress($businessId,$time);
+            }
+        }
         // 指令输出
         $output->writeln('producingprogresssummary');
     }
