@@ -774,7 +774,7 @@
 										//判断该用户是否还有其他再加工的二级规格，若没有，则将一级产品状态还原
 										is_has_product=_this.isHasProduct()//0-没有 1-有正在加工的其他产品
 									}
-									if(item['guige1_id']>0&&is_has_product==0||item['guige1_id']==0){
+									if(goods_cate==2&&item['guige1_id']>0&&is_has_product==0||goods_cate==1&&item['guige1_id']==0){
 										_this.menudata2Sort[index]['status'] = 0
 										_this.menudata2Sort[index]['is_lock'] = 0
 										//修改原数组的值
