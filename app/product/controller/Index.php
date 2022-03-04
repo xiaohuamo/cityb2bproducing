@@ -506,7 +506,7 @@ class Index extends AuthBase
                 //4.如果当前规格加工完毕，判断当前产品是否全部加工完毕
                 if($is_product_guige1_done == 1){
                     $isDone_arr = ProducingProgressSummery::where([
-                        ['business_userId','=',$wcc_info['business_userId']],
+                        ['business_userId','=',$businessId],
                         ['delivery_date','=',$wcc_info['logistic_delivery_date']],
                         ['product_id','=',$wcc_info['product_id']],
                         ['isdeleted','=',0],

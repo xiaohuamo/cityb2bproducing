@@ -27,7 +27,10 @@ class Order extends Model
         ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
-        $today_before_k = $today_k = $today_after_k = [];
+        foreach($date_arr as $k=>$v) {
+            $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'], $today_time);
+        }
+        $today_before_k = $today_k = $today_after_k = '';
         foreach($date_arr as $k=>$v){
             $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'],$today_time);
             if($v['logistic_delivery_date']-$today_time <= 0){
@@ -41,22 +44,26 @@ class Order extends Model
                 break;
             }
         }
-        if($today_k){
+        if($today_k!==''){
             $date_arr[$today_k]['is_default'] = 1;
             $default = $date_arr[$today_k];
             $default_k = $today_k;
-        }elseif($today_after_k){
+            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+        }
+        if($today_after_k!=='') {
             $date_arr[$today_after_k]['is_default'] = 1;
             $default = $date_arr[$today_after_k];
             $default_k = $today_after_k;
-        }elseif($today_before_k){
+            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+        }
+        if($today_before_k!=='') {
             $date_arr[$today_before_k]['is_default'] = 1;
             $default = $date_arr[$today_before_k];
             $default_k = $today_before_k;
-        }else{
-            $default = [];
-            $default_k = 0;
+            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
         }
+        $default = [];
+        $default_k = 0;
         return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
     }
 
@@ -204,12 +211,13 @@ class Order extends Model
         foreach($order as &$v){
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
             //判断当前加工明细是否被锁定
+            $v['is_lock'] = 0;
+            $v['lock_type'] = 0;
             if($v['operator_user_id'] > 0){
-                $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
-                $v['lock_type'] = $user_id == $v['operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
-            }else{
-                $v['is_lock'] = 0;
-                $v['lock_type'] = 0;
+                if($v['isDone'] == 0){
+                    $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                    $v['lock_type'] = $user_id == $v['operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
+                }
             }
         }
         return $order;
