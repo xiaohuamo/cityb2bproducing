@@ -1038,7 +1038,7 @@
 								_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 0
 								//修改原数组的值
 								for(var i in _this.menudata2){
-									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[index].product_id){
+									if(_this.menudata2[i]['product_id'] == _this.menudata2Sort[_this.menudata2SortIndex].product_id){
 										_this.menudata2[i]['status']=1
 										_this.menudata2[i]['is_lock']=1
 										_this.menudata2[i]['isDone']=0
