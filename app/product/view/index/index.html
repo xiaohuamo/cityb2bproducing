@@ -937,7 +937,7 @@
 						_this.isLoading=false
 						if (res.status == 200) {
 							_this.handleListSort[index].is_producing_done = data.is_producing_done
-							if(data.is_producing_done == 0&&(_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3||_this.menudata2Sort[_this.menudata2SortIndex]['status']==3)){
+							if(data.is_producing_done == 0&&(item.guige1_id>0&&_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3||item.guige1_id==0&&_this.menudata2Sort[_this.menudata2SortIndex]['status']==3)){
 								_this.handleListSort[index]['is_lock'] = 1
 								_this.handleListSort[index]['lock_type'] = 1
 							}
