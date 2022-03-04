@@ -290,7 +290,7 @@ a{
 	justify-content: center;
     /*line-height: 76px;*/
 	text-align: center;
-	font-weight: bold;
+	font-weight: normal;
 	margin: 0 12px 8px;
 	height: 76px;
 	box-sizing: border-box;
