@@ -937,10 +937,16 @@
 						_this.isLoading=false
 						if (res.status == 200) {
 							_this.handleListSort[index].is_producing_done = data.is_producing_done
+							if(data.is_producing_done == 0&&(_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3||_this.menudata2Sort[_this.menudata2SortIndex]['status']==3)){
+								_this.handleListSort[index]['is_lock'] = 1
+								_this.handleListSort[index]['lock_type'] = 1
+							}
 							//修改原数组的值
 							for(var i in _this.handleList) {
 								if(_this.handleList[i]['id'] == _this.handleListSort[index].id){
 									_this.handleList[i].is_producing_done = data.is_producing_done
+									_this.handleList[i].is_lock = _this.handleListSort[index]['is_lock']
+									_this.handleList[i].lock_type = _this.handleListSort[index]['lock_type']
 									break;
 								}
 							}
