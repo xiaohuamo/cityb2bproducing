@@ -29,7 +29,13 @@ class ProducingProgressSummery extends Model
             ['guige1_id', '=', $data['guige1_id']]
         ]);
         if ($info) {
-            $res = self::getUpdate(['id' => $info['id']], $data);
+            //1.判断数据是否有变动
+            if($info['finish_quantities'] != $data['finish_quantities']){
+                if($info['isDone']==1){
+                    $data['isDone'] = 0;
+                }
+                $res = self::getUpdate(['id' => $info['id']], $data);
+            }
         } else {
             $res = self::createData($data);
         }
@@ -42,6 +48,20 @@ class ProducingProgressSummery extends Model
      * @param string $logistic_delivery_date  配送日期
      * @param string $logistic_truck_No 配送司机id
      * @return array
+     */
+    /**
+     * 获取加工产品信息(一级类目)
+     * @param $businessId  供应商id
+     * @param $userId  用户id
+     * @param string $logistic_delivery_date  配送日期
+     * @param string $logistic_truck_No 配送司机id
+     * @param int $goods_sort 产品排序
+     * @param string $category_id 分类id
+     * @param int $type
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0,$category_id='')
     {
@@ -61,7 +81,7 @@ class ProducingProgressSummery extends Model
         }
         $goods_one_cate = Db::name('producing_progress_summery')
             ->alias('pps')
-            ->field('pps.product_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id')
+            ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
             ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
             ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
             ->where($where)

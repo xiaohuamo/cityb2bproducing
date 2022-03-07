@@ -10,7 +10,7 @@ class IndexValidate extends Validate
 
     protected $rule = [
         'id' => 'require',//加工明细id
-        'is_producing_done'  =>  'require|in:0,1',//是否已处理 1已处理 0未处理
+        'is_producing_done'  =>  'require|in:0,1,2',//是否已处理 1已处理 0未处理 2-正在处理
         'product_id' => 'require',//产品id
         'logistic_delivery_date' => 'require',//配送日期
         'new_customer_buying_quantity' => 'require|float',

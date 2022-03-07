@@ -281,7 +281,6 @@ a{
 }
 .right{
 	width: calc(100% - 125px);
-
 }
 
 .lbtn{
@@ -563,11 +562,26 @@ a{
 	left:calc(50% - 3rem);
 }
 
-.cateHeight {
+.cateWH {
+	width: 220px;
 	height: 112px;
 }
 .actionHeight {
 	height: 50px;
 	line-height: 50px;
+}
+.cater {
+	border: 6px solid #80d7c7;
+	width: 116px;
+	height: 50px;
+	line-height: 50px;
+	color: #80d7c7;
+	text-align: center;
+	font-weight: normal;
+	margin-left: 12px;
+}
+.rightCateMenu {
+	height: calc(100vh - 120px);
+	overflow: auto;
 }
 

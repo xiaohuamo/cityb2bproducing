@@ -25,6 +25,7 @@ class RestaurantMenu extends Model
                 ['rm.proucing_item','=',1],
                 ['rm.isDeleted','=',0]
             ])
+            ->order('rm.menu_id asc')
             ->select()->toArray();
         return $data;
     }

@@ -461,8 +461,8 @@ class Index extends AuthBase
             if(!$pps_info){
                 return show(config('status.code')['summary_error']['code'], config('status.code')['summary_error']['msg']);
             }
-            //一.已处理流程
-            if($param['is_producing_done'] == 1){
+            //一.已处理和正在处理流程
+            if($param['is_producing_done'] == 1 || $param['is_producing_done'] == 2){
                 //1-1.判断该产品是否有人加工，无人加工不可点击已处理
                 if(!($pps_info['operator_user_id'] > 0)){
                     return show(config('status.code')['summary_process_error']['code'], config('status.code')['summary_process_error']['msg']);
@@ -476,7 +476,11 @@ class Index extends AuthBase
                     return show(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
                 }
                 //2.更新该产品加工数量和状态
-                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['operator_user_id'=>$user_id,'is_producing_done'=>1]);
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['operator_user_id'=>$user_id,'is_producing_done'=>$param['is_producing_done']]);
+                if($param['is_producing_done'] == 2){
+                    Db::commit();
+                    return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+                }
                 $finish_quantities = $pps_info['finish_quantities']+$wcc_info['customer_buying_quantity'];
                 $pps_data['finish_quantities'] = $finish_quantities;
                 if($finish_quantities == $pps_info['sum_quantities']){
@@ -639,7 +643,20 @@ class Index extends AuthBase
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
         $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No']);
-        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$goods);
+        //将产品信息按照分类获取
+        $data = [];
+        foreach($goods as &$v){
+            if(!isset($data[$v['cate_id']])){
+                $data[$v['cate_id']] = [
+                    'cate_id' => $v['cate_id'],
+                    'category_en_name' => $v['category_en_name'],
+                    'data' => []
+                ];
+            }
+            $data[$v['cate_id']]['data'][] = $v;
+        }
+        $data = array_values($data);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
     //获取置顶产品信息
