@@ -219,7 +219,7 @@
 							<div v-for="(item,index) in goods">
 								<div class="F20 hand cater mb10" :class="index>0?'maT10':''">{{item['category_en_name']}}</div>
 								<div class="flexbox2">
-									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656 checkStyle':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn2 cateWH relative pdbtn" @click="goto(item,index,'#anchor-'+item1.product_id)">
+									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn2 cateWH relative pdbtn" @click="goto(item,index,'#anchor-'+item1.product_id)">
 										<div :class="{'blink':item1.status==1||item1.status==2}">
 											<div>{{item1.menu_en_name}}</div>
 											<div>{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</div>
