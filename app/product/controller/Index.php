@@ -235,14 +235,26 @@ class Index extends AuthBase
     public function iniData()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','goods_sort','product_id']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','goods_sort','product_id','type']);
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['goods_sort'] = $param['goods_sort']??0;
         $param['product_id'] = $param['product_id']??0;
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+        //如果是定时刷新信息，需要判断当前条件下信息是否有变动，如果有变动，则更新
+//        if($param['type'] == 'refresh'){
+//            $resdis = redis_connect();
+//            $key = 'logistic_delivery_date_'.$param['logistic_delivery_date'].'logistic_truck_No_'.$param['logistic_truck_No'];
+//            //获取最后一个操作该界面的用户，如果是同一用户，不需要更新。不同用户则更新
+//            $change_user_id = $resdis->get($key);
+//            if($user_id == $change_user_id){
+//                return show(config('status.code')['no_need_refresh']['code'],config('status.code')['no_need_refresh']['msg']);
+//            }
+//        }
         $Order = new Order();
         $ProducingProgressSummery = new ProducingProgressSummery();
         //1.获取对应日期的客户（目前默认先获取当前的商家）
-        $businessId = $this->getBusinessId();
         $nickname = User::getVal(['id' => $businessId],'nickname');
         //2.获取对应日期的配送司机
         $all_drivers = $Order->getDrivers($businessId,$param['logistic_delivery_date']);
@@ -251,7 +263,6 @@ class Index extends AuthBase
         //4.获取对应日期全部的已加工订单数量和总的加工订单数量
         $all_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date']);
         //5.获取对应日期加工的商品信息
-        $user_id = $this->getMemberUserId();
         $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['goods_sort']);
         //        //6.获取对应日期的加工明细信息
 //        $order = $Order->getProductOrderList($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);

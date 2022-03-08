@@ -7,6 +7,8 @@
 		<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="__STATIC__/product/js/vue.min.js"></script>
 		<script src="__STATIC__/product/js/common.js"></script>
+		<script src="__STATIC__/product/lodop/LodopFuncs.js"></script>
+		<script src="__STATIC__/product/js/print.js"></script>
 	</head>
 	<body onselectstart="return false">
 	<div id="main" v-cloak @click="closePop();isDo()">
@@ -77,7 +79,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="right pa20">
+			<div class="right pa26">
 				<div v-show="currentPage==1">
 					<div>
 						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element">
@@ -217,9 +219,9 @@
 						</div>
 						<div v-else>
 							<div v-for="(item,index) in goods">
-								<div class="F20 hand cater mb10" :class="index>0?'maT10':''">{{item['category_en_name']}}</div>
+								<div class="F20 hand cater mb10 bgFD6921 colfff" :class="index>0?'maT10':''" @click="goto(item,index,'.J_cate_'+item['cate_id'],2)">{{item['category_en_name']}}</div>
 								<div class="flexbox2">
-									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn2 cateWH relative pdbtn" @click="goto(item,index,'#anchor-'+item1.product_id)">
+									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn3 cateWH relative pdbtn" @click="goto(item,index,'#anchor-'+item1.product_id)">
 										<div :class="{'blink':item1.status==1||item1.status==2}">
 											<div>{{item1.menu_en_name}}</div>
 											<div>{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</div>
@@ -234,7 +236,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- 主体部分结束 -->
+		<!-- 主体部分结束 -->`
 
 		<div class="mask" v-if="iskeyboardShow" @click="closeKeyboard">
 			<div class="keyboardBox">
@@ -575,6 +577,7 @@
 						"logistic_delivery_date":_this.logistic_delivery_date,
 						"logistic_truck_No":_this.logistic_truck_No,
 						"goods_sort":_this.isHandle,
+						"type":type
 					}
 					console.log('初始化参数---',data)
 					getData('product/iniData', data, function (res) {
@@ -1320,8 +1323,8 @@
 						this.popBox('Inoperable completed')
 						return
 					}
-					//跳转到打印标签页
-					window.open(common.webUrl+'product/labelprint')
+					//跳转到打印标签页,item-订单信息 item.num1-打印数量
+					preview(item,item.num1)
 				},
 				add(source,index,sec){
 					if(source==0){

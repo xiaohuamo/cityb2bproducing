@@ -102,5 +102,9 @@ return [
             'code' => 121,
             'msg' => 'Someone is currently working on it and you cannot click'
         ],
+        'no_need_refresh' => [//不需要更新界面信息
+            'code' => 122,
+            'msg' => 'No update required'
+        ]
     ]
 ];

@@ -298,8 +298,16 @@ a{
 .lbtn2{
 	text-align: center;
 	font-weight: normal;
-	margin-bottom: 8px;
 	margin: 0 12px 8px;
+	min-height: 76px;
+	box-sizing: border-box;
+	padding-top: 15px;
+}
+
+.lbtn3{
+	text-align: center;
+	font-weight: normal;
+	margin: 0 6px 8px;
 	min-height: 76px;
 	box-sizing: border-box;
 	padding-top: 15px;
@@ -370,6 +378,9 @@ a{
 }
 .pa20{
   padding:20px;
+}
+.pa26{
+	padding:26px;
 }
 .pa5-10{
 	padding: 5px 10px;
@@ -571,14 +582,14 @@ a{
 	line-height: 50px;
 }
 .cater {
-	border: 6px solid #80d7c7;
+	/*border: 6px solid #80d7c7;*/
 	width: 116px;
 	height: 50px;
 	line-height: 50px;
-	color: #80d7c7;
+	/*color: #80d7c7;*/
 	text-align: center;
 	font-weight: normal;
-	margin-left: 12px;
+	margin-left: 6px;
 }
 .rightCateMenu {
 	height: calc(100vh - 120px);
