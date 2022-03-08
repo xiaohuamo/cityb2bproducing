@@ -742,5 +742,12 @@ class Index extends AuthBase
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
+    //打印程序页面
+    public function labelprint()
+    {
+        // 模板输出
+        return View::fetch('labelprint');
+    }
+
 
 }

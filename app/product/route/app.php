@@ -5,6 +5,7 @@ use think\facade\Route;
 //登录
 Route::get('login', 'Login/index');
 Route::get('index', 'Index/index');
+Route::get('labelprint', 'Index/labelprint');
 
 //接口路由
 //账号登录

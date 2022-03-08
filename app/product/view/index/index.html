@@ -206,7 +206,7 @@
 						</div>
 						<div v-else-if="currentMenu==1" class="flexbox2">
 							<div v-for="(item,index) in goods">
-								<div class="rbtn2" :class="{'bgdarkGrey colfff':item.is_progress==2,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0&&menudata2SortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.is_progress==1&&item.status==0&&menudata2SortIndex==index,'bgFD6921 blink':item.is_progress==1&&item.status==1,'bg34C079':item.is_progress==1&&item.status==3,'bgGrey blink':item.is_progress==1&&item.status==2}" @click="goto('#anchor-'+item.product_id)">
+								<div class="rbtn2" :class="{'bgdarkGrey colfff':item.is_progress==2,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFD6921 blink':item.is_progress==1&&item.status==1,'bg34C079':item.is_progress==1&&item.status==3,'bgGrey blink':item.is_progress==1&&item.status==2}" @click="goto('#anchor-'+item.product_id)">
 									<div :id="item.is_progress">{{item.menu_en_name}}</div>
 								</div>
 								<div class="F22 col000 flexbox4 bgfff zdBox" @click="cancelZD(item,index,2,'top')">
@@ -1320,6 +1320,8 @@
 						this.popBox('Inoperable completed')
 						return
 					}
+					//跳转到打印标签页
+					window.location.href=common.webUrl+'product/labelprint'
 				},
 				add(source,index,sec){
 					if(source==0){
