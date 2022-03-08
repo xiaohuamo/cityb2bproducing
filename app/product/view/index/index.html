@@ -1321,7 +1321,7 @@
 						return
 					}
 					//跳转到打印标签页
-					window.location.href=common.webUrl+'product/labelprint'
+					window.open(common.webUrl+'product/labelprint')
 				},
 				add(source,index,sec){
 					if(source==0){
@@ -1471,18 +1471,16 @@
  				returnPage(index){
 					this.currentPage=index
 					//返回首页时，将默认获取第一个分类的信息
-					if(index==2){
-						this.currentMenu=0
-						//获取大类
-						var _this=this
-						getData('product/category', '', function (res) {
-							res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
-							_this.menudata = res.result
-							console.log('获取产品大类目---',_this.menudata)
-							//获取默认的展示产品
-							_this.cetegoryProduct(_this.menudata[0]['id']);
-						});
-					}
+					this.currentMenu=0
+					//获取大类
+					var _this=this
+					getData('product/category', '', function (res) {
+						res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
+						_this.menudata = res.result
+						console.log('获取产品大类目---',_this.menudata)
+						//获取默认的展示产品
+						_this.cetegoryProduct(_this.menudata[0]['id']);
+					});
 				},
 				//切换分类
 				clickMenu(item,index){
@@ -1498,7 +1496,7 @@
 				},
 				//获取对应类别的产品
 				cetegoryProduct(cate_id){
-					this.goods = []
+					// this.goods = []
 					//调取获取当前备货接口
 					var data = {
 						"logistic_delivery_date":this.logistic_delivery_date,
