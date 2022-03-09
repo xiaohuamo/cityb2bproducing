@@ -206,8 +206,11 @@ class Index extends AuthBase
         }else{
             $user_name = $this->getUserName();
         }
+        $businessId = $this->getBusinessId();
+        $business_name = User::getVal(['id' => $businessId],'nickname');
         $data = [
             "user_name" => $user_name,
+            "business_name" => $business_name,
             "is_has_pincode" => $user['pincode'] ? 1 : 2//是否设置pincode，1设置 2未设置
         ];
         return $data;

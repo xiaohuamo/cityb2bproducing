@@ -134,7 +134,7 @@
 								</div>
 								<div class="flexbox2 relative hand">
 									<span @click="popKeyboard">
-										<span>{{userName}}</span>&nbsp;&nbsp;
+										<span v-if="userName">i am {{userName}}</span>&nbsp;&nbsp;
 										<img src="__STATIC__/product/img/suo2.png" class="suo2"/>
 									</span>
 									<span class="colFD6921" v-if="isShowLoginOut" @click="LogOut" style="margin-left:25px;">&nbspLogout</span>
@@ -236,7 +236,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- 主体部分结束 -->`
+		<!-- 主体部分结束 -->
 
 		<div class="mask" v-if="iskeyboardShow" @click="closeKeyboard">
 			<div class="keyboardBox">
@@ -513,6 +513,7 @@
 				timeLock:0,//上锁时间
 				timer:null,//定时器
 				userName:'',//登录用户信息
+				businessName:'',//商家名
 				intervalId:null,//定时器id，刷新数据使用
 				lastTime: null, //最后一次点击的时间
 				currentTime: null, //当前点击的时间
@@ -538,7 +539,8 @@
 					_this.isLoading=false
 					//获取登录信息
 					if (res.result.user_name) {
-						_this.userName = 'i am '+res.result.user_name
+						_this.userName = res.result.user_name
+						_this.businessName = res.result.business_name
 						_this.isShowLoginOut = true
 					} else {
 						//获取不到登录信息则弹出登录框
@@ -1324,7 +1326,11 @@
 						return
 					}
 					//跳转到打印标签页,item-订单信息 item.num1-打印数量
-					preview(item,item.num1)
+					if(this.menudata2Sort[this.menudata2SortIndex]['is_has_two_cate'] == 1){
+						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],this.menudataTwoCate[this.menudataTwoCateIndex],this.businessName,this.userName)
+					}else{
+						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],[],this.businessName,this.userName)
+					}
 				},
 				add(source,index,sec){
 					if(source==0){
@@ -1776,7 +1782,8 @@
 						if(res.status == 200){
 							console.log(res.result.user_name);
 							if (res.result.user_name) {
-								_this.userName = 'i am '+res.result.user_name
+								_this.userName = res.result.user_name
+								_this.businessName = res.result.business_name
 							}
 							//登录成功，隐藏密码框
 							_this.iskeyboardShow=false
