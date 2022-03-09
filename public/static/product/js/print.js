@@ -185,7 +185,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
             '    </div>';
         return html;
     } else {
-        html += '<div style="font-size: 18px;padding: 5px 15px;">\n' +
+        html += '<div style="font-size: 18px;padding: 15px;">\n' +
             '        <div style="margin: 8px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n' +
             '        <div style="margin: 8px 0;">'+businessName+'</div>\n' +
             '        <div style="position: absolute;top: 20px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n' +
