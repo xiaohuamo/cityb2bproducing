@@ -16,6 +16,7 @@ function init(order,totalCopy,goods,goodsTwoCate,businessName,userName) {
     LODOP = getLodop();
     LODOP.PRINT_INIT("CityB2B-打印机预览");
     // LODOP.SET_PRINT_PAGESIZE(1, '2.76 in', '1.97 in', "");
+    // LODOP.SET_PRINT_PAGESIZE(1, '3.6 in', '7 in', "");
     LODOP.SET_PRINT_PAGESIZE(1, '70mm', '50mm', "");
     if (DEFAULT_PRINT_MODE === PRINT_MODE_SINGLE_LABEL_PER_PAGE) {
         generateOrderPrint(order, totalCopy,goods,goodsTwoCate,businessName,userName);
@@ -67,6 +68,7 @@ function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userNam
 
     if (copy > 2) {
         for (var i = 1; i <= copy/2-1; i++) {
+            console.log('sssss---')
             LODOP.NewPage();
             //QR CODE
             var qrvalue = 'https://www.cityb2b.com/company/customer_order_redeem_qrscan?qrscanredeemcode=' + order.redeem_code;
@@ -185,10 +187,10 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
             '    </div>';
         return html;
     } else {
-        html += '<div style="font-size: 18px;padding: 15px;">\n' +
+        html += '<div style="font-size: 18px;padding: 5px 15px;">\n' +
             '        <div style="margin: 8px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n' +
             '        <div style="margin: 8px 0;">'+order.nickname+'</div>\n' +
-            '        <div style="position: absolute;top: 20px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n' +
+            '        <div style="position: absolute;top: 10px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n' +
             '        <div style="margin: 8px 0;"><span style="display: inline-block;width: 60px">'+goods.menu_id+'</span><span>'+goods.menu_en_name+'</span></div>\n'
         if(goods.is_has_two_cate == 1){
             html += '        <div style="margin: 8px 0;"><span style="display: inline-block;width: 60px">'+goodsTwoCate.guige1_id+'</span><span>'+goodsTwoCate.guige_name+'</span></div>\n';
