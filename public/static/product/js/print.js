@@ -175,14 +175,14 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
     // html+='</div>';
     if(businessName.length>20 || goods.menu_en_name.length>20 || (goods.is_has_two_cate == 1 && goodsTwoCate.guige_name.length > 20)){
         html += '<div style="font-size: 15px;padding: 5px 15px;">\n' +
-            '        <div style="margin: 8px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n' +
-            '        <p style="margin: 8px 0;">'+order.nickname+'</p>\n' +
-            '        <div style="position: absolute;top: 10px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n' +
-            '        <div style="margin: 8px 0;"><span style="display: inline-block;width: 60px">'+goods.menu_id+'</span><span>'+goods.menu_en_name+'</span></div>\n'
+            '        <div style="margin: 4px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n' +
+            '        <p style="margin: 4px 0;">'+order.nickname+'</p>\n' +
+            '        <div style="position: absolute;top: 8px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n' +
+            '        <div style="margin: 4px 0;"><span style="display: inline-block;width: 60px">'+goods.menu_id+'</span><span>'+goods.menu_en_name+'</span></div>\n'
         if(goods.is_has_two_cate == 1){
-            html += '        <div style="margin: 8px 0;"><span style="display: inline-block;width: 60px">'+goodsTwoCate.guige1_id+'</span><span>'+goodsTwoCate.guige_name+'</span></div>\n';
+            html += '        <div style="margin: 4px 0;"><span style="display: inline-block;width: 60px">'+goodsTwoCate.guige1_id+'</span><span>'+goodsTwoCate.guige_name+'</span></div>\n';
         }
-        html += '    <div style="margin: 8px 0;"><span style="display: inline-block;width: 60px">'+order.new_customer_buying_quantity+'</span><span>kg</span></div>\n' +
+        html += '    <div style="margin: 4px 0;"><span style="display: inline-block;width: 60px">'+order.new_customer_buying_quantity+'</span><span>kg</span></div>\n' +
             '        <div style="display: flex;"><span style="display: inline-block;width: 100px">Box '+order.boxLabel+'</span><span style="flex: 1;text-align: right;font-weight: normal;">'+userName+'</span></div>\n' +
             '    </div>';
         return html;
