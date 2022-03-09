@@ -174,7 +174,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
     if(businessName.length>20 || goods.menu_en_name.length>20 || (goods.is_has_two_cate == 1 && goodsTwoCate.guige_name.length > 20)){
         html += '<div style="font-size: 15px;padding: 5px 15px;">\n' +
             '        <div style="margin: 8px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n' +
-            '        <p style="margin: 8px 0;">'+businessName+'</p>\n' +
+            '        <p style="margin: 8px 0;">'+order.nickname+'</p>\n' +
             '        <div style="position: absolute;top: 10px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n' +
             '        <div style="margin: 8px 0;"><span style="display: inline-block;width: 60px">'+goods.menu_id+'</span><span>'+goods.menu_en_name+'</span></div>\n'
         if(goods.is_has_two_cate == 1){
@@ -187,7 +187,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
     } else {
         html += '<div style="font-size: 18px;padding: 15px;">\n' +
             '        <div style="margin: 8px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n' +
-            '        <div style="margin: 8px 0;">'+businessName+'</div>\n' +
+            '        <div style="margin: 8px 0;">'+order.nickname+'</div>\n' +
             '        <div style="position: absolute;top: 20px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n' +
             '        <div style="margin: 8px 0;"><span style="display: inline-block;width: 60px">'+goods.menu_id+'</span><span>'+goods.menu_en_name+'</span></div>\n'
         if(goods.is_has_two_cate == 1){
