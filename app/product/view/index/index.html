@@ -174,8 +174,9 @@
 									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
 										waitting lock
 									</div>
-									<div class="rbtn3 F22 colfff" :class="{'bgFD6921':item.is_producing_done==0&&item.is_lock==1&&item.lock_type==1,'bgGrey':item.is_producing_done==0&&item.is_lock==1&&item.lock_type==2,'bgFD6921 blink':item.is_producing_done==2&&item.is_lock==1&&item.lock_type==1,'bgGrey blink':item.is_producing_done==2&&item.is_lock==1&&item.lock_type==2}" v-else @click="changeStatus(item,index)">
-										waitting process
+									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.is_producing_done==0&&item.is_lock==1&&item.lock_type==1,'bgGrey':item.is_producing_done==0&&item.is_lock==1&&item.lock_type==2,'bgFD6921 blink':item.is_producing_done==2&&item.is_lock==1&&item.lock_type==1,'bgGrey blink':item.is_producing_done==2&&item.is_lock==1&&item.lock_type==2}" @click="changeStatus(item,index)">
+										<span v-if="item.is_producing_done==0">waitting process</span>
+										<span v-else>processing</span>
 									</div>
 								</div>
 							</div>
