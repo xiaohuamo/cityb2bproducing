@@ -89,7 +89,7 @@ class Order extends Model
         if($logistic_truck_No_arr){
             $logistic_truck_No_arr = array_filter($logistic_truck_No_arr);
             $drivers = Truck::alias('t')
-                ->field('t.id logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
+                ->field('t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
                 ->leftjoin('user u','u.id=t.current_driver')
                 ->where([
                     ['t.business_id','=',$businessId],
