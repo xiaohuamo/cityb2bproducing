@@ -9,7 +9,7 @@ use think\Model;
 /**
  * @mixin \think\Model
  */
-class producingPlaningSelect extends Model
+class ProducingPlaningSelect extends Model
 {
     use modelTrait;
 }
