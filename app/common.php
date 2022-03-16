@@ -121,5 +121,16 @@ if (!function_exists('writeLog')) {
     }
 }
 
+if (!function_exists('makeNum')) {
+    /**
+     * @describe:生成编码
+     */
+    function makeNum()
+    {
+        $num = date('YmdHis').mt_rand(100000,999999);
+        return $num;
+    }
+}
+
 
 

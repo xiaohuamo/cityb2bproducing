@@ -6,6 +6,7 @@ namespace app\model;
 use app\common\traits\modelTrait;
 use think\Model;
 use think\facade\Db;
+use app\model\User;
 
 /**
  * @mixin \think\Model
@@ -17,16 +18,27 @@ class StaffRoles extends Model
     //判断用户是否有生产页面权限
     public function getProductPermission($staff_id)
     {
-        $map1 = [
-            ['roles','like','%,1,%']
-        ];
-        $map2 = [
-            ['roles','like','%,9,%']
-        ];
-        $map3 = [
-            ['roles','like','%,11,%']
-        ];
-        $info = Db::name('staff_roles')->where(['staff_id'=>$staff_id])->whereOr([$map1,$map2,$map3])->find();
+        $map = "staff_id=$staff_id and (roles like '%,1,%' or roles like '%,9,%' or roles like '%,11,%')";
+        $info = Db::name('staff_roles')->where($map)->find();
         return $info;
+    }
+
+    //判断用户是否有预加工管理权限
+    public function getProductPlaningPermission($staff_id)
+    {
+        $is_permission = 2;
+        //判断用户角色
+        $role = User::getVal(['id'=>$staff_id],'role');
+        if ($role == 3) {
+            $is_permission = 1;
+        } else {
+            $map = "staff_id=$staff_id and (roles like '%,0,%' or roles like '%,1,%' or roles like '%,9,%')";
+            $info = Db::name('staff_roles')->where($map)->find();
+            //如果用户角色表中不存在该用户
+            if($info){
+                $is_permission = 1;
+            }
+        }
+        return $is_permission;
     }
 }

@@ -105,6 +105,34 @@ return [
         'no_need_refresh' => [//不需要更新界面信息
             'code' => 122,
             'msg' => 'No update required'
+        ],
+        'product_plan_approved_error' => [
+            'code' => 123,//没有权限管理预加工产品
+            'msg' => 'You do not have permission'
+        ],
+        'product_plan_has_add' => [
+            'code' => 124,//您已添加预加工产品
+            'msg' => 'This product has been added'
+        ],
+        'product_error' => [
+            'code' => 125,//产品信息错误
+            'msg' => 'product error'
+        ],
+        'order_product_exists' => [
+            'code' => 126,//加工明细单已存在
+            'msg' => 'order already exists'
+        ],
+        'order_product_not_exists' => [
+            'code' => 127,//加工明细单不存在
+            'msg' => 'order does not exists'
+        ],
+        'order_not_exists' => [
+            'code' => 128,//订单不存在
+            'msg' => 'order does not exist'
+        ],
+        'quantity_error' => [
+            'code' => 129,//请填写加工数量
+            'msg' => 'Please fill in the processing quantity'
         ]
     ]
 ];

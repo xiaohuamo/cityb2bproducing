@@ -6,6 +6,8 @@ use think\facade\Route;
 Route::get('login', 'Login/index');
 Route::get('index', 'Index/index');
 Route::get('labelprint', 'Index/labelprint');
+Route::get('preProduct', 'preProduct/index');
+
 
 //接口路由
 //账号登录
@@ -52,6 +54,34 @@ Route::post('topProduct', 'Index/topProduct');
 Route::post('setTopProduct', 'Index/setTopProduct');
 //test
 Route::post('test', 'Index/test');
+
+//预加工项目路由--------start
+//获取加工日期
+Route::post('prepDeliveryDate', 'preProduct/deliveryDate');
+//获取初始化数据
+Route::post('prepInidata', 'preProduct/inidata');
+//切换商品时获取对应的数据
+Route::post('prepChangeGoods', 'preProduct/changeGoods');
+//切换商品时获取对应的加工明细单
+Route::post('prepProductOrderList', 'preProduct/productOrderList');
+//锁定加工状态
+Route::post('prepLockProduct', 'preProduct/lockProduct');
+//获取锁定结果
+Route::post('prepLockProductResult', 'preProduct/lockProductResult');
+//解锁
+Route::post('prepUnlockProduct', 'preProduct/unlockProduct');
+//修改加工数量
+Route::post('prepEditBuyingQuantity', 'preProduct/editBuyingQuantity');
+//加工状态变更
+Route::post('prepChangeProductOrderStatus', 'preProduct/changeProductOrderStatus');
+//获取当前加工产品
+Route::post('prepCurrentStockProduct', 'preProduct/currentStockProduct');
+//设置预加工
+Route::post('setProductPlaning', 'preProduct/setProductPlaning');
+//添加预加工订单
+Route::post('addOrderProductPlaning', 'preProduct/addOrderProductPlaning');
+
+//预加工项目路由--------end
 
 //miss 路由
 Route::miss(function() {

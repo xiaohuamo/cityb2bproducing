@@ -6,11 +6,12 @@ namespace app\model;
 use app\common\traits\modelTrait;
 use think\facade\Db;
 use think\Model;
+use app\model\StaffRoles;
 
 /**
  * @mixin \think\Model
  */
-class ProducingProgressSummery extends Model
+class producingPlaningProgressSummery extends Model
 {
     use modelTrait;
 
@@ -28,6 +29,7 @@ class ProducingProgressSummery extends Model
             ['product_id', '=', $data['product_id']],
             ['guige1_id', '=', $data['guige1_id']]
         ]);
+        $res = true;
         if ($info) {
             //1.判断数据是否有变动
             if($info['sum_quantities'] != $data['sum_quantities']){
@@ -47,7 +49,7 @@ class ProducingProgressSummery extends Model
      * @param $businessId  供应商id
      * @param $userId  用户id
      * @param string $logistic_delivery_date  配送日期
-     * @param string $logistic_truck_No 配送司机id
+     * @param string $operator_user_id 操作员工id
      * @param int $goods_sort 产品排序
      * @param string $category_id 分类id
      * @param int $type
@@ -56,9 +58,12 @@ class ProducingProgressSummery extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0,$category_id='')
+    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$operator_user_id='',$goods_sort=0,$category_id='')
     {
-        $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
+        //如果是管理者，则需要获取全部的包括待分配的产品
+        $StaffRoles = new StaffRoles();
+        $is_permission = $StaffRoles->getProductPlaningPermission($userId);
+        $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$operator_user_id,'',$is_permission,$userId);
         $map = [];
         if($category_id){
             $map[] = ['rm.restaurant_category_id','=',$category_id];
@@ -72,26 +77,56 @@ class ProducingProgressSummery extends Model
                 break;
             default:$order_by = 'isDone asc,rc.category_sort_id asc,rm.menu_order_id asc';
         }
-        $goods_one_cate = Db::name('producing_progress_summery')
-            ->alias('pps')
-            ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
-            ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
-            ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
-            ->where($where)
-            ->where(['rm.proucing_item'=>1])
-            ->where($map)
-            ->group('product_id')
-            ->order($order_by)
-            ->select()->toArray();
+        if ($is_permission == 1) {
+            $goods_one_cate = Db::name('producing_planing_select')
+                ->alias('pps')
+                ->field('pps.product_id,IF(ppps.sum_quantities>=0,sum(ppps.sum_quantities),0) sum_quantities,IF(ppps.finish_quantities>=0,sum(ppps.finish_quantities),0) finish_quantities,IFNULL(ppps.isDone,-1) isDone,IFNULL(ppps.operator_user_id,-1) operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
+                ->leftJoin('producing_planing_progress_summery ppps',"ppps.delivery_date=$logistic_delivery_date and ppps.business_userId=$businessId and ppps.product_id = pps.product_id and ppps.isdeleted=0")
+                ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
+                ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+                ->where($where)
+                ->where(['rm.proucing_item'=>1])
+                ->where($map)
+                ->group('product_id')
+                ->order($order_by)
+                ->select()->toArray();
+        } else {
+            $goods_one_cate = Db::name('producing_planing_progress_summery')
+                ->alias('pps')
+                ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
+                ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
+                ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+                ->where($where)
+                ->where(['rm.proucing_item'=>1])
+                ->where($map)
+                ->group('product_id')
+                ->order($order_by)
+                ->select()->toArray();
+        }
         foreach($goods_one_cate as &$v){
             $v['sum_quantities'] = floatval($v['sum_quantities']);
             $v['finish_quantities'] = floatval($v['finish_quantities']);
             //获取是否有二级分类
-            $map = [
-                ['pps.product_id', '=', $v['product_id']],
-                ['pps.guige1_id', '>', 0],
-            ];
-            $two_cate_done_info = Db::name('producing_progress_summery')->alias('pps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
+            if ($is_permission == 1) {
+                $map = [
+                    ['rm.id', '=', $v['product_id']],
+                    ['rm.proucing_item','=',1],
+                ];
+                $two_cate_done_info = Db::name('restaurant_menu')
+                    ->alias('rm')
+                    ->field('IFNULL(ppps.operator_user_id,-1) operator_user_id,IFNULL(ppps.isDone,-1) isDone')
+                    ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
+                    ->leftJoin('producing_planing_progress_summery ppps','ppps.product_id = rm.id')
+                    ->where($map)
+                    ->where('length( rmo.menu_cn_name )> 0 OR length( rmo.menu_en_name )> 0')
+                    ->select()->toArray();
+            } else{
+                $map = [
+                    ['pps.product_id', '=', $v['product_id']],
+                    ['pps.guige1_id', '>', 0],
+                ];
+                $two_cate_done_info = Db::name('producing_planing_progress_summery')->alias('pps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
+            }
             $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);
@@ -111,18 +146,35 @@ class ProducingProgressSummery extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsTwoCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$product_id)
+    public function getGoodsTwoCate($businessId,$userId,$logistic_delivery_date='',$operator_user_id='',$product_id)
     {
-        $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No,$product_id);
-        $goods_two_cate = Db::name('producing_progress_summery')
-            ->alias('pps')
-            ->field('pps.product_id,pps.guige1_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
-            ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
-            ->leftJoin('restaurant_menu_option rmo','pps.guige1_id = rmo.id')
-            ->where($where)
-            ->where(['rm.proucing_item'=>1])
-            ->group('product_id,guige1_id')
-            ->select()->toArray();
+        //如果是管理者，则需要获取全部的包括待分配的产品
+        $StaffRoles = new StaffRoles();
+        $is_permission = $StaffRoles->getProductPlaningPermission($userId);
+        $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$operator_user_id,$product_id,$is_permission,$userId);
+        if ($is_permission == 1) {
+            $goods_two_cate = Db::name('restaurant_menu')
+                ->alias('rm')
+                ->field('rm.id product_id,rmo.id guige1_id,IF(ppps.sum_quantities>=0,ppps.sum_quantities,0) sum_quantities,IF(ppps.finish_quantities>=0,ppps.finish_quantities,0) finish_quantities,IFNULL(ppps.isDone,-1) isDone,IFNULL(ppps.operator_user_id,-1) operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
+                ->leftJoin('producing_planing_progress_summery ppps','ppps.product_id = rm.id and ppps.guige1_id = rmo.id')
+                ->where([
+                    ['rm.id','=',$product_id],
+                    ['rm.proucing_item','=',1],
+                ])
+                ->where('length( rmo.menu_cn_name )> 0 OR length( rmo.menu_en_name )> 0')
+                ->select()->toArray();
+        } else {
+            $goods_two_cate = Db::name('producing_planing_progress_summery')
+                ->alias('pps')
+                ->field('pps.product_id,pps.guige1_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
+                ->leftJoin('restaurant_menu_option rmo','pps.guige1_id = rmo.id')
+                ->where($where)
+                ->where(['rm.proucing_item'=>1])
+                ->group('product_id,guige1_id')
+                ->select()->toArray();
+        }
         foreach($goods_two_cate as &$v){
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['sum_quantities'] = floatval($v['sum_quantities']);
@@ -138,50 +190,29 @@ class ProducingProgressSummery extends Model
      * @param $businessId
      * @param $userId
      * @param string $logistic_delivery_date
-     * @param string $logistic_truck_No
+     * @param string $operator_user_id
      * @param string $product_id
      */
-    public function getGoodsCondition($businessId,$logistic_delivery_date='',$logistic_truck_No='',$product_id='')
+    public function getGoodsCondition($businessId,$logistic_delivery_date='',$operator_user_id='',$product_id='',$is_permission,$userId)
     {
-        $where = [
-            ['pps.business_userId', '=', $businessId],
-            ['pps.isdeleted', '=', 0]
-        ];
+        $where = "pps.business_userId=$businessId";
         if($logistic_delivery_date){
-            $where[] = ['pps.delivery_date','=',$logistic_delivery_date];
+            $where .= " and pps.delivery_date=$logistic_delivery_date";
         }
         if($product_id){
-            $where[] = ['pps.product_id','=',$product_id];
-            $where[] = ['pps.guige1_id','>',0];
+            $where .= " and pps.product_id=$product_id";
+            $where .= " and pps.guige1_id>0";
         }
-        if($logistic_truck_No){
-            $map = 'o.status=1 or o.accountPay=1';
-            $order_where = [
-                ['o.business_userId', '=', $businessId],
-                ['o.coupon_status', '=', 'c01']
-            ];
-            if($logistic_delivery_date){
-                $order_where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
+        if($is_permission == 1){
+            //锁定产品即为锁定加工单
+            if($operator_user_id){
+//                $where .= " and (ppps.operator_user_id=$operator_user_id or pps.userId=$userId)";
+                $where .= " and ppps.operator_user_id=$operator_user_id";
             }
-            $order_where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
-            //如果没有规格id,查询的是该司机所有的产品
-            if(empty($product_id)){
-                $product_id_arr = Db::name('wj_customer_coupon')
-                    ->alias('wcc')
-                    ->leftJoin('order o','o.orderId = wcc.order_id')
-                    ->where($order_where)
-                    ->where($map)
-                    ->group('restaurant_menu_id')->column('restaurant_menu_id');
-                $where[] = ['pps.product_id','in',$product_id_arr];
-            } else {
-                $order_where[] = ['wcc.restaurant_menu_id','=',$product_id];
-                $guige1_id_arr = Db::name('wj_customer_coupon')
-                    ->alias('wcc')
-                    ->leftJoin('order o','o.orderId = wcc.order_id')
-                    ->where($order_where)
-                    ->where($map)
-                    ->group('guige1_id')->column('guige1_id');
-                $where[] = ['pps.guige1_id','in',$guige1_id_arr];
+        }else{
+            //锁定产品即为锁定加工单
+            if($operator_user_id){
+                $where .= " and pps.operator_user_id=$operator_user_id";
             }
         }
         return $where;
@@ -197,7 +228,7 @@ class ProducingProgressSummery extends Model
      */
     public function getProcessStatus($data,$userId,$type=1,$two_cate_done_info=[])
     {
-        //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
+        //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成 4-待分配
         if($type==1 && $data['is_has_two_cate'] == 2 || $type==2){
             if($data['isDone'] == 0){
                 if($data['operator_user_id'] > 0){
@@ -205,8 +236,10 @@ class ProducingProgressSummery extends Model
                 } else {
                     $status = 0;
                 }
-            }else{
+            }elseif($data['isDone'] == 1){
                 $status = 3;
+            }else{
+                $status = 4;
             }
         } else {
             //如果一级分类中，有二级分类，需要根据二级分类中的所有来判断一级的状态
@@ -218,14 +251,16 @@ class ProducingProgressSummery extends Model
                 if(count($two_cate_done_unique) == 1){
                     if($two_cate_done_unique[0] == 0){
                         $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr);
-                    }else{
+                    }elseif($two_cate_done_unique[0] == 1){
                         $status = 3;
+                    }else{
+                        $status = 4;
                     }
                 }else{
                     //判断未完成的规格中加工状态
                     $operator_user_id_arr = [];
                     foreach($two_cate_done_info as $v){
-                        if($v['isDone'] == 0){
+                        if($v['isDone'] == 0 || $v['isDone'] == -1){
                             $operator_user_id_arr[] = $v['operator_user_id'];
                         }
                     }
@@ -251,6 +286,8 @@ class ProducingProgressSummery extends Model
             }else{
                 if(in_array(0,$operator_user_id_arr)){
                     $status = 0;//表示待加工
+                }elseif(in_array(-1,$operator_user_id_arr)){
+                    $status = 4;//待分配加工数量
                 }else{
                     $status = 2;//其他人加工中
                 }
