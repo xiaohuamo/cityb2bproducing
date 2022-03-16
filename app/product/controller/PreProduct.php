@@ -553,6 +553,17 @@ class PreProduct extends AuthBase
             $res = ProducingPlaningSelect::createData($data);
         } else {
             if($info){
+                //查询该产品加工单是否存在，若存在不可删除
+                $OrderProductPlanningDetails = new OrderProductPlanningDetails();
+                $oppd_where = [
+                    'logistic_delivery_date' => $param['logistic_delivery_date'],
+                    'business_userId' => $businessId,
+                    'restaurant_menu_id' => $param['product_id'],
+                ];
+                $info = $OrderProductPlanningDetails->getOrderDetailsInfo($oppd_where);
+                if($info){
+                    return show(config('status.code')['preproduct_delete_error']['code'],config('status.code')['preproduct_delete_error']['msg']);
+                }
                 $res = ProducingPlaningSelect::deleteAll(['id' => $info['id']]);
             }
         }
@@ -584,6 +595,7 @@ class PreProduct extends AuthBase
         $user_id = $this->getMemberUserId();
         $StaffRoles = new StaffRoles();
         $RestaurantMenu= new RestaurantMenu();
+        $OrderProductPlanningDetails = new OrderProductPlanningDetails();
         $ProducingBehaviorLog = new ProducingPlaningBehaviorLog();
         $ProducingPlaningProgressSummery = new ProducingPlaningProgressSummery();
 
@@ -593,16 +605,13 @@ class PreProduct extends AuthBase
             return show(config('status.code')['product_plan_approved_error']['code'],config('status.code')['product_plan_approved_error']['msg']);
         }
         //2.判断今日订单是否存在
-        $info = Db::name('order_product_planning_details')
-            ->alias('oppd')
-            ->field('opp.orderId,oppd.id,oppd.customer_buying_quantity')
-            ->leftJoin('order_product_planing opp','opp.orderId = oppd.order_id')
-            ->where([
-                'logistic_delivery_date' => $param['logistic_delivery_date'],
-                'business_userId' => $businessId,
-                'restaurant_menu_id' => $param['product_id'],
-                'guige1_id' => $param['guige1_id'],
-            ])->find();
+        $oppd_where = [
+            'logistic_delivery_date' => $param['logistic_delivery_date'],
+            'business_userId' => $businessId,
+            'restaurant_menu_id' => $param['product_id'],
+            'guige1_id' => $param['guige1_id'],
+        ];
+        $info = $OrderProductPlanningDetails->getOrderDetailsInfo($oppd_where);
         try {
             Db::startTrans();
             //1-新增 2-编辑

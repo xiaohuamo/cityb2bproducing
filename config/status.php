@@ -133,6 +133,10 @@ return [
         'quantity_error' => [
             'code' => 129,//请填写加工数量
             'msg' => 'Please fill in the processing quantity'
+        ],
+        'preproduct_delete_error' => [
+            'code' => 130,//预加工产品不可删除
+            'msg' => 'Cannot be deleted'
         ]
     ]
 ];

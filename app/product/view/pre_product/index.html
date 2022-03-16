@@ -247,7 +247,7 @@
 						</div>
 						<div v-else>
 							<div v-for="(item,index) in goods">
-								<div class="F20 hand cater mb10 bgFD6921 colfff" :class="index>0?'maT10':''" @click="goto(item,index,'.J_cate_'+item['cate_id'],2)">{{item['category_en_name']}}</div>
+								<div class="F20 hand cater mb10 bgFD6921 colfff" @click="goto(item,index,'.J_cate_'+item['cate_id'],2)">{{item['category_en_name']}}</div>
 								<div class="flexbox2">
 									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3,'bg1d95b9 colfff':item1.status==4}" class="lbtn3 cateWH relative pdbtn J_current_panel_item" @click="goto(item,index,'#anchor-'+item1.product_id)" @dblclick="selectProductPlaning(item1,index1,2)">
 										<div :class="{'blink':item1.status==1||item1.status==2}">
@@ -800,9 +800,9 @@
 						// console.log("刷新",new Date());
 						this.currentTime = new Date().getTime();
 						//更新数据
-						// if(this.logistic_delivery_date) {
-						// 	this.inidata('refresh')
-						// }
+						if(this.logistic_delivery_date) {
+							this.inidata('refresh')
+						}
 						//判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
 						if(this.currentTime - this.lastTime > this.timeOut) {
 							//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
@@ -1637,6 +1637,9 @@
 					});
 				},
 				selectProductPlaning(item,index,action_type=1){
+					if(item.status != 4){
+						_this.popBox('Cannot be deleted')
+					}
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					var data = {
 						"logistic_delivery_date":this.logistic_delivery_date,
@@ -1648,9 +1651,11 @@
 					getData('product/setProductPlaning', data, function (res) {
 						console.log('添加与加工产品结果---',res)
 						_this.popBox(res.message)
-						_this.inidata()
-						if(action_type == 2){
-							$('.J_current_panel_item').eq(index).remove();
+						if(res.status == 200){
+							_this.inidata()
+							if(action_type == 2){
+								$('.J_current_panel_item').eq(index).remove();
+							}
 						}
 						return
 					});

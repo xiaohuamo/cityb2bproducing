@@ -49,4 +49,20 @@ class OrderProductPlanningDetails extends Model
             ->count();
         return $count;
     }
+
+    /**
+     * 获取加工明细单信息
+     * @param $where
+     * @return array|Db|Model|null
+     */
+    public function getOrderDetailsInfo($where)
+    {
+        $info = Db::name('order_product_planning_details')
+            ->alias('oppd')
+            ->field('opp.orderId,oppd.id,oppd.customer_buying_quantity')
+            ->leftJoin('order_product_planing opp','opp.orderId = oppd.order_id')
+            ->where($where)
+            ->find();
+        return $info;
+    }
 }
