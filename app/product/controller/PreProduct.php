@@ -658,16 +658,16 @@ class PreProduct extends AuthBase
                 if(empty($goods_info)){
                     return show(config('status.code')['product_error']['code'],config('status.code')['product_error']['msg']);
                 }
-//                //查询订单中该加工明细是否存在
-//                $oppd_info = OrderProductPlanningDetails::getOne([
-//                    ['order_id','=',$order_id],
+                //查询订单中该加工明细是否存在
+                $oppd_info = OrderProductPlanningDetails::getOne([
+                    ['order_id','=',$order_id],
 //                    ['userId','=',$user_id],
-//                    ['restaurant_menu_id','=',$param['product_id']],
-//                    ['guige1_id','=',$param['guige1_id']]
-//                ]);
-//                if(!empty($oppd_info)){
-//                    return show(config('status.code')['order_product_exists']['code'],config('status.code')['order_product_exists']['msg']);
-//                }
+                    ['restaurant_menu_id','=',$param['product_id']],
+                    ['guige1_id','=',$param['guige1_id']]
+                ]);
+                if(!empty($oppd_info)){
+                    return show(config('status.code')['order_product_exists']['code'],config('status.code')['order_product_exists']['msg']);
+                }
                 $goods_data = [
                     'restaurant_menu_id' => $param['product_id'],
                     'order_id' => $order_id,
