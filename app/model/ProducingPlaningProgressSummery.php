@@ -11,7 +11,7 @@ use app\model\StaffRoles;
 /**
  * @mixin \think\Model
  */
-class producingPlaningProgressSummery extends Model
+class ProducingPlaningProgressSummery extends Model
 {
     use modelTrait;
 
