@@ -1136,11 +1136,16 @@
 									_this.menudata2[i]['isDone'] = _this.menudata2Sort[_this.menudata2SortIndex]['isDone']
 								}
 							}
-							//修改加工明细单加工数量
-							_this.handleListSort[0]['customer_buying_quantity'] = _this.quantity
-							_this.handleListSort[0]['new_customer_buying_quantity'] = _this.quantity
-							_this.handleList[0]['customer_buying_quantity'] = _this.quantity
-							_this.handleList[0]['new_customer_buying_quantity'] = _this.quantity
+							//获取订单数据
+							if(_this.handleListSort.length==0){
+								_this.productOrder(_this.product_id,_this.guige1_id)
+							} else {
+								//修改加工明细单加工数量
+								_this.handleListSort[0]['customer_buying_quantity'] = _this.quantity
+								_this.handleListSort[0]['new_customer_buying_quantity'] = _this.quantity
+								_this.handleList[0]['customer_buying_quantity'] = _this.quantity
+								_this.handleList[0]['new_customer_buying_quantity'] = _this.quantity
+							}
 							//关闭加工数量弹层
 							_this.isQuantityShow=false
 						} else {
@@ -1643,6 +1648,7 @@
 					getData('product/setProductPlaning', data, function (res) {
 						console.log('添加与加工产品结果---',res)
 						_this.popBox(res.message)
+						_this.inidata()
 						if(action_type == 2){
 							$('.J_current_panel_item').eq(index).remove();
 						}
