@@ -1638,7 +1638,7 @@
 				},
 				selectProductPlaning(item,index,action_type=1){
 					if(item.status != 4){
-						_this.popBox('Cannot be deleted')
+						this.popBox('Cannot be deleted')
 					}
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					var data = {
