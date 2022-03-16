@@ -6,7 +6,7 @@ use think\facade\Route;
 Route::get('login', 'Login/index');
 Route::get('index', 'Index/index');
 Route::get('labelprint', 'Index/labelprint');
-Route::get('preProduct', 'preProduct/index');
+Route::get('preProduct', 'PreProduct/index');
 
 
 //接口路由

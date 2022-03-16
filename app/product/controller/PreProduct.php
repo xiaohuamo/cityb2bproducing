@@ -18,7 +18,7 @@ use app\model\{
     RestaurantMenu
 };
 
-class preProduct extends AuthBase
+class PreProduct extends AuthBase
 {
     /**
      * 显示资源列表
