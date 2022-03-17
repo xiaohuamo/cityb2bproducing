@@ -62,7 +62,7 @@ class ProducingPlaningProgressSummery extends Model
     {
         //如果是管理者，则需要获取全部的包括待分配的产品
         $StaffRoles = new StaffRoles();
-        $is_permission = $StaffRoles->getProductPlaningPermission($userId);
+        $is_permission = 1;//$StaffRoles->getProductPlaningPermission($userId);
         $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$operator_user_id,'',$is_permission,$userId);
         $map = [];
         if($category_id){
@@ -116,11 +116,11 @@ class ProducingPlaningProgressSummery extends Model
                     ->alias('rm')
                     ->field('IFNULL(ppps.operator_user_id,-1) operator_user_id,IFNULL(ppps.isDone,-1) isDone')
                     ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
-                    ->leftJoin('producing_planing_progress_summery ppps','ppps.product_id = rm.id')
+                    ->leftJoin('producing_planing_progress_summery ppps',"ppps.delivery_date=$logistic_delivery_date and ppps.business_userId=$businessId and ppps.product_id = rm.id and ppps.isdeleted=0")
                     ->where($map)
                     ->where('length( rmo.menu_cn_name )> 0 OR length( rmo.menu_en_name )> 0')
                     ->select()->toArray();
-            } else{
+            } else {
                 $map = [
                     ['pps.product_id', '=', $v['product_id']],
                     ['pps.guige1_id', '>', 0],

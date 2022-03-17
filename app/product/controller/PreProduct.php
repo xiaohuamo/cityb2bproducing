@@ -98,7 +98,7 @@ class PreProduct extends AuthBase
         //1.获取对应日期的客户（目前默认先获取当前的商家）
         $nickname = User::getVal(['id' => $businessId],'nickname');
         //2.获取对应日期的加工员工
-        $all_operator = $User->getUsers($businessId);
+        $all_operator = $User->getUsers($businessId,$user_id);
         //3.获取对应日期默认全部的司机的已加工订单数量和总的加工订单数量
         $operator_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date'],$param['operator_user_id']);
         //4.获取对应日期全部的已加工订单数量和总的加工订单数量
@@ -612,6 +612,9 @@ class PreProduct extends AuthBase
             'guige1_id' => $param['guige1_id'],
         ];
         $info = $OrderProductPlanningDetails->getOrderDetailsInfo($oppd_where);
+
+        $operator_sum_order_inc_num = 0;//对应的操作员的总订单数据新增
+        $order_sum_inc_num = 0;//总订单新增数量
         try {
             Db::startTrans();
             //1-新增 2-编辑
@@ -705,11 +708,19 @@ class PreProduct extends AuthBase
                 ];
                 $ProducingPlaningProgressSummery->addProgressSummary($ppps_data);
                 Db::commit();
+                if($isPermission == 1){
+                    $operator_sum_order_inc_num = 1;
+                }
+                $order_sum_inc_num = 1;
+                $res = [
+                    'operator_sum_order_inc_num' => $operator_sum_order_inc_num,
+                    'order_sum_inc_num' => $order_sum_inc_num
+                ];
                 $data = $param;
                 $data['order_product_planning_details_id'] = $order_product_planning_details_id;
                 $data['new_customer_buying_quantity'] = $param['quantity'];
                 $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,6,$data['logistic_delivery_date'],$data);
-                return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+                return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
             } else {
                 if(empty($info)){
                     return show(config('status.code')['order_not_exists']['code'],config('status.code')['order_not_exists']['msg']);
@@ -736,6 +747,10 @@ class PreProduct extends AuthBase
                     $ProducingPlaningProgressSummery->addProgressSummary($ppps_data);
                 }
                 Db::commit();
+                $res = [
+                    'operator_sum_order_inc_num' => $operator_sum_order_inc_num,
+                    'order_sum_inc_num' => $order_sum_inc_num
+                ];
                 if($info['customer_buying_quantity'] != $param['quantity']) {
                     //添加修改日志
                     $data = $param;
@@ -743,7 +758,7 @@ class PreProduct extends AuthBase
                     $data['new_customer_buying_quantity'] = $param['quantity'];
                     $ProducingBehaviorLog->addProducingBehaviorLog($user_id, $businessId, 7, $data['logistic_delivery_date'], $data);
                 }
-                return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+                return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
             }
         } catch (\Exception $e) {
             // 回滚事务

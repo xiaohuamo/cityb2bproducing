@@ -18,14 +18,14 @@
 				<span>City b2b</span>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(0)">
-				{{productType[currentProductTypeIndex]}}
+				<span class="blink">{{productType[currentProductTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox w200" v-show="whichPopShow==0">
 					<div class="mb10 F20" v-for="(item ,index) in productType" :class="currentProductTypeIndex==index?'colFD6921':''" @click.stop="choseProductType(item,index)">{{item}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(5)" v-if="isManager==1">
-				{{manageActionType[currentManageActionTypeIndex]}}
+				<span class="blink">{{manageActionType[currentManageActionTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox" v-show="whichPopShow==5">
 					<div class="mb10 F20" v-for="(item,index) in manageActionType" :class="currentManageActionTypeIndex==index?'colFD6921':''" @click.stop="choseActionType(item,index)">
@@ -95,7 +95,7 @@
 				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="['J_cate_'+item.cate_id,{'bgFFF7F3 col5e5656':item.status==0&&menudata2SortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudata2SortIndex==index,'bgFD6921 blink':item.status==1,'bgGrey blink':item.status==2,'bg34C079 colfff':item.status==3,'bg1d95b9 colfff':item.status==4}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="currentManageActionTypeIndex==0&&gtouchstart(item,index,1);currentManageActionTypeIndex==1&&popQuantityBox(item,index,1);" :id="'anchor-'+item.product_id">
+					<div :class="['J_cate_'+item.cate_id,{'bgFFF7F3 col5e5656':item.status==0&&menudata2SortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudata2SortIndex==index,'bgFD6921 blink':item.status==1,'bgGrey blink':item.status==2,'bg34C079 colfff':item.status==3,'bg1d95b9 colfff':item.status==4}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="(item.status!=4&&currentManageActionTypeIndex==0)&&gtouchstart(item,index,1);(item.status==4||currentManageActionTypeIndex==1)&&popQuantityBox(item,index,1);" :id="'anchor-'+item.product_id">
 						<div>{{item.menu_en_name}}</div>
 						<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 						<div>{{item.menu_id}}</div>
@@ -108,7 +108,7 @@
 				<div v-show="currentPage==1">
 					<div>
 						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element">
-							<div :class="{'bgFFF7F3 col5e5656':item.status==0&&menudataTwoCateIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudataTwoCateIndex==index,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2,'bg1d95b9':item.status==4}" class="colfff rbtn relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="currentManageActionTypeIndex==0&&gtouchstart(item,index,2);currentManageActionTypeIndex==1&&popQuantityBox(item,index,2);">
+							<div :class="{'bgFFF7F3 col5e5656':item.status==0&&menudataTwoCateIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudataTwoCateIndex==index,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2,'bg1d95b9':item.status==4}" class="colfff rbtn relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="(item.status==4||currentManageActionTypeIndex==0)&&gtouchstart(item,index,2);currentManageActionTypeIndex==1&&popQuantityBox(item,index,2);">
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -189,12 +189,13 @@
 										</div>
 										<img src="__STATIC__/product/img/echo.png" class="echo" @click="print(item,index)"/>
 									</div>
+<!--									<div class="rbtn3 F20 bg34C079 colfff relative" v-if="item.is_producing_done==1" @click="handle(index)">-->
 									<div class="rbtn3 F20 bg34C079 colfff relative" v-if="item.is_producing_done==1" @click="handle(index)">
 										processed
-										<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-show="currentHandlePop==index">
-											<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>
-											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
-										</div>
+<!--										<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-show="currentHandlePop==index">-->
+										<!--											<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>-->
+<!--											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>-->
+<!--										</div>-->
 									</div>
 									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
 										waitting lock
@@ -329,7 +330,7 @@
 				currentHandlePop:-1,
 				productType: ['pre product','orders'],//加工单类型
 				currentProductTypeIndex: 0,//加工单类型默认选中
-				manageActionType: ['product','edit'],//管理员操作类型
+				manageActionType: ['producing','planning'],//管理员操作类型
 				currentManageActionTypeIndex: 0,//管理员操作类型默认选中
 				currentDay:0,
 				current2:0,
@@ -414,6 +415,8 @@
 				isManager:2,//是否是管理员 1是 2否
 				quantity:0,//新的加工数量
 				oldQuantity:0,//旧的加工数量
+				currentInterTime:null,//获取锁定结果的开始时间
+				interTimeOut: 1.5 * 60 * 1000,//设置锁定结果超时时间： 1.5分钟
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -671,6 +674,8 @@
 							getData('product/prepLockProduct', data, function (res) {
 								console.log('获取锁定结果-----',res)
 								if(res.status == 200){
+									//记录过期时间
+									_this.currentInterTime = new Date().getTime();
 									_this.lockProductRes(res.result,item,index)
 								} else {
 									_this.isLoading=false
@@ -733,10 +738,17 @@
 						console.log('获取队列结果----',res);
 						if (res.status == 119) {
 							_this.isLoading=true
-							this.timeOutLock = setTimeout(() => {
-								// console.log('定时获取结果------');
-								_this.lockProductRes(result,item,index)
-							}, 100);
+							//判断上次最后一次点击的时间和这次点击的时间间隔是否大于1.5分钟
+							if(new Date().getTime() - _this.currentInterTime > _this.interTimeOut) {
+								clearTimeout(_this.timeOutLock);
+								_this.isLoading=false
+								_this.popBox('The server is busy, please try again later')
+							} else {
+								this.timeOutLock = setTimeout(() => {
+									// console.log('定时获取结果------');
+									_this.lockProductRes(result,item,index)
+								}, 100);
+							}
 						} else {
 							clearTimeout(_this.timeOutLock);
 							_this.isLoading=false
@@ -875,7 +887,7 @@
 							}
 							_this.currentHandlePop=-1
 							if(data.is_producing_done != 2) {
-								//修改司机对应的订单数量
+								//修操作员对应的订单数量
 								_this.operatorOrderDoneNum = _this.numAdd(_this.operatorOrderDoneNum, res.result.operator_order_inc_num)
 								//修改总订单数
 								_this.orderDoneNum = _this.numAdd(_this.orderDoneNum, res.result.order_inc_num)
@@ -1146,6 +1158,10 @@
 								_this.handleList[0]['customer_buying_quantity'] = _this.quantity
 								_this.handleList[0]['new_customer_buying_quantity'] = _this.quantity
 							}
+							//修操作员对应的订单数量
+							_this.operatorOrderNum = _this.numAdd(_this.operatorOrderNum, res.result.operator_sum_order_inc_num)
+							//修改总订单数
+							_this.orderNum = _this.numAdd(_this.orderNum, res.result.order_sum_inc_num)
 							//关闭加工数量弹层
 							_this.isQuantityShow=false
 						} else {
@@ -1855,6 +1871,12 @@
 							_this.isShowTypePincode2 = _this.isShowTypePincode3 = false
 							_this.pincodeType = 1 //默认显示pincode登录
 							_this.focusDatype = 10 //默认可直接输入密码
+							//重置操作员默认信息-start
+							if(_this.isManager==2){
+								_this.currentOperatorIndex=0
+								_this.operator_user_id = ''
+							}
+							//重置操作员默认信息-end
 							_this.inidata(_this.logistic_delivery_date)
 						} else {
 							_this.message = res.message
@@ -1933,12 +1955,16 @@
 				},
 				//拼接数据
 				splideData(all_customers,all_operator){
-					//如果当前未选中操作员，则初始化时更新操作员信息
+					//如果当前未选中操作员，则初始化时更新操作员信息,只有管理员可查看所有操作员信息，加工人员只可查看自己的
 					if(this.operator_user_id == ''){
-						this.list4 = [{"user_id":"","user_name":"All Operator"}]
-						this.currentOperatorIndex=0
-						this.operator_user_id=this.list4[this.currentOperatorIndex]['user_id']
-						this.list4 = this.list4.concat(all_operator)
+						if(this.isManager == 1){
+							this.list4 = [{"user_id":"","user_name":"All Operator"}]
+							this.currentOperatorIndex=0
+							this.operator_user_id=this.list4[this.currentOperatorIndex]['user_id']
+							this.list4 = this.list4.concat(all_operator)
+						}else{
+							this.list4 = all_operator
+						}
 					}
 					//如果未切换客户信息，则更新客户信息
 					if(this.current2 == 0){

@@ -542,6 +542,8 @@
 				mainOrderHeight:'',
 				clickTimer:null,//定时器
 				isHasCateData:false,//分类页，Back to this category,判断当前加工产品是否有该类产品
+				currentInterTime:null,//获取锁定结果的开始时间
+				interTimeOut: 1.5 * 60 * 1000,//设置锁定结果超时时间： 1.5分钟
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -787,6 +789,8 @@
 							getData('product/lockProduct', data, function (res) {
 								console.log('获取锁定结果-----',res)
 								if(res.status == 200){
+									//记录过期时间
+									_this.currentInterTime = new Date().getTime();
 									_this.lockProductRes(res.result,item,index)
 								} else {
 									_this.isLoading=false
@@ -849,10 +853,17 @@
 						console.log('获取队列结果----',res);
 						if (res.status == 119) {
 							_this.isLoading=true
-							this.timeOutLock = setTimeout(() => {
-								// console.log('定时获取结果------');
-								_this.lockProductRes(result,item,index)
-							}, 100);
+							//判断上次最后一次点击的时间和这次点击的时间间隔是否大于1.5分钟
+							if(new Date().getTime() - _this.currentInterTime > _this.interTimeOut) {
+								clearTimeout(_this.timeOutLock);
+								_this.isLoading=false
+								_this.popBox('The server is busy, please try again later')
+							} else {
+								this.timeOutLock = setTimeout(() => {
+									// console.log('定时获取结果------');
+									_this.lockProductRes(result, item, index)
+								}, 100);
+							}
 						} else {
 							clearTimeout(_this.timeOutLock);
 							_this.isLoading=false

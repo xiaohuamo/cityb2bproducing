@@ -308,7 +308,7 @@ a{
 	margin: 0 12px 8px;
 	min-height: 76px;
 	box-sizing: border-box;
-	padding-top: 15px;
+	padding: 15px 0;
 }
 
 .lbtn3{
@@ -317,7 +317,7 @@ a{
 	margin: 0 6px 10px;
 	min-height: 76px;
 	box-sizing: border-box;
-	padding-top: 15px;
+	padding: 15px 0;
 }
 
 .rbtn{
@@ -366,7 +366,7 @@ a{
 	margin-right: 10px;
 	margin-bottom: 10px;
 	text-align: center;
-	padding-top: 15px;
+	padding: 15px 0;
 	box-sizing: border-box;
 }
 
@@ -425,7 +425,7 @@ a{
 	padding: 15px 0;
 	position: absolute;
 	width: 310px;
-	max-height: 300px;
+	max-height: 450px;
 	top: 0px;
 	background: #FFFFFF;
 	text-align: center;

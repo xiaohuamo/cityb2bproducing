@@ -14,9 +14,16 @@ class User extends Model
 {
     use modelTrait;
 
-    public function getUsers($businessId)
+    public function getUsers($businessId,$userId)
     {
-        $map = "(u.role=3 and u.id=$businessId or u.role=20 and u.user_belong_to_user=$businessId) and (sr.roles like '%,0,%' or sr.roles like '%,1,%' or sr.roles like '%,9,%' or sr.roles like '%,11,%')";
+        //如果是管理者，则需要获取全部的包括待分配的产品
+        $StaffRoles = new StaffRoles();
+        $is_permission = $StaffRoles->getProductPlaningPermission($userId);
+        if($is_permission == 1){
+            $map = "(u.role=3 and u.id=$businessId or u.role=20 and u.user_belong_to_user=$businessId) and (sr.roles like '%,0,%' or sr.roles like '%,1,%' or sr.roles like '%,9,%' or sr.roles like '%,11,%')";
+        } else {
+            $map = "staff_id=$userId";
+        }
         $data = Db::name('user')
             ->alias('u')
             ->field('u.id user_id,u.name,u.nickname,sr.roles')
