@@ -26,6 +26,10 @@ Route::post('setPincode', 'Index/setPincode');
 Route::post('editPincode', 'Index/editPincode');
 //获取加工日期
 Route::post('deliveryDate', 'Index/deliveryDate');
+//获取客户数据
+Route::post('customer', 'Index/customer');
+//获取司机数据
+Route::post('drivers', 'Index/drivers');
 //获取初始化数据
 Route::post('inidata', 'Index/inidata');
 //切换商品时获取对应的数据
@@ -58,6 +62,8 @@ Route::post('test', 'Index/test');
 //预加工项目路由--------start
 //获取加工日期
 Route::post('prepDeliveryDate', 'preProduct/deliveryDate');
+//获取操作员数据
+Route::post('operator', 'preProduct/operator');
 //获取初始化数据
 Route::post('prepInidata', 'preProduct/inidata');
 //切换商品时获取对应的数据

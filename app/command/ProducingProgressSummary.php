@@ -37,7 +37,7 @@ class ProducingProgressSummary extends Command
                 $time = strtotime("+$i day",$today_time);
                 $Order->addOrderGoodsToProgress($businessId,$time);
             }
-            //加载前3天的数据
+            //加载前7天的数据
             for($i=1;$i<=7;$i++){
                 $time = strtotime("-$i day",$today_time);
                 $Order->addOrderGoodsToProgress($businessId,$time);

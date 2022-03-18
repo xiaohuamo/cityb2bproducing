@@ -27,7 +27,8 @@ class ProducingPlaningProgressSummery extends Model
             ['business_userId', '=', $data['business_userId']],
             ['delivery_date', '=', $data['delivery_date']],
             ['product_id', '=', $data['product_id']],
-            ['guige1_id', '=', $data['guige1_id']]
+            ['guige1_id', '=', $data['guige1_id']],
+            ['isdeleted','=',0]
         ]);
         $res = true;
         if ($info) {
@@ -36,7 +37,37 @@ class ProducingPlaningProgressSummery extends Model
                 if($info['isDone']==1 && $info['sum_quantities'] < $data['sum_quantities']){
                     $data['isDone'] = 0;
                 }
+                if($data['sum_quantities'] == 0){
+                    $data['isdeleted'] = 1;
+                }
                 $res = self::getUpdate(['id' => $info['id']], $data);
+                //查询该产品是否需要下架
+                $is_has_data = self::is_exist([
+                    ['business_userId', '=', $data['business_userId']],
+                    ['delivery_date', '=', $data['delivery_date']],
+                    ['product_id', '=', $data['product_id']],
+                    ['isdeleted','=',0]
+                ]);
+                if(empty($is_has_data)){
+                    //查询该产品是否还有二级类目
+                    $map = [
+                        ['rm.id', '=', $data['product_id']],
+                        ['rm.proucing_item','=',1],
+                    ];
+                    $two_cate_count = Db::name('restaurant_menu')
+                        ->alias('rm')
+                        ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
+                        ->where($map)
+                        ->where('length( rmo.menu_cn_name )> 0 OR length( rmo.menu_en_name )> 0')
+                        ->count();
+                    if($two_cate_count == 0 || $two_cate_count == 1){
+                        ProducingPlaningSelect::deleteAll([
+                            ['business_userId', '=', $data['business_userId']],
+                            ['delivery_date', '=', $data['delivery_date']],
+                            ['product_id', '=', $data['product_id']],
+                        ]);
+                    }
+                }
             }
         } else {
             $res = self::createData($data);
@@ -52,17 +83,17 @@ class ProducingPlaningProgressSummery extends Model
      * @param string $operator_user_id 操作员工id
      * @param int $goods_sort 产品排序
      * @param string $category_id 分类id
-     * @param int $type
+     * @param int $sorce 调用接口来源 1-inidata 2-current Plan
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$operator_user_id='',$goods_sort=0,$category_id='')
+    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$operator_user_id='',$goods_sort=0,$category_id='',$source=1)
     {
         //如果是管理者，则需要获取全部的包括待分配的产品
         $StaffRoles = new StaffRoles();
-        $is_permission = 1;//$StaffRoles->getProductPlaningPermission($userId);
+        $is_permission = $StaffRoles->getProductPlaningPermission($userId);
         $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$operator_user_id,'',$is_permission,$userId);
         $map = [];
         if($category_id){
@@ -97,7 +128,7 @@ class ProducingPlaningProgressSummery extends Model
                 ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
                 ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
                 ->where($where)
-                ->where(['rm.proucing_item'=>1])
+                ->where(['rm.proucing_item'=>1,'pps.isdeleted'=>0])
                 ->where($map)
                 ->group('product_id')
                 ->order($order_by)
@@ -129,7 +160,7 @@ class ProducingPlaningProgressSummery extends Model
             }
             $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
-            $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);
+            $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info,$source);
             $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
             //获取该产品是否设置置顶
             $top_info = Db::name('restaurant_menu_top')->where(['userId'=>$userId,'business_userId'=>$businessId,'product_id'=>$v['product_id']])->find();
@@ -157,7 +188,7 @@ class ProducingPlaningProgressSummery extends Model
                 ->alias('rm')
                 ->field('rm.id product_id,rmo.id guige1_id,IF(ppps.sum_quantities>=0,ppps.sum_quantities,0) sum_quantities,IF(ppps.finish_quantities>=0,ppps.finish_quantities,0) finish_quantities,IFNULL(ppps.isDone,-1) isDone,IFNULL(ppps.operator_user_id,-1) operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
                 ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
-                ->leftJoin('producing_planing_progress_summery ppps','ppps.product_id = rm.id and ppps.guige1_id = rmo.id')
+                ->leftJoin('producing_planing_progress_summery ppps',"ppps.delivery_date=$logistic_delivery_date and ppps.business_userId=$businessId and ppps.product_id = rm.id and ppps.guige1_id = rmo.id")
                 ->where([
                     ['rm.id','=',$product_id],
                     ['rm.proucing_item','=',1],
@@ -210,8 +241,8 @@ class ProducingPlaningProgressSummery extends Model
                 $where .= " and ppps.operator_user_id=$operator_user_id";
             }
         }else{
-            //锁定产品即为锁定加工单
-            if($operator_user_id){
+            //锁定产品即为锁定加工单，只针对管理员有作用
+            if($operator_user_id && $is_permission==1){
                 $where .= " and pps.operator_user_id=$operator_user_id";
             }
         }
@@ -226,7 +257,7 @@ class ProducingPlaningProgressSummery extends Model
      * @param array $two_cate_done_info 二级类目完成情况
      * @return int
      */
-    public function getProcessStatus($data,$userId,$type=1,$two_cate_done_info=[])
+    public function getProcessStatus($data,$userId,$type=1,$two_cate_done_info=[],$source=1)
     {
         //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成 4-待分配
         if($type==1 && $data['is_has_two_cate'] == 2 || $type==2){
@@ -250,7 +281,7 @@ class ProducingPlaningProgressSummery extends Model
 //                dump($two_cate_done_unique);
                 if(count($two_cate_done_unique) == 1){
                     if($two_cate_done_unique[0] == 0){
-                        $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr);
+                        $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr,$source);
                     }elseif($two_cate_done_unique[0] == 1){
                         $status = 3;
                     }else{
@@ -264,7 +295,7 @@ class ProducingPlaningProgressSummery extends Model
                             $operator_user_id_arr[] = $v['operator_user_id'];
                         }
                     }
-                    $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr);
+                    $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr,$source);
                 }
             }
         }
@@ -276,20 +307,40 @@ class ProducingPlaningProgressSummery extends Model
      * @param $user_id
      * @param $operator_user_id_arr
      */
-    public function productStatusAccordGuige($userId,$operator_user_id_arr)
+    public function productStatusAccordGuige($userId,$operator_user_id_arr,$source)
     {
         if(count($operator_user_id_arr) > 0){//有人正在操作
             //如果当前用户正在加工该产品，状态为：正在加工中2
-            //如果当前用户没加工该产品，判断所有规格是否都有人在加工，所有规格都被其他人加工，状态为：其他人加工中2。否则，状态为：待加工0
+            //$source=1:如果当前用户没加工该产品，判断所有规格是否都有人在加工，所有规格都被其他人加工，状态为：其他人加工中2。否则，状态为：待加工0
+            //$source=2:如果当前用户没加工该产品，判断是否有其他人在加工，有则灰闪；没有则粉色
             if(in_array($userId,$operator_user_id_arr)){
                 $status = 1;//表示正在加工中
             }else{
-                if(in_array(0,$operator_user_id_arr)){
-                    $status = 0;//表示待加工
-                }elseif(in_array(-1,$operator_user_id_arr)){
-                    $status = 4;//待分配加工数量
-                }else{
-                    $status = 2;//其他人加工中
+                if($source == 1){
+                    if(in_array(0,$operator_user_id_arr)){
+                        $status = 0;//表示待加工
+                    }elseif(in_array(-1,$operator_user_id_arr)){
+                        $status = 4;//待分配加工数量
+                    }else{
+                        $status = 2;//其他人加工中
+                    }
+                } else {
+                    //1.判断是否有其他人在加工 1-是 2-否
+                    $is_has_other = 2;
+                    foreach ($operator_user_id_arr as $v){
+                        if($v>0){
+                            $is_has_other = 1;
+                            $status = 2;//其他人加工中
+                            break;
+                        }
+                    }
+                    if($is_has_other == 2){
+                        if(in_array(0,$operator_user_id_arr)){
+                            $status = 0;//表示待加工
+                        }elseif(in_array(-1,$operator_user_id_arr)){
+                            $status = 4;//待分配加工数量
+                        }
+                    }
                 }
             }
         }else{//所有规格都无人加工

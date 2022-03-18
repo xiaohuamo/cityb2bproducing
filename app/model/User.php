@@ -20,7 +20,7 @@ class User extends Model
         $StaffRoles = new StaffRoles();
         $is_permission = $StaffRoles->getProductPlaningPermission($userId);
         if($is_permission == 1){
-            $map = "(u.role=3 and u.id=$businessId or u.role=20 and u.user_belong_to_user=$businessId) and (sr.roles like '%,0,%' or sr.roles like '%,1,%' or sr.roles like '%,9,%' or sr.roles like '%,11,%')";
+            $map = "u.role=3 and u.id=$businessId or (u.role=20 and u.user_belong_to_user=$businessId and (sr.roles like '%,0,%' or sr.roles like '%,1,%' or sr.roles like '%,9,%' or sr.roles like '%,11,%'))";
         } else {
             $map = "staff_id=$userId";
         }

@@ -22,35 +22,41 @@ class OrderProductPlaning extends Model
      * @param string $user_id 操作员用户id
      * @return array
      */
-    public function getOrderCount($businessId,$logistic_delivery_date='',$opeator_user_id='')
+    public function getOrderCount($businessId,$logistic_delivery_date,$opeator_user_id='')
     {
-        $where = [
-            ['opp.business_userId', '=', $businessId],
-            ['rm.proucing_item', '=', 1]
-        ];
-        if($logistic_delivery_date){
-            $where[] = ['opp.logistic_delivery_date','=',$logistic_delivery_date];
-        }
         if($opeator_user_id){
-            $where[] = ['oppd.operator_user_id','=',$opeator_user_id];
+            $op_where = [
+                ['business_userId', '=', $businessId],
+                ['delivery_date', '=', $logistic_delivery_date],
+                ['operator_user_id', '=', $opeator_user_id]
+            ];
+            $order_count = Db::name('producing_planing_progress_summery')->where($op_where)->count();
+            $op_where[] = ['isDone','=',1];
+            $order_done_count = Db::name('producing_planing_progress_summery')->where($op_where)->count();
+        } else {
+            $where = [
+                ['opp.business_userId', '=', $businessId],
+                ['rm.proucing_item', '=', 1],
+                ['opp.logistic_delivery_date','=',$logistic_delivery_date]
+            ];
+            //获取需要加工的订单总数
+            $order_count = Db::name('order_product_planning_details')
+                ->alias('oppd')
+                ->leftJoin('order_product_planing opp','oppd.order_id = opp.orderId')
+                ->leftJoin('restaurant_menu rm','rm.id = oppd.restaurant_menu_id')
+                ->where($where)
+                ->group('oppd.order_id')
+                ->count();
+            //获取已加工的订单总数
+            $where[] = ['oppd.is_producing_done','=',1];
+            $order_done_count = Db::name('order_product_planning_details')
+                ->alias('oppd')
+                ->leftJoin('order_product_planing opp','oppd.order_id = opp.orderId')
+                ->leftJoin('restaurant_menu rm','rm.id = oppd.restaurant_menu_id')
+                ->where($where)
+                ->group('oppd.order_id')
+                ->count();
         }
-        //获取需要加工的订单总数
-        $order_count = Db::name('order_product_planning_details')
-            ->alias('oppd')
-            ->leftJoin('order_product_planing opp','oppd.order_id = opp.orderId')
-            ->leftJoin('restaurant_menu rm','rm.id = oppd.restaurant_menu_id')
-            ->where($where)
-            ->group('oppd.order_id')
-            ->count();
-        //获取已加工的订单总数
-        $where[] = ['oppd.is_producing_done','=',1];
-        $order_done_count = Db::name('order_product_planning_details')
-            ->alias('oppd')
-            ->leftJoin('order_product_planing opp','oppd.order_id = opp.orderId')
-            ->leftJoin('restaurant_menu rm','rm.id = oppd.restaurant_menu_id')
-            ->where($where)
-            ->group('oppd.order_id')
-            ->count();
         return [
             'order_done_count' => $order_done_count,
             'order_count' => $order_count
@@ -73,9 +79,10 @@ class OrderProductPlaning extends Model
         if ($logistic_delivery_date) {
             $where[] = ['opp.logistic_delivery_date', '=', $logistic_delivery_date];
         }
-        if ($opeator_user_id) {
-            $where[] = ['oppd.operator_user_id','=',$opeator_user_id];
-        }
+        //目前操作员和产品规格锁定，所以订单查询只需按照日期，产品规格查询即可
+//        if ($opeator_user_id) {
+//            $where[] = ['oppd.operator_user_id','=',$opeator_user_id];
+//        }
         if ($product_id > 0) {
             $where[] = ['oppd.restaurant_menu_id','=',$product_id];
         }

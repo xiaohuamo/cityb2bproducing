@@ -10,6 +10,7 @@ use think\facade\Queue;
 use app\model\{
     User,
     StaffRoles,
+    RestaurantCategory,
     OrderProductPlaning,
     ProducingPlaningSelect,
     OrderProductPlanningDetails,
@@ -71,6 +72,24 @@ class PreProduct extends AuthBase
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 
+    /**
+     * 获取操作员信息
+     * @return \think\response\Json
+     */
+    public function operator()
+    {
+        $param = $this->request->only(['logistic_delivery_date']);
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+        $User = new User();
+        //2.获取对应日期的加工员工
+        $all_operator = $User->getUsers($businessId,$user_id);
+        $data = [
+            'all_operator' => $all_operator,
+        ];
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
+    }
+
     //根据筛选日期获取初始化数据
     public function iniData()
     {
@@ -93,12 +112,7 @@ class PreProduct extends AuthBase
 //            }
 //        }
         $Order = new OrderProductPlaning();
-        $User = new User();
         $ProducingProgressSummery = new ProducingPlaningProgressSummery();
-        //1.获取对应日期的客户（目前默认先获取当前的商家）
-        $nickname = User::getVal(['id' => $businessId],'nickname');
-        //2.获取对应日期的加工员工
-        $all_operator = $User->getUsers($businessId,$user_id);
         //3.获取对应日期默认全部的司机的已加工订单数量和总的加工订单数量
         $operator_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date'],$param['operator_user_id']);
         //4.获取对应日期全部的已加工订单数量和总的加工订单数量
@@ -106,8 +120,6 @@ class PreProduct extends AuthBase
         //5.获取对应日期加工的商品信息
         $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['operator_user_id'],$param['goods_sort']);
         $data = [
-            'all_customers' => [$nickname],
-            'all_operator' => $all_operator,
             'goods' => $goods,
             'operator_order_count' => $operator_order_count,
             'all_order_count' => $all_order_count,
@@ -489,11 +501,17 @@ class PreProduct extends AuthBase
         $param = $this->request->only(['logistic_delivery_date','operator_user_id']);
         $param['operator_user_id'] = $param['operator_user_id']??'';
         $ProducingPlaningProgressSummery = new ProducingPlaningProgressSummery();
+        $RestaurantCategory = new RestaurantCategory();
 
         //1.获取对应日期加工的商品信息
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
-        $goods = $ProducingPlaningProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['operator_user_id']);
+        $goods = $ProducingPlaningProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['operator_user_id'],0,'',2);
+        //按顺序获取产品大类
+        $cate = $RestaurantCategory->getCategory($businessId);
+        $cate_sort_arr = array_column($cate->toArray(),'id');
+        $cate_id_arr = array_unique(array_column($goods,'cate_id'));
+        $result = array_intersect($cate_sort_arr,$cate_id_arr);
         //将产品信息按照分类获取
         $data = [];
         foreach($goods as &$v){
@@ -506,7 +524,11 @@ class PreProduct extends AuthBase
             }
             $data[$v['cate_id']]['data'][] = $v;
         }
-        $data = array_values($data);
+        $new_data = [];
+        foreach($result as $cv){
+            $new_data[$cv] = $data[$cv];
+        }
+        $data = array_values($new_data);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
@@ -533,7 +555,7 @@ class PreProduct extends AuthBase
         //2.判断该产品是否存在
         $where = [
             'delivery_date' => $param['logistic_delivery_date'],
-            'userId' => $user_id,
+//            'userId' => $user_id,
             'business_userId' => $businessId,
             'product_id' => $param['product_id'],
         ];
@@ -552,6 +574,7 @@ class PreProduct extends AuthBase
             ];
             $res = ProducingPlaningSelect::createData($data);
         } else {
+            $res = true;
             if($info){
                 //查询该产品加工单是否存在，若存在不可删除
                 $OrderProductPlanningDetails = new OrderProductPlanningDetails();
@@ -560,8 +583,8 @@ class PreProduct extends AuthBase
                     'business_userId' => $businessId,
                     'restaurant_menu_id' => $param['product_id'],
                 ];
-                $info = $OrderProductPlanningDetails->getOrderDetailsInfo($oppd_where);
-                if($info){
+                $oppd_info = $OrderProductPlanningDetails->getOrderDetailsInfo($oppd_where);
+                if(!empty($oppd_info)){
                     return show(config('status.code')['preproduct_delete_error']['code'],config('status.code')['preproduct_delete_error']['msg']);
                 }
                 $res = ProducingPlaningSelect::deleteAll(['id' => $info['id']]);
@@ -600,7 +623,7 @@ class PreProduct extends AuthBase
         $ProducingPlaningProgressSummery = new ProducingPlaningProgressSummery();
 
         //1.判断当前用户是都有权限添加预加工
-        $isPermission = $StaffRoles->getProductPlaningPermission($user_id);
+        $isPermission = 1;//$StaffRoles->getProductPlaningPermission($user_id);
         if ($isPermission != 1) {
             return show(config('status.code')['product_plan_approved_error']['code'],config('status.code')['product_plan_approved_error']['msg']);
         }
@@ -747,6 +770,12 @@ class PreProduct extends AuthBase
                     $ProducingPlaningProgressSummery->addProgressSummary($ppps_data);
                 }
                 Db::commit();
+                if($param['quantity'] == 0 && $info['customer_buying_quantity']>0){
+                    if($isPermission == 1){
+                        $operator_sum_order_inc_num = -1;
+                    }
+                    $order_sum_inc_num = -1;
+                }
                 $res = [
                     'operator_sum_order_inc_num' => $operator_sum_order_inc_num,
                     'order_sum_inc_num' => $order_sum_inc_num

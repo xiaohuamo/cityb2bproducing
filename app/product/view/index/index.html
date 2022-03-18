@@ -31,10 +31,10 @@
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(2)">
-				{{choseDate2?choseDate2:list2[0]}}
+				{{choseDate2?choseDate2:list2[0].name}}
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox" v-show="whichPopShow==2">
-					<div class="mb10 F20" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item}}</div>
+					<div class="mb10 F20" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item.name}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(3)">
@@ -309,7 +309,7 @@
 				product_id:0,//当前选择的产品id
 				guige1_id:'',//当前选择的规格id
 				list:[],
-				list2:['All customers'],
+				list2:[{"id":"","name":"All customers"}],
 				list3:[{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
 				driverOrderDoneNum:0,//对应司机已完成订单数
 				driverOrderNum:0,//对应司机全部订单数
@@ -329,178 +329,6 @@
 				handleListSort:[],//加工明细数据，为保证初始化的数据不变
 				wccSort:0,//加工明细排序类型
 				wccSortType:1,//排序方向 1正向 2反向
-				handleList1:[
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:1    // 0已处理  1未处理
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:1
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:1
-					}
-				],
-				handleList2:[
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0    // 0已处理  1未处理
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgFFF7F3',
-						status:0
-
-					},
-					{
-						num:10,
-						num1:1,
-						bg:'bgF0FBFB',
-						status:0
-					}
-				],
 				currentMenu:0,
 				isHandle:0,
 				goods:[],
@@ -577,7 +405,7 @@
 					_this.list = res.result.list
 					_this.choseDate1 = res.result.default
 					_this.currentDay = res.result.default_k
-					_this.logistic_delivery_date = _this.choseDate1.logistic_delivery_date
+					_this.logistic_delivery_date = _this.choseDate1.hasOwnProperty('logistic_delivery_date')?_this.choseDate1.logistic_delivery_date:''
 					//获取初始化数据
 					if(_this.logistic_delivery_date){
 						_this.inidata()
@@ -589,6 +417,9 @@
 				//获取初始化数据 type:refresh来源与数据刷新
 				inidata(type='') {
 					var _this = this
+					if(!(_this.logistic_delivery_date>0)){
+						return
+					}
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
 						"logistic_truck_No":_this.logistic_truck_No,
@@ -599,7 +430,6 @@
 					getData('product/iniData', data, function (res) {
 						console.log('初始化结果---',res)
 						res = res.result
-						_this.splideData(res.all_customers,res.all_drivers)
 						_this.driverOrderDoneNum = res.driver_order_count.order_done_count
 						_this.driverOrderNum = res.driver_order_count.order_count
 						_this.orderDoneNum = res.all_order_count.order_done_count
@@ -610,8 +440,8 @@
 							_this.menudata2Sort=_this.sortAccordingOtherData(res.goods,_this.menudata2Sort,'product_id')
 							console.log('刷新后产品数据-----',_this.menudata2Sort);
 						}else{
-							_this.menudata2=[]
-							_this.menudata2Sort=[]
+							_this.menudata2=_this.menudata2Sort=_this.menudataTwoCate=[]
+							_this.menudataTwoCateIndex = 0
 							_this.menudata2 = res.goods
 							_this.menudata2Sort = res.goods
 						}
@@ -1124,17 +954,6 @@
 				handle(index){  // 点击已处理
 					this.currentHandlePop=index
 				},
-				Popcontinue(source,index){  // 变成待处理
-					this.lastTime = new Date().getTime();//记录最后一次点击时间
-					this.currentHandlePop=-1
-					if(source==0){
-						this.handleList[index].status=1
-					}else if(source==1){
-						this.handleList1[index].status=1
-					}else{
-						this.handleList2[index].status=1
-					}
-				},
 				Popreturn(index){
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.currentHandlePop=-1
@@ -1355,48 +1174,6 @@
 						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],[],this.businessName,this.userName)
 					}
 				},
-				add(source,index,sec){
-					if(source==0){
-						if(sec==0){
-							this.handleList[index].num=this.numAdd(this.handleList[index].num,0.1)
-						}else{
-							this.handleList[index].num1++
-						}
-					}else if(source==1){
-						if(sec==0){
-							this.handleList1[index].num=this.numAdd(this.handleList1[index].num,0.1)
-						}else{
-							this.handleList1[index].num1++
-						}
-					}else{
-						if(sec==0){
-							this.handleList2[index].num=this.numAdd(this.handleList2[index].num,0.1)
-						}else{
-							this.handleList2[index].num1++
-						}
-					}
-				},
-				reduce(source,index,sec){
-					if(source==0){
-						if(sec==0){
-							this.handleList[index].num=this.numSub(this.handleList[index].num,0.1)
-						}else{
-							this.handleList[index].num1--
-						}
-					}else if(source==1){
-						if(sec==0){
-							this.handleList1[index].num=this.numSub(this.handleList1[index].num,0.1)
-						}else{
-							this.handleList1[index].num1--
-						}
-					}else{
-						if(sec==0){
-							this.handleList2[index].num=this.numSub(this.handleList2[index].num,0.1)
-						}else{
-							this.handleList2[index].num1--
-						}
-					}
-				},
 				numSub(arg1,arg2){
 				    var r1,r2,m;
 				    try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
@@ -1427,7 +1204,7 @@
 					this.whichPopShow=-1
 					this.logistic_delivery_date=item.logistic_delivery_date
 					//重置客户默认信息-start
-					this.choseDate2=this.list2[0]
+					this.choseDate2=this.list2[0].name
 					this.current2=0
 					//重置司机默认信息-end
 					//重置司机默认信息-start
@@ -1453,7 +1230,7 @@
 					this.isLoading=false
 				},
 				choseCus(item,index){
-					this.choseDate2=item
+					this.choseDate2=item.name
 					this.current2=index
 					this.whichPopShow=-1
 					//重置司机默认信息-start
@@ -1507,6 +1284,25 @@
 				chose(index){
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.whichPopShow=index
+					//获取客户数据
+					if(index==2){
+						var _this=this
+						getData('product/customer', '', function (res) {
+							_this.list2 = [{"id":"","name":"All customers"}]
+							_this.list2 = _this.list2.concat(res.result.all_customers)
+						});
+					}
+					//获取司机数据
+					if(index==3){
+						var _this=this
+						var data = {
+							'logistic_delivery_date':_this.logistic_delivery_date
+						}
+						getData('product/drivers', data , function (res) {
+							_this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
+							_this.list3 = _this.list3.concat(res.result.all_drivers)
+						});
+					}
 				},
 				//index-1:返回首页 2:返回类目页
  				returnPage(index){
@@ -1901,23 +1697,6 @@
 								this.timer = null;
 							}
 						}, 1000)
-					}
-				},
-				//拼接数据
-				splideData(all_customers,all_drivers){
-					//如果当前未选中司机，则初始化时更新司机信息
-					if(this.logistic_truck_No == ''){
-						this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
-						this.choseDate3=this.list[0].name
-						this.current3=0
-						this.list3 = this.list3.concat(all_drivers)
-					}
-					//如果未切换客户信息，则更新客户信息
-					if(this.current2 == 0){
-						this.list2 = ["All customers"]
-						this.choseDate2=this.list2[0]
-						this.current2=0
-						this.list2 = this.list2.concat(all_customers)
 					}
 				},
 				//聚焦时，默认全部选中文本框

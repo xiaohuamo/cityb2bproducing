@@ -210,6 +210,7 @@ class Index extends AuthBase
         $businessId = $this->getBusinessId();
         $business_name = User::getVal(['id' => $businessId],'nickname');
 
+        $User = new User();
         $StaffRoles = new StaffRoles();
         $isPermission = $StaffRoles->getProductPlaningPermission($user['id']);
         $data = [
@@ -217,6 +218,7 @@ class Index extends AuthBase
             "business_name" => $business_name,
             "is_has_pincode" => $user['pincode'] ? 1 : 2,//是否设置pincode，1设置 2未设置
             "is_manager" => $isPermission,//判断用户是否是管理员
+            "user_info" => $User->getUsers($businessId,$user['id']),//获取当前用户信息
         ];
         return $data;
     }
@@ -237,6 +239,40 @@ class Index extends AuthBase
         $businessId = $this->getBusinessId();
         $res = $Order->getDeliveryDate($businessId);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
+    }
+
+
+    /**
+     * 获取客户信息
+     * @return \think\response\Json
+     */
+    public function customer()
+    {
+        //1.获取对应日期的客户（目前默认先获取当前的商家）
+        $businessId = $this->getBusinessId();
+        $info = User::getOne(['id' => $businessId],'id,nickname name');
+        $data = [
+            'all_customers' => [$info]
+        ];
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
+    }
+
+    /**
+     * 获取司机信息
+     * @return \think\response\Json
+     */
+    public function drivers()
+    {
+        $param = $this->request->only(['logistic_delivery_date']);
+
+        $businessId = $this->getBusinessId();
+        $Order = new Order();
+        //获取对应日期的配送司机
+        $all_drivers = $Order->getDrivers($businessId,$param['logistic_delivery_date']);
+        $data = [
+            'all_drivers' => $all_drivers
+        ];
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
     //根据筛选日期获取初始化数据
@@ -262,10 +298,6 @@ class Index extends AuthBase
 //        }
         $Order = new Order();
         $ProducingProgressSummery = new ProducingProgressSummery();
-        //1.获取对应日期的客户（目前默认先获取当前的商家）
-        $nickname = User::getVal(['id' => $businessId],'nickname');
-        //2.获取对应日期的配送司机
-        $all_drivers = $Order->getDrivers($businessId,$param['logistic_delivery_date']);
         //3.获取对应日期默认全部的司机的已加工订单数量和总的加工订单数量
         $driver_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
         //4.获取对应日期全部的已加工订单数量和总的加工订单数量
@@ -275,8 +307,6 @@ class Index extends AuthBase
         //        //6.获取对应日期的加工明细信息
 //        $order = $Order->getProductOrderList($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
         $data = [
-            'all_customers' => [$nickname],
-            'all_drivers' => $all_drivers,
             'goods' => $goods,
             'driver_order_count' => $driver_order_count,
             'all_order_count' => $all_order_count,
@@ -657,11 +687,17 @@ class Index extends AuthBase
         $param = $this->request->only(['logistic_delivery_date','logistic_truck_No']);
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $ProducingProgressSummery = new ProducingProgressSummery();
+        $RestaurantCategory = new RestaurantCategory();
 
         //1.获取对应日期加工的商品信息
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
         $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        //按顺序获取产品大类
+        $cate = $RestaurantCategory->getCategory($businessId);
+        $cate_sort_arr = array_column($cate->toArray(),'id');
+        $cate_id_arr = array_unique(array_column($goods,'cate_id'));
+        $result = array_intersect($cate_sort_arr,$cate_id_arr);
         //将产品信息按照分类获取
         $data = [];
         foreach($goods as &$v){
@@ -674,6 +710,11 @@ class Index extends AuthBase
             }
             $data[$v['cate_id']]['data'][] = $v;
         }
+        $new_data = [];
+        foreach($result as $cv){
+            $new_data[$cv] = $data[$cv];
+        }
+        $data = array_values($new_data);
         $data = array_values($data);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }

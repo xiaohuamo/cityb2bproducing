@@ -237,7 +237,8 @@ class Order extends Model
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
-            ['rm.proucing_item', '=', 1]
+            ['rm.proucing_item', '=', 1],
+            ['wcc.customer_buying_quantity','>',0]
         ];
         if($logistic_delivery_date){
             $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
@@ -245,9 +246,10 @@ class Order extends Model
         //查找订单中的所有商品的汇总
         $order_goods = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('o.business_userId,o.logistic_delivery_date delivery_date,wcc.restaurant_menu_id product_id,wcc.guige1_id,sum(wcc.customer_buying_quantity) AS sum_quantities')
+            ->field('o.business_userId,o.logistic_delivery_date delivery_date,wcc.restaurant_menu_id product_id,wcc.guige1_id,sum(wcc.customer_buying_quantity) AS sum_quantities,pps.id pps_id,pps.sum_quantities pps_sum_quantities,pps.isDone')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+            ->leftJoin('producing_progress_summery pps',"pps.delivery_date = o.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
             ->where($where)
             ->where($map)
             ->group('wcc.restaurant_menu_id,wcc.guige1_id')
@@ -273,12 +275,15 @@ class Order extends Model
         //将商品信息加入队列依次插入数据库
         foreach($order_goods as $k=>$v){
             $v['proucing_center_id'] = 0;
-            $isPushed = Queue::push('app\job\Job1', $v, 'producingProgressSummary');
-            // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
-            if( $isPushed !== false ){
-                echo date('Y-m-d H:i:s') . " a new Job is Pushed to the MQ"."<br>";
-            }else{
-                echo 'Oops, something went wrong.';
+            $ProducingProgressSummery = new ProducingProgressSummery();
+           if(empty($v['pps_id']) || $v['pps_sum_quantities'] != $v['sum_quantities']) {
+                $isPushed = Queue::push('app\job\Job1', $v, 'producingProgressSummary');
+                // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
+                if ($isPushed !== false) {
+                    echo date('Y-m-d H:i:s') . " a new Job is Pushed to the MQ" . "<br>";
+                } else {
+                    echo 'Oops, something went wrong.';
+                }
             }
         }
     }

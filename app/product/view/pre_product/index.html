@@ -4,11 +4,13 @@
 		<meta charset="UTF-8">
 		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
 		<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/sweetalert2.css"/>
 		<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="__STATIC__/product/js/vue.min.js"></script>
 		<script src="__STATIC__/product/js/common.js"></script>
 		<script src="__STATIC__/product/lodop/LodopFuncs.js"></script>
 		<script src="__STATIC__/product/js/print.js"></script>
+		<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	</head>
 	<body onselectstart="return false">
 	<div id="main" v-cloak @click="closePop();isDo()">
@@ -40,10 +42,10 @@
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(2)">
-				{{choseDate2?choseDate2:list2[0]}}
+				{{choseDate2?choseDate2:list2[0].name}}
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox" v-show="whichPopShow==2">
-					<div class="mb10 F20" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item}}</div>
+					<div class="mb10 F20" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item.name}}</div>
 				</div>
 			</div>
 <!--			<div class="flexbox2 relative hand" @click.stop="chose(3)">-->
@@ -108,7 +110,7 @@
 				<div v-show="currentPage==1">
 					<div>
 						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element">
-							<div :class="{'bgFFF7F3 col5e5656':item.status==0&&menudataTwoCateIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudataTwoCateIndex==index,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2,'bg1d95b9':item.status==4}" class="colfff rbtn relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="(item.status==4||currentManageActionTypeIndex==0)&&gtouchstart(item,index,2);currentManageActionTypeIndex==1&&popQuantityBox(item,index,2);">
+							<div :class="{'bgFFF7F3 col5e5656':item.status==0&&menudataTwoCateIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudataTwoCateIndex==index,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2,'bg1d95b9':item.status==4}" class="colfff rbtn relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="(item.status!=4&&currentManageActionTypeIndex==0)&&gtouchstart(item,index,2);(item.status==4||currentManageActionTypeIndex==1)&&popQuantityBox(item,index,2);">
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -218,7 +220,7 @@
 								Back to this category
 							</div>
 							<div class="flexbox2">
-								<div class="J_set_top" v-for="(item,index) in goods"  @dblclick="selectProductPlaning(item,index)">
+								<div class="J_set_top" v-for="(item,index) in goods"  @dblclick="selectProductPlaning(item,index,1,$event)">
 									<div class="rbtn4 bgFFF7F3 col5e5656">
 										<div>{{item.menu_en_name}}</div>
 										<div>{{item.menu_id}}</div>
@@ -236,7 +238,7 @@
 						</div>
 						<div v-else-if="currentMenu==1" class="flexbox2">
 							<div class="J_set_top" v-for="(item,index) in goods">
-								<div class="rbtn4" :class="{'bgdarkGrey colfff':item.is_progress==2,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFD6921 blink':item.is_progress==1&&item.status==1,'bg34C079':item.is_progress==1&&item.status==3,'bgGrey blink':item.is_progress==1&&item.status==2,'bg1d95b9 colfff':item.status==4}" @dblclick="selectProductPlaning(item,index)">
+								<div class="rbtn4" :class="{'bgdarkGrey colfff':item.is_progress==2,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFD6921 blink':item.is_progress==1&&item.status==1,'bg34C079':item.is_progress==1&&item.status==3,'bgGrey blink':item.is_progress==1&&item.status==2,'bg1d95b9 colfff':item.status==4}" @dblclick="selectProductPlaning(item,index,1,$event)">
 									<div :id="item.is_progress">{{item.menu_en_name}}</div>
 									<div>{{item.menu_id}}</div>
 								</div>
@@ -247,10 +249,10 @@
 							</div>
 						</div>
 						<div v-else>
-							<div v-for="(item,index) in goods">
+							<div v-for="(item,index) in goods" class="J_current_panel">
 								<div class="F20 hand cater mb10 bgFD6921 colfff" @click="goto(item,index,'.J_cate_'+item['cate_id'],2)">{{item['category_en_name']}}</div>
 								<div class="flexbox2">
-									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3,'bg1d95b9 colfff':item1.status==4}" class="lbtn3 cateWH relative pdbtn J_current_panel_item" @click="goto(item,index,'#anchor-'+item1.product_id)" @dblclick="selectProductPlaning(item1,index1,2)">
+									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3,'bg1d95b9 colfff':item1.status==4}" class="lbtn3 cateWH relative pdbtn J_current_panel_item" @click="goto(item,index,'#anchor-'+item1.product_id)" @dblclick="selectProductPlaning(item1,index1,2,$event)">
 										<div :class="{'blink':item1.status==1||item1.status==2}">
 											<div>{{item1.menu_en_name}}</div>
 											<div>{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</div>
@@ -345,7 +347,7 @@
 				product_id:0,//当前选择的产品id
 				guige1_id:'',//当前选择的规格id
 				list:[],
-				list2:['All customers'],
+				list2:[{"id":"","name":"All customers"}],
 				list3:[{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
 				list4:[{"user_id":"","user_name":"All Operator"}],
 				operatorOrderDoneNum:0,//对应操作员已完成订单数
@@ -436,6 +438,11 @@
 							_this.currentPage = 2
 							_this.returnPage(2)
 						}
+						if(res.result.is_manager == 2){
+							_this.list4 = res.result.user_info
+							_this.currentOperatorIndex=0
+							_this.operator_user_id = res.result.user_info[0]['user_id']
+						}
 					} else {
 						//获取不到登录信息则弹出登录框
 						_this.iskeyboardShow = true
@@ -453,10 +460,11 @@
 				//获取加工日期
 				_this.isLoading=true
 				getData('product/prepDeliveryDate', '', function (res) {
+					console.log(res)
 					_this.list = res.result.list
 					_this.choseDate1 = res.result.default
 					_this.currentDay = res.result.default_k
-					_this.logistic_delivery_date = _this.choseDate1.logistic_delivery_date
+					_this.logistic_delivery_date = _this.choseDate1.hasOwnProperty('logistic_delivery_date')?_this.choseDate1.logistic_delivery_date:''
 					//获取初始化数据
 					if(_this.logistic_delivery_date){
 						_this.inidata()
@@ -468,6 +476,9 @@
 				//获取初始化数据 type:refresh来源与数据刷新
 				inidata(type='') {
 					var _this = this
+					if(!(_this.logistic_delivery_date>0)){
+						return
+					}
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
 						"operator_user_id":_this.operator_user_id,
@@ -478,7 +489,6 @@
 					getData('product/prepInidata', data, function (res) {
 						console.log('初始化结果---',res)
 						res = res.result
-						_this.splideData(res.all_customers,res.all_operator)
 						_this.operatorOrderDoneNum = res.operator_order_count.order_done_count
 						_this.operatorOrderNum = res.operator_order_count.order_count
 						_this.orderDoneNum = res.all_order_count.order_done_count
@@ -489,8 +499,8 @@
 							_this.menudata2Sort=_this.sortAccordingOtherData(res.goods,_this.menudata2Sort,'product_id')
 							console.log('刷新后产品数据-----',_this.menudata2Sort);
 						}else{
-							_this.menudata2=[]
-							_this.menudata2Sort=[]
+							_this.menudata2=_this.menudata2Sort=_this.menudataTwoCate=[]
+							_this.menudataTwoCateIndex = 0
 							_this.menudata2 = res.goods
 							_this.menudata2Sort = res.goods
 						}
@@ -1010,17 +1020,6 @@
 				handle(index){  // 点击已处理
 					this.currentHandlePop=index
 				},
-				Popcontinue(source,index){  // 变成待处理
-					this.lastTime = new Date().getTime();//记录最后一次点击时间
-					this.currentHandlePop=-1
-					if(source==0){
-						this.handleList[index].status=1
-					}else if(source==1){
-						this.handleList1[index].status=1
-					}else{
-						this.handleList2[index].status=1
-					}
-				},
 				Popreturn(index){
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.currentHandlePop=-1
@@ -1102,12 +1101,25 @@
 				},
 				//添加/修改加工数量
 				saveQuantity(){
+					if(this.menudata2Sort[this.menudata2SortIndex].is_has_two_cate == 2){
+						if(this.menudata2Sort[this.menudata2SortIndex].status == 4){
+							action_type = 1
+						}else{
+							action_type = 2
+						}
+					}else{
+						if(this.menudataTwoCate[this.menudataTwoCateIndex].status == 4){
+							action_type = 1
+						}else{
+							action_type = 2
+						}
+					}
 					var data = {
 						"logistic_delivery_date":this.logistic_delivery_date,
 						"product_id":this.product_id,
 						"guige1_id":this.guige1_id,
 						"quantity":this.quantity,
-						"action_type":this.oldQuantity>0?2:1
+						"action_type":action_type
 					}
 					console.log('保存加工数量参数----',data)
 					var _this=this
@@ -1344,48 +1356,6 @@
 						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],[],this.businessName,this.userName)
 					}
 				},
-				add(source,index,sec){
-					if(source==0){
-						if(sec==0){
-							this.handleList[index].num=this.numAdd(this.handleList[index].num,0.1)
-						}else{
-							this.handleList[index].num1++
-						}
-					}else if(source==1){
-						if(sec==0){
-							this.handleList1[index].num=this.numAdd(this.handleList1[index].num,0.1)
-						}else{
-							this.handleList1[index].num1++
-						}
-					}else{
-						if(sec==0){
-							this.handleList2[index].num=this.numAdd(this.handleList2[index].num,0.1)
-						}else{
-							this.handleList2[index].num1++
-						}
-					}
-				},
-				reduce(source,index,sec){
-					if(source==0){
-						if(sec==0){
-							this.handleList[index].num=this.numSub(this.handleList[index].num,0.1)
-						}else{
-							this.handleList[index].num1--
-						}
-					}else if(source==1){
-						if(sec==0){
-							this.handleList1[index].num=this.numSub(this.handleList1[index].num,0.1)
-						}else{
-							this.handleList1[index].num1--
-						}
-					}else{
-						if(sec==0){
-							this.handleList2[index].num=this.numSub(this.handleList2[index].num,0.1)
-						}else{
-							this.handleList2[index].num1--
-						}
-					}
-				},
 				numSub(arg1,arg2){
 				    var r1,r2,m;
 				    try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
@@ -1421,7 +1391,7 @@
 					this.whichPopShow=-1
 					this.logistic_delivery_date=item.logistic_delivery_date
 					//重置客户默认信息-start
-					this.choseDate2=this.list2[0]
+					this.choseDate2=this.list2[0].name
 					this.current2=0
 					//重置客户默认信息-end
 					//重置操作员默认信息-start
@@ -1451,7 +1421,7 @@
 					this.isLoading=false
 				},
 				choseCus(item,index){
-					this.choseDate2=item
+					this.choseDate2=item.name
 					this.current2=index
 					this.whichPopShow=-1
 					//重置操作员默认信息-start
@@ -1482,8 +1452,7 @@
 				},
 				//切换操作员
 				choseOperator(item,index){
-					this.choseDate3=item.user_name
-					this.current3=index
+					this.currentOperatorIndex=index
 					this.whichPopShow=-1
 					this.operator_user_id=item.user_id
 					//重置产品默认信息-start
@@ -1509,6 +1478,29 @@
 				chose(index){
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.whichPopShow=index
+					//获取客户数据
+					if(index==2){
+						var _this=this
+						getData('product/customer', '', function (res) {
+							_this.list2 = [{"id":"","name":"All customers"}]
+							_this.list2 = _this.list2.concat(res.result.all_customers)
+						});
+					}
+					//获取操作员数据
+					if(index==4){
+						var _this=this
+						var data = {
+							'logistic_delivery_date':_this.logistic_delivery_date
+						}
+						getData('product/operator', data , function (res) {
+							if(_this.isManager == 1){
+								_this.list4 = [{"user_id":"","user_name":"All Operator"}]
+								_this.list4 = _this.list4.concat(res.result.all_operator)
+							}else{
+								_this.list4 = res.result.all_operator
+							}
+						});
+					}
 				},
 				//index-1:返回首页 2:返回类目页
  				returnPage(index){
@@ -1652,11 +1644,29 @@
 						}
 					});
 				},
-				selectProductPlaning(item,index,action_type=1){
-					if(item.status != 4){
-						this.popBox('Cannot be deleted')
-					}
+				selectProductPlaning(item,index,action_type=1,e){
 					clearTimeout(this.clickTimer);  //首先清除计时器
+					if(action_type == 2){
+						if(item.status != 4){
+							this.popBox('Cannot be deleted')
+							return
+						}
+						swal({
+							title: "Are you sure you want to delete?",
+							icon: "warning",
+							buttons: true,
+							dangerMode: true,
+						})
+						.then((willDelete) => {
+							if (willDelete) {
+								this.setProductPlaningFun(item,index,action_type,e)
+							}
+						});
+					}else{
+						this.setProductPlaningFun(item,index,action_type,e)
+					}
+				},
+				setProductPlaningFun(item,index,action_type,e){
 					var data = {
 						"logistic_delivery_date":this.logistic_delivery_date,
 						"product_id":item.product_id,
@@ -1670,7 +1680,11 @@
 						if(res.status == 200){
 							_this.inidata()
 							if(action_type == 2){
-								$('.J_current_panel_item').eq(index).remove();
+								if($(e.target).parents('.J_current_panel_item').siblings().length==0){
+									$(e.target).parents('.J_current_panel').remove()
+								}else{
+									$(e.target).parents('.J_current_panel_item').remove()
+								}
 							}
 						}
 						return
@@ -1850,12 +1864,23 @@
 						console.log(res);
 						_this.isDisable = false
 						if(res.status == 200){
-							console.log(res.result.user_name);
 							if (res.result.user_name) {
 								_this.userName = res.result.user_name
 								_this.businessName = res.result.business_name
 								//管理员登录默认进入二级页面(需要再放开)
+								//如果当前登录账号的权限和上一个账号权限不一致，则重置操作员信息
+								if(res.result.is_manager!=_this.isManager && res.result.is_manager==1){
+									_this.list4=[{"user_id":"","user_name":"All Operator"}]
+									_this.currentOperatorIndex=0
+									_this.operator_user_id=""
+								}
 								_this.isManager = res.result.is_manager
+								//重置操作员默认信息-start(如果是操作员，操作员列表只有当前用户)
+								if(_this.isManager==2){
+									_this.list4 = res.result.user_info
+									_this.currentOperatorIndex=0
+									_this.operator_user_id = res.result.user_info[0]['user_id']
+								}
 								// if(res.result.is_manager == 1){
 								// 	_this.currentPage = 2
 								// 	_this.returnPage(2)
@@ -1871,11 +1896,6 @@
 							_this.isShowTypePincode2 = _this.isShowTypePincode3 = false
 							_this.pincodeType = 1 //默认显示pincode登录
 							_this.focusDatype = 10 //默认可直接输入密码
-							//重置操作员默认信息-start
-							if(_this.isManager==2){
-								_this.currentOperatorIndex=0
-								_this.operator_user_id = ''
-							}
 							//重置操作员默认信息-end
 							_this.inidata(_this.logistic_delivery_date)
 						} else {
@@ -1946,32 +1966,10 @@
 							} else {
 								this.isDisable = !this.isDisable
 								this.timeLock = 0
-								console.log(this.isDisable,this.isClock);
 								clearInterval(this.timer);
 								this.timer = null;
 							}
 						}, 1000)
-					}
-				},
-				//拼接数据
-				splideData(all_customers,all_operator){
-					//如果当前未选中操作员，则初始化时更新操作员信息,只有管理员可查看所有操作员信息，加工人员只可查看自己的
-					if(this.operator_user_id == ''){
-						if(this.isManager == 1){
-							this.list4 = [{"user_id":"","user_name":"All Operator"}]
-							this.currentOperatorIndex=0
-							this.operator_user_id=this.list4[this.currentOperatorIndex]['user_id']
-							this.list4 = this.list4.concat(all_operator)
-						}else{
-							this.list4 = all_operator
-						}
-					}
-					//如果未切换客户信息，则更新客户信息
-					if(this.current2 == 0){
-						this.list2 = ["All customers"]
-						this.choseDate2=this.list2[0]
-						this.current2=0
-						this.list2 = this.list2.concat(all_customers)
 					}
 				},
 				//聚焦时，默认全部选中文本框

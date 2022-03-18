@@ -21,22 +21,16 @@ class ProducingProgressSummery extends Model
      */
     public function addProgressSummary($data)
     {
-        //1.查询该数据是否已存在，不存在新增，存在则更新
-        $info = self::is_exist([
-            ['business_userId', '=', $data['business_userId']],
-            ['delivery_date', '=', $data['delivery_date']],
-            ['product_id', '=', $data['product_id']],
-            ['guige1_id', '=', $data['guige1_id']]
-        ]);
-        if ($info) {
+        if (!empty($data['pps_id'])) {
             //1.判断数据是否有变动
-            if($info['sum_quantities'] != $data['sum_quantities']){
-                if($info['isDone']==1 && $info['sum_quantities'] < $data['sum_quantities']){
+            if($data['pps_sum_quantities'] != $data['sum_quantities']){
+                if($data['isDone']==1 && $data['sum_quantities'] < $data['sum_quantities']){
                     $data['isDone'] = 0;
                 }
-                $res = self::getUpdate(['id' => $info['id']], $data);
+                $res = self::getUpdate(['id' => $data['pps_id']], $data);
             }
         } else {
+            $data['isDone'] = 0;
             $res = self::createData($data);
         }
         return $res;
