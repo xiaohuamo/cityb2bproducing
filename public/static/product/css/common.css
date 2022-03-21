@@ -248,7 +248,7 @@ a{
 }
 
 .w70{
-	width: 60%;
+	width: 55%;
 }
 .w200{
 	width: 200px !important;
@@ -701,9 +701,9 @@ a{
 	position: absolute;
 	top: 50%;
 	right: 50%;
-	width: 762px;
+	width: 768px;
 	max-height: 400px;
-	margin-right: -381px;
+	margin-right: -384px;
 	margin-top: -200px;
 	border-radius: 3px;
 	background-color: #fff;
@@ -721,7 +721,7 @@ a{
 }
 .operateLogBox{
 	position: absolute;
-	top: 25%;
+	top: 10%;
 	right: 50%;
 	width: 400px;
 	margin-right: -200px;
