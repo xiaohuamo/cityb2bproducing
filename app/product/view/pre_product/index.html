@@ -170,6 +170,9 @@
 							<!-- 主体部分 -->
 							<div class="mainBox J_main_box F20" style="flex: auto;">
 								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
+									<div class="log" @click="log(item,index)">
+										<img src="__STATIC__/product/img/log.png">
+									</div>
 									<div class="flexbox1 pa5-10 w70" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
@@ -191,13 +194,11 @@
 										</div>
 										<img src="__STATIC__/product/img/echo.png" class="echo" @click="print(item,index)"/>
 									</div>
-<!--									<div class="rbtn3 F20 bg34C079 colfff relative" v-if="item.is_producing_done==1" @click="handle(index)">-->
+									<div class="rbtn5 F20 bg1d95b9 colfff relative" v-if="item.is_producing_done==1" @click="showOperateQuantityLog(item,index)">
+										processed Log
+									</div>
 									<div class="rbtn3 F20 bg34C079 colfff relative" v-if="item.is_producing_done==1" @click="handle(index)">
 										processed
-<!--										<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-show="currentHandlePop==index">-->
-										<!--											<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>-->
-<!--											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>-->
-<!--										</div>-->
 									</div>
 									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
 										waitting lock
@@ -314,7 +315,45 @@
 					<input class="inputW2 F20 J_add_quantity" type="number" v-model="quantity" @focus="focusEvent($event)" @keyup="handleInput2"/>
 				</div>
 				<div class="maT10">
-					<button type="submit" class="btn-primary" @click="saveQuantity(1)">Save</button>
+					<button type="submit" class="btn-primary ml160" @click="saveQuantity(1)">Save</button>
+				</div>
+			</div>
+		</div>
+		<!-- 日志记录-->
+		<div class="mask" v-show="isShowLog">
+			<div class="logContent F18">
+				<div class="chaClose" @click="closeLog">×</div>
+				<table>
+					<tr>
+						<th class="thead">Operation time</th>
+						<th class="thead">Username</th>
+						<th class="thead">Number</th>
+						<th class="thead">Quantity</th>
+						<th class="thead">Operate</th>
+					</tr>
+					<tr v-for="item in logData">
+						<td class="thead">{{item.created_at}}</td>
+						<td class="thead">{{item.name}}</td>
+						<td class="thead">{{item.userId}}</td>
+						<td class="thead" v-if="item.behavior_type==5||item.behavior_type==6||item.behavior_type==7">{{item.new_customer_buying_quantity}}</td>
+						<td class="thead" v-else>--</td>
+						<td class="thead">{{item.behavior_type_desc}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- 加工数量记录-->
+		<div class="mask" v-show="isShowOperateQuantityLog">
+			<div class="operateLogBox">
+				<div class="chaClose" @click="closeLog">×</div>
+				<div class="mb15 F20" v-for="item in operateQuantityLog">
+					<span class="boxl">{{item.name}}</span>
+					<input type="number" class="inputW3 F20" v-model="item.quantity" @focus="focusEvent($event)" @keyup="handleInput2($event,'operatelog')">
+				</div>
+				<div class="maT40 F20">
+					<span class="sumBox">Total {{total}}</span>
+					<span class="sumBox">Filled in <span class="J_fillInSum colred">0</span></span>
+					<button class="btn-pos btn-primary-disable J_quantity_submit" disabled @click="saveOperatorQuantityLog">Submit</button>
 				</div>
 			</div>
 		</div>
@@ -419,6 +458,12 @@
 				oldQuantity:0,//旧的加工数量
 				currentInterTime:null,//获取锁定结果的开始时间
 				interTimeOut: 1.5 * 60 * 1000,//设置锁定结果超时时间： 1.5分钟
+				isShowLog:false,//是否显示日志信息
+				logData:[],//日志数据
+				isShowOperateQuantityLog:false,//是否显示加工数量记录表
+				operateQuantityLog:[],//加工数量记录
+				total:0,//总加工数量
+				operateQuantityLogIndex:0,//获取当前显示加工日志的索引值
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -836,6 +881,8 @@
 								_this.message=''
 								_this.isPsdCorrect=false
 								_this.isQuantityShow=false
+								_this.isShowLog=false
+								_this.isShowOperateQuantityLog=false
 							});
 						}
 					}, 5000);
@@ -1016,6 +1063,48 @@
 						}
 					}
 					return is_has_product
+				},
+				//显示加工数量日志
+				showOperateQuantityLog(item,index){
+					this.isShowOperateQuantityLog=true
+					this.operateQuantityLogIndex=index
+					this.total=item.new_customer_buying_quantity
+					var data = {
+						"oppd_id":item.id
+					}
+					console.log('加工数量日志参数----', data)
+					var _this = this
+					_this.isLoading=true
+					getData('product/processQuantityLog', data, function (res) {
+						_this.isLoading=false
+						console.log('加工数量日志结果----', res)
+						_this.operateQuantityLog = res.result
+						_this.quantitySum()
+					})
+				},
+				//获取所有输入的值,并将加工记录存入数据库
+				saveOperatorQuantityLog() {
+					var data = {
+						"oppd_id" : this.handleListSort[this.operateQuantityLogIndex].id,
+						"data" : []
+					}
+					for (var i = 0; i < this.operateQuantityLog.length;i++) {
+						var res = this.operateQuantityLog[i].quantity;
+						if(res > 0){
+							data.data.push({
+								"user_id":this.operateQuantityLog[i].user_id,
+								"num":res
+							});
+						}
+					}
+					console.log('保存操作原加工数量日志参数----',data);
+					var _this=this
+					_this.isLoading=true
+					getData('product/addProcessQuantityLog', data, function (res) {
+						_this.isLoading=false
+						console.log('保存操作原加工数量日志参数结果----', res)
+						_this.isShowOperateQuantityLog=false
+					})
 				},
 				handle(index){  // 点击已处理
 					this.currentHandlePop=index
@@ -1690,6 +1779,31 @@
 						return
 					});
 				},
+				//关闭日志弹窗
+				closeLog(){
+					this.isShowLog=false
+					this.isShowOperateQuantityLog=false
+				},
+				//弹出日志信息
+				log(item,index){
+					this.isShowLog=true
+					var data = {
+						"logistic_delivery_date":this.logistic_delivery_date,
+						"product_id":item.product_id,
+						"guige1_id":item.guige1_id,
+						"oppd_id":item.id
+					}
+					console.log('获取日志参数---',data)
+					var _this=this
+					getData('product/prepLogData', data, function (res) {
+						console.log('获取日志结果---',res)
+						if(res.status == 200){
+							_this.logData = res.result
+						}else{
+							_this.popBox(res.message)
+						}
+					});
+				},
 				//光标移入div样式
 				focusData(e,type,pincodeType){
 					e.target.setAttribute('placeholder','')
@@ -1976,9 +2090,39 @@
 				focusEvent: function (e) {
 					e.currentTarget.select();
 				},
-				handleInput2(e) {
+				handleInput2(e,source='') {
 					// 通过正则过滤小数点后两位
-					e.target.value = e.target.value.match(/\d+\.?\d{0,2}/)
+					// e.target.value = e.target.value.match(/\d+\.?\d{0,2}/)
+					var obj = e.target
+					obj.value = obj.value.replace(/[^\d.]/g, "");  //清除“数字”和“.”以外的字符
+					obj.value = obj.value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的
+					obj.value = obj.value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+					obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3');//只能输入两个小数
+					// //以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+					// if (obj.value.indexOf(".") < 0 && obj.value != "") {
+					// 	obj.value = parseFloat(obj.value);
+					// }
+					if(source == 'operatelog'){
+						this.quantitySum()
+					}
+
+				},
+				quantitySum(){
+					var sum = 0
+					for (var i = 0; i < this.operateQuantityLog.length;i++) {
+						var res = this.operateQuantityLog[i].quantity;
+						sum = this.numAdd(sum,res)
+					}
+					$('.J_fillInSum').text(sum)
+					if(sum == this.total){
+						$('.J_fillInSum').removeClass('colred').addClass('colgreen')
+						$('.J_quantity_submit').removeClass('btn-primary-disable').addClass('btn-primary')
+						$('.J_quantity_submit').removeAttr("disabled")
+					}else{
+						$('.J_fillInSum').removeClass('colgreen').addClass('colred')
+						$('.J_quantity_submit').removeClass('btn-primary').addClass('btn-primary-disable')
+						$('.J_quantity_submit').attr('disabled',"true");
+					}
 				},
 				handleInput(e) {
 					e.target.value=e.target.value.replace(/[^\d]/g,'');
@@ -1993,7 +2137,7 @@
 						clearTimeout(this.timeOutEvent);//清除定时器
 					},2000);//这里设置定时器，定义长按2000毫秒触发长按事件
 					return
-				}
+				},
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间

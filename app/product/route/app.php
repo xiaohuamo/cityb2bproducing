@@ -56,6 +56,8 @@ Route::post('categoryProduct', 'Index/categoryProduct');
 Route::post('topProduct', 'Index/topProduct');
 //设置置顶
 Route::post('setTopProduct', 'Index/setTopProduct');
+//获取加工日志
+Route::post('logData', 'Index/logData');
 //test
 Route::post('test', 'Index/test');
 
@@ -86,7 +88,12 @@ Route::post('prepCurrentStockProduct', 'preProduct/currentStockProduct');
 Route::post('setProductPlaning', 'preProduct/setProductPlaning');
 //添加预加工订单
 Route::post('addOrderProductPlaning', 'preProduct/addOrderProductPlaning');
-
+//获取加工日志
+Route::post('prepLogData', 'preProduct/logData');
+//添加预加工数量日志记录
+Route::post('addProcessQuantityLog', 'preProduct/addProcessQuantityLog');
+//获取预加工数量日志记录
+Route::post('processQuantityLog', 'preProduct/processQuantityLog');
 //预加工项目路由--------end
 
 //miss 路由

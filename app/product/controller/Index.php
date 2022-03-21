@@ -809,5 +809,20 @@ class Index extends AuthBase
         return View::fetch('labelprint');
     }
 
+    //获取日志数据
+    public function logData()
+    {
+        $param = $this->request->only(['logistic_delivery_date','product_id','guige1_id','wcc_id']);
+        $param['guige1_id'] = isset($param['guige1_id']) ? ($param['guige1_id']?:0) : 0;
+        $param['wcc_id'] = isset($param['wcc_id']) ? ($param['wcc_id']?:0) : 0;
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        $ProducingBehaviorLog = new ProducingBehaviorLog();
+        $res = $ProducingBehaviorLog->getLogData($businessId,$user_id,$param);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
+    }
+
 
 }

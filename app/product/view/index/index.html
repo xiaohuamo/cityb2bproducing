@@ -150,6 +150,9 @@
 							<!-- 主体部分 -->
 							<div class="mainBox J_main_box F20" style="flex: auto;">
 								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
+									<div class="log" @click="log(item,index)">
+										<img src="__STATIC__/product/img/log.png">
+									</div>
 									<div class="flexbox1 pa5-10 w70" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
@@ -284,6 +287,29 @@
 				{{popMessage}}
 			</div>
 		</div>
+		<!-- 日志记录-->
+		<div class="mask" v-show="isShowLog">
+			<div class="logContent F18">
+				<div class="chaClose" @click="closeLog">×</div>
+				<table>
+					<tr>
+						<th class="thead">Operation time</th>
+						<th class="thead">Username</th>
+						<th class="thead">Number</th>
+						<th class="thead">Quantity</th>
+						<th class="thead">Operate</th>
+					</tr>
+					<tr v-for="item in logData">
+						<td class="thead">{{item.created_at}}</td>
+						<td class="thead">{{item.name}}</td>
+						<td class="thead">{{item.userId}}</td>
+						<td class="thead" v-if="item.behavior_type==5||item.behavior_type==6||item.behavior_type==7">{{item.new_customer_buying_quantity}}</td>
+						<td class="thead" v-else>--</td>
+						<td class="thead">{{item.behavior_type_desc}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
 	</div>
 	</body>
 	<script>
@@ -372,6 +398,8 @@
 				isHasCateData:false,//分类页，Back to this category,判断当前加工产品是否有该类产品
 				currentInterTime:null,//获取锁定结果的开始时间
 				interTimeOut: 1.5 * 60 * 1000,//设置锁定结果超时时间： 1.5分钟
+				isShowLog:false,//是否显示日志信息
+				logData:[],//日志数据
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -770,6 +798,7 @@
 								_this.psd=_this.psd2=_this.npsd=_this.npsd2=_this.nrpsd=_this.nrpsd2=''
 								_this.message=''
 								_this.isPsdCorrect=false
+								_this.isShowLog=false
 							});
 						}
 					}, 5000);
@@ -1431,6 +1460,30 @@
 						}else{
 							_this.popBox(res.message)
 							return
+						}
+					});
+				},
+				//关闭日志弹窗
+				closeLog(){
+					this.isShowLog=false
+				},
+				//弹出日志信息
+				log(item,index){
+					this.isShowLog=true
+					var data = {
+						"logistic_delivery_date":this.logistic_delivery_date,
+						"product_id":item.product_id,
+						"guige1_id":item.guige1_id,
+						"wcc_id":item.id
+					}
+					console.log('获取日志参数---',data)
+					var _this=this
+					getData('product/logData', data, function (res) {
+						console.log('获取日志结果---',res)
+						if(res.status == 200){
+							_this.logData = res.result
+						}else{
+							_this.popBox(res.message)
 						}
 					});
 				},

@@ -10,13 +10,14 @@ use think\facade\Queue;
 use app\model\{
     User,
     StaffRoles,
+    RestaurantMenu,
     RestaurantCategory,
     OrderProductPlaning,
     ProducingPlaningSelect,
     OrderProductPlanningDetails,
     ProducingPlaningBehaviorLog,
     ProducingPlaningProgressSummery,
-    RestaurantMenu
+    OrderProductPlanningQuantityLog
 };
 
 class PreProduct extends AuthBase
@@ -794,5 +795,91 @@ class PreProduct extends AuthBase
             Db::rollback();
             return show(config('status.code')['system_error']['code'], $e->getMessage());
         }
+    }
+
+    //获取日志数据
+    public function logData()
+    {
+        $param = $this->request->only(['logistic_delivery_date','product_id','guige1_id','oppd_id']);
+        $param['guige1_id'] = isset($param['guige1_id']) ? ($param['guige1_id']?:0) : 0;
+        $param['oppd_id'] = isset($param['oppd_id']) ? ($param['oppd_id']?:0) : 0;
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        $ProducingPlaningBehaviorLog = new ProducingPlaningBehaviorLog();
+        $res = $ProducingPlaningBehaviorLog->getLogData($businessId,$user_id,$param);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
+    }
+
+    //添加预加工数量日志记录
+    public function addProcessQuantityLog()
+    {
+        $param = $this->request->only(['oppd_id','data']);
+        $param['oppd_id'] = $param['oppd_id'] ?? 0;
+        $data = $param['data'] ?? [];
+        if(empty($param['oppd_id']) || count($data) == 0){
+            return show(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg']);
+        }
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        //1.查询该加工明细单是否存在，并且判断是否加工完毕
+        $oppd_info = OrderProductPlanningDetails::getOne(['id' => $param['oppd_id']],'id,is_producing_done,customer_buying_quantity,new_customer_buying_quantity');
+        if(empty($oppd_info)){
+            return show(config('status.code')['order_product_not_exists']['code'],config('status.code')['order_product_not_exists']['msg']);
+        }
+        if($oppd_info['is_producing_done'] != 1){
+            return show(config('status.code')['preproduct_order_done_error']['code'],config('status.code')['preproduct_order_done_error']['msg']);
+        }
+        //2.判断输入的用户数据集是否合法
+        $sum_quantity = array_sum(array_column($data,'num'));
+        $oppd_info['new_customer_buying_quantity'] = $oppd_info['new_customer_buying_quantity']>0?:$oppd_info['customer_buying_quantity'];
+        if($sum_quantity != $oppd_info['new_customer_buying_quantity']){
+            return show(config('status.code')['distribute_quantity_error']['code'],config('status.code')['distribute_quantity_error']['msg']);
+        }
+        //3.查询用户数据是否正确
+        $user = new User();
+        $all_operator = $user->getUsers($businessId,0);
+        $user_id_arr = array_column($all_operator,'user_id');
+        $data_log = [];
+        $time = time();
+        //4.查询加工数量日志是否已存在
+        $oppql_info = OrderProductPlanningQuantityLog::getOne(['order_product_planning_details_id'=>$param['oppd_id']]);
+        if($oppql_info){
+            OrderProductPlanningQuantityLog::deleteAll(['order_product_planning_details_id'=>$param['oppd_id']]);
+        }
+        foreach ($data as $k=>$v){
+            if(!in_array($v['user_id'],$user_id_arr)){
+                return show(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg']);
+            }
+            $data_log[$k] = [
+                'order_product_planning_details_id' => $param['oppd_id'],
+                'userId' => $v['user_id'],
+                'quantity' => $v['num'],
+                'createUserId' => $user_id,
+                'createTime' => $time
+            ];
+        }
+        OrderProductPlanningQuantityLog::insertAll($data_log);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+    }
+
+    //获取加工数量日志
+    public function processQuantityLog()
+    {
+        $param = $this->request->only(['oppd_id']);
+        $param['oppd_id'] = $param['oppd_id'] ?? 0;
+        if(empty($param['oppd_id'])){
+            return show(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg']);
+        }
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        $user = new User();
+        $res = $user->getUserQuantityLog($businessId,$param['oppd_id']);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 }

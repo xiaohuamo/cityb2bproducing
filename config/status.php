@@ -137,6 +137,14 @@ return [
         'preproduct_delete_error' => [
             'code' => 130,//预加工产品不可删除
             'msg' => 'Cannot be deleted'
+        ],
+        'preproduct_order_done_error' => [
+            'code' => 131,//预加工单尚未加工完毕，不可填写分配加工数量
+            'msg' => 'Please complete the order first'
+        ],
+        'distribute_quantity_error' => [
+            'code' => 132,//分配加工数量不正确
+            'msg' => 'Incorrect quantity to be processed'
         ]
     ]
 ];
