@@ -20,14 +20,14 @@
 				<span>City b2b</span>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(0)">
-				<span class="blink">{{productType[currentProductTypeIndex]}}</span>
+				<span class="colFD6921">{{productType[currentProductTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox w200" v-show="whichPopShow==0">
 					<div class="mb10 F20" v-for="(item ,index) in productType" :class="currentProductTypeIndex==index?'colFD6921':''" @click.stop="choseProductType(item,index)">{{item}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(5)" v-if="isManager==1">
-				<span class="blink">{{manageActionType[currentManageActionTypeIndex]}}</span>
+				<span class="colFD6921">{{manageActionType[currentManageActionTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox" v-show="whichPopShow==5">
 					<div class="mb10 F20" v-for="(item,index) in manageActionType" :class="currentManageActionTypeIndex==index?'colFD6921':''" @click.stop="choseActionType(item,index)">
@@ -36,7 +36,7 @@
 				</div>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
-				<span class="blink">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
+				<span class="colFD6921">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
 					<div class="mb10 F20" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
@@ -181,7 +181,7 @@
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
 											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-',$event)" v-else/>
-											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
+											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
 											<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+',$event)"/>
 										</div>
 									</div>
@@ -314,7 +314,7 @@
 				<div class="chaClose" @click="closeQuantity">×</div>
 				<div class="mb10">Processing quantity</div>
 				<div class="flexbox2">
-					<input class="inputW2 F20 J_add_quantity" type="number" v-model="quantity" @focus="focusEvent($event)" @keyup="handleInput2"/>
+					<input class="inputW2 F20 J_add_quantity" type="text" v-model="quantity" @focus="focusEvent($event)" @keyup="handleInput2"/>
 				</div>
 				<div class="maT10">
 					<button type="submit" class="btn-primary ml160" @click="saveQuantity(1)">Save</button>
@@ -326,21 +326,25 @@
 			<div class="logContent F18">
 				<div class="chaClose" @click="closeLog">×</div>
 				<table>
-					<tr>
-						<th class="thead">Operation time</th>
-						<th class="thead">Username</th>
-						<th class="thead">Number</th>
-						<th class="thead">Quantity</th>
-						<th class="thead">Operate</th>
-					</tr>
-					<tr v-for="item in logData">
-						<td class="thead">{{item.created_at}}</td>
-						<td class="thead">{{item.name}}</td>
-						<td class="thead">{{item.userId}}</td>
-						<td class="thead" v-if="item.behavior_type==5||item.behavior_type==6||item.behavior_type==7">{{item.new_customer_buying_quantity}}</td>
-						<td class="thead" v-else>--</td>
-						<td class="thead">{{item.behavior_type_desc}}</td>
-					</tr>
+					<thead>
+						<tr>
+							<th style="width: 180px;">Operation time</th>
+							<th style="width: 100px;">Username</th>
+							<th style="width: 80px;">Number</th>
+							<th style="width: 80px;">Quantity</th>
+							<th style="width: 300px;">Operate</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="item in logData">
+							<td style="width: 180px;">{{item.created_at}}</td>
+							<td style="width: 100px;">{{item.name}}</td>
+							<td style="width: 80px;">{{item.userId}}</td>
+							<td style="width: 80px;" v-if="item.behavior_type==5||item.behavior_type==6||item.behavior_type==7">{{item.new_customer_buying_quantity}}</td>
+							<td style="width: 80px;" v-else>--</td>
+							<td style="width: 300px;">{{item.behavior_type_desc}}</td>
+						</tr>
+					</tbody>
 				</table>
 			</div>
 		</div>
@@ -348,9 +352,9 @@
 		<div class="mask" v-show="isShowOperateQuantityLog">
 			<div class="operateLogBox">
 				<div class="chaClose" @click="closeLog">×</div>
-				<div class="mb15 F20" v-for="item in operateQuantityLog">
-					<span class="boxl">{{item.name}}</span>
-					<input type="number" class="inputW3 F20" v-model="item.quantity" @focus="focusEvent($event)" @keyup="handleInput2($event,'operatelog')">
+				<div class="mb15 F20 J_operatelog_item" v-for="item in operateQuantityLog">
+					<span class="boxl">{{item.user_name}}</span>
+					<input type="text" class="inputW3 F20" v-model="item.quantity" @focus="focusEvent($event,'operatelog')" @keyup="handleInput2($event,'operatelog')">
 				</div>
 				<div class="maT40 F20">
 					<span class="sumBox">Total {{total}}</span>
@@ -464,6 +468,7 @@
 				logData:[],//日志数据
 				isShowOperateQuantityLog:false,//是否显示加工数量记录表
 				operateQuantityLog:[],//加工数量记录
+				oqlActionType:1,//加工数量记录动作 1新增 2修改
 				total:0,//总加工数量
 				operateQuantityLogIndex:0,//获取当前显示加工日志的索引值
 			},
@@ -1080,8 +1085,31 @@
 					getData('product/processQuantityLog', data, function (res) {
 						_this.isLoading=false
 						console.log('加工数量日志结果----', res)
-						_this.operateQuantityLog = res.result
-						_this.quantitySum()
+						_this.operateQuantityLog = res.result.data
+						_this.oqlActionType = res.result.action_type
+						//默认选中当前用户的操作数量，如果没有值，则给默认用户赋值
+						var index = -1
+						for(var i in _this.operateQuantityLog){
+							if(_this.operateQuantityLog[i].is_current_user == 1){
+								index = i
+								break;
+							}
+						}
+						_this.$nextTick(()=> {
+							//如果当前登录用户存在，则默认选中并赋值
+							if(index >= 0){
+								$('.J_operatelog_item').eq(index).find('input').select()
+								var sum = _this.quantitySum()
+								if(_this.total > sum){
+									var main = _this.numSub(_this.total,sum)
+									$('.J_operatelog_item').eq(index).find('input').val(main.toFixed(2))
+									_this.operateQuantityLog[index].quantity = main;
+									_this.quantitySum()
+								}
+							}else{
+								_this.quantitySum()
+							}
+						})
 					})
 				},
 				//获取所有输入的值,并将加工记录存入数据库
@@ -1403,19 +1431,19 @@
 				},
 				//修改打印标签
 				printLable(item,index,addType,e){
-					if(item.is_lock!=1){
+					if(item.is_producing_done == 0 && item.is_lock!=1){
 						this.popBox('Please lock the product')
 						return
 					}
-					if(item.lock_type!=1){
+					if(item.is_producing_done == 0 && item.lock_type!=1){
 						this.popBox('Product has been locked by someone else')
 						return
 					}
 					//如果该订单已加工完成，则没有权限操作
-					if(item.is_producing_done==1){
-						this.popBox('Inoperable completed')
-						return
-					}
+					// if(item.is_producing_done==1){
+					// 	this.popBox('Inoperable completed')
+					// 	return
+					// }
 					e.currentTarget.parentElement.children.item(1).focus()
 					if(addType == '+'){
 						this.handleListSort[index].num1++
@@ -1427,19 +1455,19 @@
 				},
 				//打印
 				print(item,index){
-					if(item.is_lock!=1){
+					if(item.is_producing_done == 0 && item.is_lock!=1){
 						this.popBox('Please lock the product')
 						return
 					}
-					if(item.lock_type!=1){
+					if(item.is_producing_done == 0 && item.lock_type!=1){
 						this.popBox('Product has been locked by someone else')
 						return
 					}
 					//如果该订单已加工完成，则没有权限操作
-					if(item.is_producing_done==1){
-						this.popBox('Inoperable completed')
-						return
-					}
+					// if(item.is_producing_done==1){
+					// 	this.popBox('Inoperable completed')
+					// 	return
+					// }
 					//跳转到打印标签页,item-订单信息 item.num1-打印数量
 					if(this.menudata2Sort[this.menudata2SortIndex]['is_has_two_cate'] == 1){
 						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],this.menudataTwoCate[this.menudataTwoCateIndex],this.businessName,this.userName)
@@ -2089,8 +2117,18 @@
 					}
 				},
 				//聚焦时，默认全部选中文本框
-				focusEvent: function (e) {
+				focusEvent: function (e,source='') {
 					e.currentTarget.select();
+					if(source == 'operatelog'){
+						//当获取焦点时，计算还剩余的加工的数量
+						var sum = this.quantitySum()
+						if(this.total > sum){
+							var main = this.numSub(this.total,sum)
+							$(e.target).val(main.toFixed(2))
+							this.operateQuantityLog[$(e.target).parent().index()-1].quantity = main;
+							this.quantitySum()
+						}
+					}
 				},
 				handleInput2(e,source='') {
 					// 通过正则过滤小数点后两位
@@ -2116,7 +2154,7 @@
 						sum = this.numAdd(sum,res)
 					}
 					$('.J_fillInSum').text(sum)
-					if(sum == this.total){
+					if(this.numSub(sum,this.total) == 0){
 						$('.J_fillInSum').removeClass('colred').addClass('colgreen')
 						$('.J_quantity_submit').removeClass('btn-primary-disable').addClass('btn-primary')
 						$('.J_quantity_submit').removeAttr("disabled")
@@ -2125,6 +2163,7 @@
 						$('.J_quantity_submit').removeClass('btn-primary').addClass('btn-primary-disable')
 						$('.J_quantity_submit').attr('disabled',"true");
 					}
+					return sum
 				},
 				handleInput(e) {
 					e.target.value=e.target.value.replace(/[^\d]/g,'');

@@ -386,6 +386,8 @@ class PreProduct extends AuthBase
                 Db::commit();
                 $ProducingBehaviorLog = new ProducingPlaningBehaviorLog();
                 $log_data = [
+                    "product_id" => $wcc_info['product_id'],
+                    "guige1_id" => $wcc_info['guige1_id'],
                     "order_product_planning_details_id" => $param['id']
                 ];
                 $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,3,$wcc_info['logistic_delivery_date'],$log_data);
@@ -443,6 +445,8 @@ class PreProduct extends AuthBase
                 ];
                 $ProducingBehaviorLog = new ProducingPlaningBehaviorLog();
                 $log_data = [
+                    "product_id" => $wcc_info['product_id'],
+                    "guige1_id" => $wcc_info['guige1_id'],
                     "order_product_planning_details_id" => $param['id']
                 ];
                 $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,4,$wcc_info['logistic_delivery_date'],$log_data);
@@ -482,6 +486,8 @@ class PreProduct extends AuthBase
             if ($res) {
                 $ProducingBehaviorLog = new ProducingPlaningBehaviorLog();
                 $log_data = [
+                    "product_id" => $wcc_info['product_id'],
+                    "guige1_id" => $wcc_info['guige1_id'],
                     "order_product_planning_details_id" => $param['id'],
                     "new_customer_buying_quantity" => $param['new_customer_buying_quantity']
                 ];
@@ -879,7 +885,7 @@ class PreProduct extends AuthBase
         $user_id = $this->getMemberUserId();
 
         $user = new User();
-        $res = $user->getUserQuantityLog($businessId,$param['oppd_id']);
+        $res = $user->getUserQuantityLog($businessId,$param['oppd_id'],$user_id);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 }

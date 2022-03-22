@@ -571,6 +571,8 @@ class Index extends AuthBase
                 Db::commit();
                 $ProducingBehaviorLog = new ProducingBehaviorLog();
                 $log_data = [
+                    "product_id" => $wcc_info['product_id'],
+                    "guige1_id" => $wcc_info['guige1_id'],
                     "wj_customer_coupon_id" => $param['id']
                 ];
                 $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,3,$wcc_info['logistic_delivery_date'],$log_data);
@@ -628,6 +630,8 @@ class Index extends AuthBase
                 ];
                 $ProducingBehaviorLog = new ProducingBehaviorLog();
                 $log_data = [
+                    "product_id" => $wcc_info['product_id'],
+                    "guige1_id" => $wcc_info['guige1_id'],
                     "wj_customer_coupon_id" => $param['id']
                 ];
                 $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,4,$wcc_info['logistic_delivery_date'],$log_data);
@@ -667,6 +671,8 @@ class Index extends AuthBase
             if ($res) {
                 $ProducingBehaviorLog = new ProducingBehaviorLog();
                 $log_data = [
+                    "product_id" => $wcc_info['product_id'],
+                    "guige1_id" => $wcc_info['guige1_id'],
                     "wj_customer_coupon_id" => $param['id'],
                     "new_customer_buying_quantity" => $param['new_customer_buying_quantity']
                 ];

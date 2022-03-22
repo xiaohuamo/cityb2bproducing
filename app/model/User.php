@@ -44,7 +44,7 @@ class User extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getUserQuantityLog($businessId,$oppd_id){
+    public function getUserQuantityLog($businessId,$oppd_id,$user_id){
         $map = "u.role=3 and u.id=$businessId or (u.role=20 and u.user_belong_to_user=$businessId and (sr.roles like '%,0,%' or sr.roles like '%,1,%' or sr.roles like '%,9,%' or sr.roles like '%,11,%'))";
         $data = Db::name('user')
             ->alias('u')
@@ -55,7 +55,10 @@ class User extends Model
             ->select()->toArray();
         foreach ($data as &$v) {
             $v['user_name'] = $v['nickname'] ?: $v['name'];
+            $v['is_current_user'] = $v['user_id']==$user_id ? 1 : 2;//当前用户是否是登录用户
         }
-        return $data;
+        $log = OrderProductPlanningQuantityLog::is_exist(['order_product_planning_details_id'=>$oppd_id]);
+        $action_type = empty($log) ? 1 : 2;//操作类型，如果日志不存在则为新增，存在则修改
+        return ['data' => $data,'action_type' => $action_type];
     }
 }

@@ -129,7 +129,7 @@ class OrderProductPlaning extends Model
             ->leftJoin('restaurant_menu rm','rm.id = oppd.restaurant_menu_id')
             ->leftJoin('order_product_planing opp','oppd.order_id = opp.orderId')
             ->leftJoin('user_factory uf','uf.user_id = opp.userId')
-            ->leftJoin('producing_planing_progress_summery pps',"pps.delivery_date = opp.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=oppd.restaurant_menu_id and pps.guige1_id=oppd.guige1_id")
+            ->leftJoin('producing_planing_progress_summery pps',"pps.delivery_date = opp.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=oppd.restaurant_menu_id and pps.guige1_id=oppd.guige1_id and pps.isdeleted=0")
             ->where($where)
             ->order($order_by)
             ->select()->toArray();

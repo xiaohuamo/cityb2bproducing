@@ -18,14 +18,14 @@
 				<span>City b2b</span>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(0)">
-				{{productType[currentProductTypeIndex]}}
+				<span class="colFD6921">{{productType[currentProductTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox w200" v-show="whichPopShow==0">
 					<div class="mb10 F20" v-for="(item ,index) in productType" :class="currentProductTypeIndex==index?'colFD6921':''" @click.stop="choseProductType(item,index)">{{item}}</div>
 				</div>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
-				<span class="blink">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
+				<span class="colFD6921">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
 					<div class="mb10 F20" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
@@ -292,21 +292,25 @@
 			<div class="logContent F18">
 				<div class="chaClose" @click="closeLog">×</div>
 				<table>
+					<thead>
 					<tr>
-						<th class="thead">Operation time</th>
-						<th class="thead">Username</th>
-						<th class="thead">Number</th>
-						<th class="thead">Quantity</th>
-						<th class="thead">Operate</th>
+						<th style="width: 180px;">Operation time</th>
+						<th style="width: 100px;">Username</th>
+						<th style="width: 80px;">Number</th>
+						<th style="width: 80px;">Quantity</th>
+						<th style="width: 300px;">Operate</th>
 					</tr>
+					</thead>
+					<tbody>
 					<tr v-for="item in logData">
-						<td class="thead">{{item.created_at}}</td>
-						<td class="thead">{{item.name}}</td>
-						<td class="thead">{{item.userId}}</td>
-						<td class="thead" v-if="item.behavior_type==5||item.behavior_type==6||item.behavior_type==7">{{item.new_customer_buying_quantity}}</td>
-						<td class="thead" v-else>--</td>
-						<td class="thead">{{item.behavior_type_desc}}</td>
+						<td style="width: 180px;">{{item.created_at}}</td>
+						<td style="width: 100px;">{{item.name}}</td>
+						<td style="width: 80px;">{{item.userId}}</td>
+						<td style="width: 80px;" v-if="item.behavior_type==5||item.behavior_type==6||item.behavior_type==7">{{item.new_customer_buying_quantity}}</td>
+						<td style="width: 80px;" v-else>--</td>
+						<td style="width: 300px;">{{item.behavior_type_desc}}</td>
 					</tr>
+					</tbody>
 				</table>
 			</div>
 		</div>
@@ -1159,19 +1163,19 @@
 				},
 				//修改打印标签
 				printLable(item,index,addType,e){
-					if(item.is_lock!=1){
+					if(item.is_producing_done == 0 && item.is_lock!=1){
 						this.popBox('Please lock the product')
 						return
 					}
-					if(item.lock_type!=1){
+					if(item.is_producing_done == 0 && item.lock_type!=1){
 						this.popBox('Product has been locked by someone else')
 						return
 					}
 					//如果该订单已加工完成，则没有权限操作
-					if(item.is_producing_done==1){
-						this.popBox('Inoperable completed')
-						return
-					}
+					// if(item.is_producing_done==1){
+					// 	this.popBox('Inoperable completed')
+					// 	return
+					// }
 					e.currentTarget.parentElement.children.item(1).focus()
 					if(addType == '+'){
 						this.handleListSort[index].num1++
@@ -1183,19 +1187,19 @@
 				},
 				//打印
 				print(item,index){
-					if(item.is_lock!=1){
+					if(item.is_producing_done == 0 && item.is_lock!=1){
 						this.popBox('Please lock the product')
 						return
 					}
-					if(item.lock_type!=1){
+					if(item.is_producing_done == 0 && item.lock_type!=1){
 						this.popBox('Product has been locked by someone else')
 						return
 					}
 					//如果该订单已加工完成，则没有权限操作
-					if(item.is_producing_done==1){
-						this.popBox('Inoperable completed')
-						return
-					}
+					// if(item.is_producing_done==1){
+					// 	this.popBox('Inoperable completed')
+					// 	return
+					// }
 					//跳转到打印标签页,item-订单信息 item.num1-打印数量
 					if(this.menudata2Sort[this.menudata2SortIndex]['is_has_two_cate'] == 1){
 						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],this.menudataTwoCate[this.menudataTwoCateIndex],this.businessName,this.userName)

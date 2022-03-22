@@ -24,13 +24,16 @@ class ProducingProgressSummery extends Model
         if (!empty($data['pps_id'])) {
             //1.判断数据是否有变动
             if($data['pps_sum_quantities'] != $data['sum_quantities']){
-                if($data['isDone']==1 && $data['sum_quantities'] < $data['sum_quantities']){
-                    $data['isDone'] = 0;
+                $update_data['sum_quantities'] = $data['sum_quantities'];
+                if($data['isDone']==1 && $data['pps_sum_quantities'] < $data['sum_quantities']){
+                    $update_data['isDone'] = 0;
                 }
-                $res = self::getUpdate(['id' => $data['pps_id']], $data);
+                $res = self::getUpdate(['id' => $data['pps_id']], $update_data);
             }
         } else {
-            $data['isDone'] = 0;
+            $data = [
+                'isDone' => 0
+            ];
             $res = self::createData($data);
         }
         return $res;
