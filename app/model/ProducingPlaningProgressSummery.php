@@ -34,40 +34,41 @@ class ProducingPlaningProgressSummery extends Model
         if ($info) {
             //1.判断数据是否有变动
             if($info['sum_quantities'] != $data['sum_quantities']){
+                $update_data['sum_quantities'] = $data['sum_quantities'];
                 if($info['isDone']==1 && $info['sum_quantities'] < $data['sum_quantities']){
-                    $data['isDone'] = 0;
+                    $update_data['isDone'] = 0;
                 }
                 if($data['sum_quantities'] == 0){
-                    $data['isdeleted'] = 1;
+                    $update_data['isdeleted'] = 1;
                 }
-                $res = self::getUpdate(['id' => $info['id']], $data);
+                $res = self::getUpdate(['id' => $info['id']], $update_data);
                 //查询该产品是否需要下架
-                $is_has_data = self::is_exist([
-                    ['business_userId', '=', $data['business_userId']],
-                    ['delivery_date', '=', $data['delivery_date']],
-                    ['product_id', '=', $data['product_id']],
-                    ['isdeleted','=',0]
-                ]);
-                if(empty($is_has_data)){
-                    //查询该产品是否还有二级类目
-                    $map = [
-                        ['rm.id', '=', $data['product_id']],
-                        ['rm.proucing_item','=',1],
-                    ];
-                    $two_cate_count = Db::name('restaurant_menu')
-                        ->alias('rm')
-                        ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
-                        ->where($map)
-                        ->where('length( rmo.menu_cn_name )> 0 OR length( rmo.menu_en_name )> 0')
-                        ->count();
-                    if($two_cate_count == 0 || $two_cate_count == 1){
-                        ProducingPlaningSelect::deleteAll([
-                            ['business_userId', '=', $data['business_userId']],
-                            ['delivery_date', '=', $data['delivery_date']],
-                            ['product_id', '=', $data['product_id']],
-                        ]);
-                    }
-                }
+//                $is_has_data = self::is_exist([
+//                    ['business_userId', '=', $data['business_userId']],
+//                    ['delivery_date', '=', $data['delivery_date']],
+//                    ['product_id', '=', $data['product_id']],
+//                    ['isdeleted','=',0]
+//                ]);
+//                if(empty($is_has_data)){
+//                    //查询该产品是否还有二级类目
+//                    $map = [
+//                        ['rm.id', '=', $data['product_id']],
+//                        ['rm.proucing_item','=',1],
+//                    ];
+//                    $two_cate_count = Db::name('restaurant_menu')
+//                        ->alias('rm')
+//                        ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
+//                        ->where($map)
+//                        ->where('length( rmo.menu_cn_name )> 0 OR length( rmo.menu_en_name )> 0')
+//                        ->count();
+//                    if($two_cate_count == 0 || $two_cate_count == 1){
+//                        ProducingPlaningSelect::deleteAll([
+//                            ['business_userId', '=', $data['business_userId']],
+//                            ['delivery_date', '=', $data['delivery_date']],
+//                            ['product_id', '=', $data['product_id']],
+//                        ]);
+//                    }
+//                }
             }
         } else {
             $res = self::createData($data);
@@ -93,7 +94,7 @@ class ProducingPlaningProgressSummery extends Model
     {
         //如果是管理者，则需要获取全部的包括待分配的产品
         $StaffRoles = new StaffRoles();
-        $is_permission = $StaffRoles->getProductPlaningPermission($userId);
+        $is_permission = 1;//$StaffRoles->getProductPlaningPermission($userId);
         $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$operator_user_id,'',$is_permission,$userId);
         $map = [];
         if($category_id){
@@ -128,7 +129,7 @@ class ProducingPlaningProgressSummery extends Model
                 ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
                 ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
                 ->where($where)
-                ->where(['rm.proucing_item'=>1,'pps.isdeleted'=>0])
+                ->where(['rm.proucing_item'=>1])
                 ->where($map)
                 ->group('product_id')
                 ->order($order_by)
@@ -165,6 +166,23 @@ class ProducingPlaningProgressSummery extends Model
             //获取该产品是否设置置顶
             $top_info = Db::name('restaurant_menu_top')->where(['userId'=>$userId,'business_userId'=>$businessId,'product_id'=>$v['product_id']])->find();
             $v['is_set_top'] = $top_info ? 1 : 0;//是否设置置顶 1设置 0未设置
+            //如果查询的是current Plan的结果，获取该产品当前的所有操作员
+            $v['operator_user'] = [];
+            if($source == 2){
+                $ou_where = [
+                    ['ppps.product_id', '=', $v['product_id']],
+                    ['ppps.operator_user_id', '>', 0],
+                ];
+                $v['operator_user'] = Db::name('producing_planing_progress_summery')
+                    ->alias('ppps')
+                    ->field('operator_user_id,u.name,u.nickname,u.displayName')
+                    ->leftJoin('user u','u.id = ppps.operator_user_id')
+                    ->where($ou_where)
+                    ->select()->toArray();
+                foreach ($v['operator_user'] as &$vv){
+                    $vv['user_name'] = $vv['nickname'] ?: $vv['name'];
+                }
+            }
         }
         return $goods_one_cate;
     }
@@ -188,7 +206,7 @@ class ProducingPlaningProgressSummery extends Model
                 ->alias('rm')
                 ->field('rm.id product_id,rmo.id guige1_id,IF(ppps.sum_quantities>=0,ppps.sum_quantities,0) sum_quantities,IF(ppps.finish_quantities>=0,ppps.finish_quantities,0) finish_quantities,IFNULL(ppps.isDone,-1) isDone,IFNULL(ppps.operator_user_id,-1) operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
                 ->leftJoin('restaurant_menu_option rmo','rm.menu_option = rmo.restaurant_category_id')
-                ->leftJoin('producing_planing_progress_summery ppps',"ppps.delivery_date=$logistic_delivery_date and ppps.business_userId=$businessId and ppps.product_id = rm.id and ppps.guige1_id = rmo.id")
+                ->leftJoin('producing_planing_progress_summery ppps',"ppps.delivery_date=$logistic_delivery_date and ppps.business_userId=$businessId and ppps.product_id = rm.id and ppps.guige1_id = rmo.id and ppps.isdeleted=0")
                 ->where([
                     ['rm.id','=',$product_id],
                     ['rm.proucing_item','=',1],
@@ -241,6 +259,7 @@ class ProducingPlaningProgressSummery extends Model
                 $where .= " and ppps.operator_user_id=$operator_user_id";
             }
         }else{
+            $where .= " and pps.isdeleted=0";
             //锁定产品即为锁定加工单，只针对管理员有作用
             if($operator_user_id && $is_permission==1){
                 $where .= " and pps.operator_user_id=$operator_user_id";

@@ -47,13 +47,13 @@ class ProducingProgressSummery extends Model
      * @param string $logistic_truck_No 配送司机id
      * @param int $goods_sort 产品排序
      * @param string $category_id 分类id
-     * @param int $type
+     * @param int $sorce 调用接口来源 1-inidata 2-current Stock
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0,$category_id='')
+    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0,$category_id='',$source=1)
     {
         $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
         $map = [];
@@ -96,6 +96,23 @@ class ProducingProgressSummery extends Model
             //获取该产品是否设置置顶
             $top_info = Db::name('restaurant_menu_top')->where(['userId'=>$userId,'business_userId'=>$businessId,'product_id'=>$v['product_id']])->find();
             $v['is_set_top'] = $top_info ? 1 : 0;//是否设置置顶 1设置 0未设置
+            //如果查询的是current Plan的结果，获取该产品当前的所有操作员
+            $v['operator_user'] = [];
+            if($source == 2){
+                $ou_where = [
+                    ['pps.product_id', '=', $v['product_id']],
+                    ['pps.operator_user_id', '>', 0],
+                ];
+                $v['operator_user'] = Db::name('producing_progress_summery')
+                    ->alias('pps')
+                    ->field('operator_user_id,u.name,u.nickname,u.displayName')
+                    ->leftJoin('user u','u.id = pps.operator_user_id')
+                    ->where($ou_where)
+                    ->select()->toArray();
+                foreach ($v['operator_user'] as &$vv){
+                    $vv['user_name'] = $vv['nickname'] ?: $vv['name'];
+                }
+            }
         }
         return $goods_one_cate;
     }

@@ -18,7 +18,7 @@ class Order extends Model
     /**
      * 获取cc_order可以配送的日期
      */
-    public function getDeliveryDate($businessId)
+    public function getDeliveryDate($businessId,$logistic_delivery_date='')
     {
         $date_arr = Db::name('producing_progress_summery')->where([
             ['business_userId', '=', $businessId],
@@ -27,44 +27,54 @@ class Order extends Model
         ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
+        $default = [];//默认显示日期数据
+        $default_k = 0;//默认显示日期索引值
         foreach($date_arr as $k=>$v) {
             $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'], $today_time);
-        }
-        $today_before_k = $today_k = $today_after_k = '';
-        foreach($date_arr as $k=>$v){
-            $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'],$today_time);
-            if($v['logistic_delivery_date']-$today_time <= 0){
-                $today_before_k = $k;
-            }
-            if($v['logistic_delivery_date']-$today_time == 0){
-                $today_k = $k;
-            }
-            if($v['logistic_delivery_date']-$today_time > 0){
-                $today_after_k = $k;
-                break;
+            if($v['logistic_delivery_date'] == $logistic_delivery_date){
+                $date_arr[$k]['is_default'] = 1;
+                $default = $date_arr[$k];
+                $default_k = $k;
             }
         }
-        if($today_k!==''){
-            $date_arr[$today_k]['is_default'] = 1;
-            $default = $date_arr[$today_k];
-            $default_k = $today_k;
+        //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
+        if($default){
+            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+        }else{
+            $today_before_k = $today_k = $today_after_k = '';
+            foreach($date_arr as $k=>$v){
+                $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'],$today_time);
+                if($v['logistic_delivery_date']-$today_time <= 0){
+                    $today_before_k = $k;
+                }
+                if($v['logistic_delivery_date']-$today_time == 0){
+                    $today_k = $k;
+                }
+                if($v['logistic_delivery_date']-$today_time > 0){
+                    $today_after_k = $k;
+                    break;
+                }
+            }
+            if($today_k!==''){
+                $date_arr[$today_k]['is_default'] = 1;
+                $default = $date_arr[$today_k];
+                $default_k = $today_k;
+                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+            }
+            if($today_after_k!=='') {
+                $date_arr[$today_after_k]['is_default'] = 1;
+                $default = $date_arr[$today_after_k];
+                $default_k = $today_after_k;
+                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+            }
+            if($today_before_k!=='') {
+                $date_arr[$today_before_k]['is_default'] = 1;
+                $default = $date_arr[$today_before_k];
+                $default_k = $today_before_k;
+                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+            }
             return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
         }
-        if($today_after_k!=='') {
-            $date_arr[$today_after_k]['is_default'] = 1;
-            $default = $date_arr[$today_after_k];
-            $default_k = $today_after_k;
-            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
-        }
-        if($today_before_k!=='') {
-            $date_arr[$today_before_k]['is_default'] = 1;
-            $default = $date_arr[$today_before_k];
-            $default_k = $today_before_k;
-            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
-        }
-        $default = [];
-        $default_k = 0;
-        return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
     }
 
     /**

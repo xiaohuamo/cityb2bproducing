@@ -28,7 +28,8 @@ class OrderProductPlaning extends Model
             $op_where = [
                 ['business_userId', '=', $businessId],
                 ['delivery_date', '=', $logistic_delivery_date],
-                ['operator_user_id', '=', $opeator_user_id]
+                ['operator_user_id', '=', $opeator_user_id],
+                ['isdeleted', '=', 0]
             ];
             $order_count = Db::name('producing_planing_progress_summery')->where($op_where)->count();
             $op_where[] = ['isDone','=',1];
@@ -36,8 +37,10 @@ class OrderProductPlaning extends Model
         } else {
             $where = [
                 ['opp.business_userId', '=', $businessId],
+                ['opp.logistic_delivery_date','=',$logistic_delivery_date],
+                ['opp.coupon_status', '=', 'c01'],
                 ['rm.proucing_item', '=', 1],
-                ['opp.logistic_delivery_date','=',$logistic_delivery_date]
+                ['oppd.coupon_status', '=', 'c01']
             ];
             //获取需要加工的订单总数
             $order_count = Db::name('order_product_planning_details')
@@ -74,7 +77,9 @@ class OrderProductPlaning extends Model
     {
         $where = [
             ['opp.business_userId', '=', $businessId],
-            ['rm.proucing_item', '=', 1]
+            ['opp.coupon_status', '=', 'c01'],
+            ['rm.proucing_item', '=', 1],
+            ['oppd.coupon_status', '=', 'c01']
         ];
         if ($logistic_delivery_date) {
             $where[] = ['opp.logistic_delivery_date', '=', $logistic_delivery_date];

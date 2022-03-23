@@ -18,14 +18,14 @@
 				<span>City b2b</span>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(0)">
-				<span class="colFD6921">{{productType[currentProductTypeIndex]}}</span>
+				<span>{{productType[currentProductTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox w200" v-show="whichPopShow==0">
 					<div class="mb10 F20" v-for="(item ,index) in productType" :class="currentProductTypeIndex==index?'colFD6921':''" @click.stop="choseProductType(item,index)">{{item}}</div>
 				</div>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
-				<span class="colFD6921">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
+				<span class="blink">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
 					<div class="mb10 F20" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
@@ -239,6 +239,9 @@
 											<div>{{item1.menu_en_name}}</div>
 											<div>{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</div>
 											<div>{{item1.menu_id}}</div>
+											<div class="userBox">
+												<span class="F14" v-for="item2 in item1.operator_user">{{item2.user_name}}</span>
+											</div>
 											<img v-if="item1.is_has_two_cate==2&&item1.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
 										</div>
 									</div>
@@ -432,14 +435,18 @@
 				});
 				//获取加工日期
 				_this.isLoading=true
-				getData('product/deliveryDate', '', function (res) {
-					console.log(res);
+				var data = {
+					'logistic_delivery_date':localStorage.logistic_delivery_date
+				}
+				getData('product/deliveryDate', data, function (res) {
+					// console.log(res);
 					_this.list = res.result.list
 					_this.choseDate1 = res.result.default
 					_this.currentDay = res.result.default_k
 					_this.logistic_delivery_date = _this.choseDate1.hasOwnProperty('logistic_delivery_date')?_this.choseDate1.logistic_delivery_date:''
 					//获取初始化数据
 					if(_this.logistic_delivery_date){
+						localStorage.logistic_delivery_date = _this.logistic_delivery_date
 						_this.inidata()
 					}
 					_this.isLoading=false
@@ -472,7 +479,7 @@
 							_this.menudata2Sort=_this.sortAccordingOtherData(res.goods,_this.menudata2Sort,'product_id')
 							console.log('刷新后产品数据-----',_this.menudata2Sort);
 						}else{
-							_this.menudata2=_this.menudata2Sort=_this.menudataTwoCate=[]
+							_this.menudata2=_this.menudata2Sort=_this.menudataTwoCate=_this.handleList=_this.handleListSort=[]
 							_this.menudataTwoCateIndex = 0
 							_this.menudata2 = res.goods
 							_this.menudata2Sort = res.goods
@@ -789,7 +796,7 @@
 						console.log("刷新",new Date());
 						this.currentTime = new Date().getTime();
 						//更新数据
-						if(this.logistic_delivery_date) {
+						if(this.logistic_delivery_date && this.currentPage == 1) {
 							this.inidata('refresh')
 						}
 						//判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
@@ -1236,6 +1243,8 @@
 					this.currentDay=index
 					this.whichPopShow=-1
 					this.logistic_delivery_date=item.logistic_delivery_date
+					//存储当前日期
+					localStorage.logistic_delivery_date=this.logistic_delivery_date
 					//重置客户默认信息-start
 					this.choseDate2=this.list2[0].name
 					this.current2=0

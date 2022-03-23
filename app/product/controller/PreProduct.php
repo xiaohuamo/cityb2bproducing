@@ -36,34 +36,51 @@ class PreProduct extends AuthBase
     //获取加工日期(前7天+后30天)
     public function deliveryDate()
     {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date']);
+        $logistic_delivery_date = $param['logistic_delivery_date']??'';
+
         $today_time = strtotime(date('Y-m-d',time()));
-        $date_arr = [];
+        $date_arr = [];//存储所有日期
         $default = [];//默认选中今天的数据
         $default_k = 0;
         for ($i=7; $i>=0; $i--) {
             $date_time = strtotime( '-' . $i .' days', $today_time);
             $date = date('Y-m-d' ,$date_time);
-            $data = [
+            $date_arr[] = [
                 'date' => $date,
-                'date_day' => date_day($date_time, $today_time),
-                'is_default' => $i==0?1:2,
-                'logistic_delivery_date' => $date_time,
+                'logistic_delivery_date' => $date_time
             ];
-            $date_arr[] = $data;
-            if($i == 0){
-                $default = $data;
-                $default_k = count($date_arr)-1;
-            }
         }
         for ($i=1; $i<=30; $i++) {
             $date_time = strtotime( '+' . $i .' days', $today_time);
             $date = date('Y-m-d' ,$date_time);
             $date_arr[] = [
                 'date' => $date,
-                'date_day' => date_day($date_time, $today_time),
-                'is_default' => 2,
-                'logistic_delivery_date' => $date_time,
+                'logistic_delivery_date' => $date_time
             ];
+        }
+        $is_has_data = 2;//当前存储的日期是否存在，1-存在 2-不存在
+        $logistic_delivery_date_arr = array_column($date_arr,'logistic_delivery_date');
+        if(in_array($logistic_delivery_date,$logistic_delivery_date_arr)){
+            $is_has_data = 1;
+        }
+        foreach($date_arr as $k=>$v){
+            $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'], $today_time);
+            $date_arr[$k]['is_default'] = 2;
+            if($is_has_data == 1){
+                if($v['logistic_delivery_date'] == $logistic_delivery_date){
+                    $date_arr[$k]['is_default'] = 1;
+                    $default = $date_arr[$k];
+                    $default_k = $k;
+                }
+            }else{
+                if($v['logistic_delivery_date'] == $today_time){
+                    $date_arr[$k]['is_default'] = 1;
+                    $default = $date_arr[$k];
+                    $default_k = $k;
+                }
+            }
         }
         $res = [
             'list' => $date_arr,
@@ -630,16 +647,18 @@ class PreProduct extends AuthBase
         $ProducingPlaningProgressSummery = new ProducingPlaningProgressSummery();
 
         //1.判断当前用户是都有权限添加预加工
-        $isPermission = 1;//$StaffRoles->getProductPlaningPermission($user_id);
+        $isPermission = $StaffRoles->getProductPlaningPermission($user_id);
         if ($isPermission != 1) {
             return show(config('status.code')['product_plan_approved_error']['code'],config('status.code')['product_plan_approved_error']['msg']);
         }
         //2.判断今日订单是否存在
         $oppd_where = [
-            'logistic_delivery_date' => $param['logistic_delivery_date'],
-            'business_userId' => $businessId,
-            'restaurant_menu_id' => $param['product_id'],
-            'guige1_id' => $param['guige1_id'],
+            'opp.logistic_delivery_date' => $param['logistic_delivery_date'],
+            'opp.business_userId' => $businessId,
+            'opp.coupon_status' => 'c01',
+            'oppd.restaurant_menu_id' => $param['product_id'],
+            'oppd.guige1_id' => $param['guige1_id'],
+            'oppd.coupon_status' => 'c01'
         ];
         $info = $OrderProductPlanningDetails->getOrderDetailsInfo($oppd_where);
 
@@ -705,7 +724,8 @@ class PreProduct extends AuthBase
                     ['order_id','=',$order_id],
 //                    ['userId','=',$user_id],
                     ['restaurant_menu_id','=',$param['product_id']],
-                    ['guige1_id','=',$param['guige1_id']]
+                    ['guige1_id','=',$param['guige1_id']],
+                    ['coupon_status', '=', 'c01']
                 ]);
                 if(!empty($oppd_info)){
                     return show(config('status.code')['order_product_exists']['code'],config('status.code')['order_product_exists']['msg']);
@@ -755,16 +775,29 @@ class PreProduct extends AuthBase
                 if(empty($info)){
                     return show(config('status.code')['order_not_exists']['code'],config('status.code')['order_not_exists']['msg']);
                 }
+                $order_id = $info['orderId'];
                 //查询产品信息
                 $goods_info = $RestaurantMenu->getMenuData($param['product_id'],$param['guige1_id']);
                 if(empty($goods_info)){
                     return show(config('status.code')['product_error']['code'],config('status.code')['product_error']['msg']);
                 }
                 if($info['customer_buying_quantity'] != $param['quantity']){
-                    OrderProductPlanningDetails::getUpdate(['id'=>$info['id']],[
+                    $update_data = [
                         'customer_buying_quantity' => $param['quantity'],
                         'new_customer_buying_quantity' => $param['quantity'],
-                    ]);
+                    ];
+                    //如果修改数量为0，则将该加工单取消
+                    if($param['quantity'] == 0){
+                        $update_data['coupon_status'] = 0;
+                    }
+                    OrderProductPlanningDetails::getUpdate(['id'=>$info['id']],$update_data);
+                    //查询该订单是否还有其他商品，若没有，则将该订单取消
+                    if($param['quantity'] == 0){
+                        $oppd_data = OrderProductPlanningDetails::getAll(['order_id'=>$order_id,'coupon_status'=>'c01']);
+                        if(empty($oppd_data)){
+                            OrderProductPlaning::getUpdate(['orderId'=>$order_id],['coupon_status'=>0]);
+                        }
+                    }
                     //同时将该加工明细信息加入加工汇总表中
                     $ppps_data = [
                         'business_userId' => $businessId,
@@ -774,7 +807,7 @@ class PreProduct extends AuthBase
                         'sum_quantities' => $param['quantity'],
                         'proucing_center_id' => 0
                     ];
-                    $ProducingPlaningProgressSummery->addProgressSummary($ppps_data);
+                    $res = $ProducingPlaningProgressSummery->addProgressSummary($ppps_data);
                 }
                 Db::commit();
                 if($param['quantity'] == 0 && $info['customer_buying_quantity']>0){

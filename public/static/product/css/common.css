@@ -209,6 +209,9 @@ a{
 .bg1d95b9{
 	background: #1d95b9;
 }
+.F14{
+	font-size: 14px;
+}
 .F18{
 	font-size: 18px;
 }
@@ -664,12 +667,16 @@ a{
 }
 
 .cateWH {
-	width: 220px;
-	height: 105px;
+	min-width: 220px;
+	height: 135px;
 }
 .actionHeight {
 	height: 50px;
 	line-height: 50px;
+}
+.userBox {
+	text-align: left;
+	padding: 0 5px;
 }
 .cater {
 	/*border: 6px solid #80d7c7;*/

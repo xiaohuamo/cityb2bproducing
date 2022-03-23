@@ -235,9 +235,13 @@ class Index extends AuthBase
     //获取可配送的加工日期
     public function deliveryDate()
     {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date']);
+        $logistic_delivery_date = $param['logistic_delivery_date']??'';
+
         $Order = new Order();
         $businessId = $this->getBusinessId();
-        $res = $Order->getDeliveryDate($businessId);
+        $res = $Order->getDeliveryDate($businessId,$logistic_delivery_date);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 
@@ -698,7 +702,7 @@ class Index extends AuthBase
         //1.获取对应日期加工的商品信息
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
-        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],0,'',2);
         //按顺序获取产品大类
         $cate = $RestaurantCategory->getCategory($businessId);
         $cate_sort_arr = array_column($cate->toArray(),'id');
