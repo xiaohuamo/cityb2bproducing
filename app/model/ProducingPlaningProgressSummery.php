@@ -94,7 +94,7 @@ class ProducingPlaningProgressSummery extends Model
     {
         //如果是管理者，则需要获取全部的包括待分配的产品
         $StaffRoles = new StaffRoles();
-        $is_permission = 1;//$StaffRoles->getProductPlaningPermission($userId);
+        $is_permission = $StaffRoles->getProductPlaningPermission($userId);
         $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$operator_user_id,'',$is_permission,$userId);
         $map = [];
         if($category_id){
