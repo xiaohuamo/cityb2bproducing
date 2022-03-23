@@ -678,6 +678,9 @@ a{
 	text-align: left;
 	padding: 0 5px;
 }
+.userBox>span{
+	margin-right: 5px;
+}
 .cater {
 	/*border: 6px solid #80d7c7;*/
 	width: 116px;
