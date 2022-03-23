@@ -102,12 +102,14 @@ class ProducingProgressSummery extends Model
                 $ou_where = [
                     ['pps.product_id', '=', $v['product_id']],
                     ['pps.operator_user_id', '>', 0],
+                    ['pps.isdeleted', '=', 0]
                 ];
                 $v['operator_user'] = Db::name('producing_progress_summery')
                     ->alias('pps')
                     ->field('operator_user_id,u.name,u.nickname,u.displayName')
                     ->leftJoin('user u','u.id = pps.operator_user_id')
                     ->where($ou_where)
+                    ->group('operator_user_id')
                     ->select()->toArray();
                 foreach ($v['operator_user'] as &$vv){
                     $vv['user_name'] = $vv['nickname'] ?: $vv['name'];
