@@ -100,6 +100,8 @@ class ProducingProgressSummery extends Model
             $v['operator_user'] = [];
             if($source == 2){
                 $ou_where = [
+                    ['pps.business_userId', '=', $businessId],
+                    ['pps.delivery_date', '=', $logistic_delivery_date],
                     ['pps.product_id', '=', $v['product_id']],
                     ['pps.operator_user_id', '>', 0],
                     ['pps.isdeleted', '=', 0]
