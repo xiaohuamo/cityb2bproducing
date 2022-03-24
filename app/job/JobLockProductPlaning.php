@@ -22,14 +22,26 @@ class JobLockProductPlaning
                 $job->delete();
                 return;
             }
+            $pps_info = ProducingPlaningProgressSummery::getOne([
+                'business_userId' => $data['pps_info']['business_userId'],
+                'delivery_date' => $data['pps_info']['delivery_date'],
+                'product_id' => $data['pps_info']['product_id'],
+                'guige1_id' => $data['pps_info']['guige1_id'],
+                'isdeleted' => 0
+            ]);
+            if (!$pps_info) {
+                $redis->set($data['uniqid'],json_encode(show_arr(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg'])));
+                return;
+            }
             //如果该产品已加工完，不可重复点击加工
-            if ($data['pps_info']['isDone'] == 1) {
-                return show(config('status.code')['lock_processed_error']['code'], config('status.code')['lock_processed_error']['msg']);
+            if ($pps_info['isDone'] == 1) {
+                $redis->set($data['uniqid'],json_encode(show_arr(config('status.code')['lock_processed_error']['code'],config('status.code')['lock_processed_error']['msg'])));
+                return;
             }
             //1.查询该商品是否有人在操作
-            if($data['pps_info']['operator_user_id'] > 0){
+            if($pps_info['operator_user_id'] > 0){
                 //如果操作人是一个人，提示请勿重复操作
-                if ($data['pps_info']['operator_user_id'] == $data['user_id']) {
+                if ($pps_info['operator_user_id'] == $data['user_id']) {
                     $redis->set($data['uniqid'],json_encode(show_arr(config('status.code')['lock_own_error']['code'],config('status.code')['lock_own_error']['msg'])));
                     return;
                 } else {

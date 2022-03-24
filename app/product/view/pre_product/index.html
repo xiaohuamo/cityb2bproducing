@@ -455,14 +455,15 @@
 				isShowTypePincode2:false,//显示pincode输入框样式-创建pincode是否显示
 				isShowTypePincode3:false,//显示pincode输入框样式-修改pincode是否显示
 				editText:'setting',//键盘文字显示
-				timeOutEvent:0,//长按定时器，锁定加工产品
-				timeOutLock:0,//获取锁定结果
+				timeOutEvent:null,//弹层提示定时器
+				timeOutLock:null,//获取锁定结果定时器
 				lockData:[],//锁定参数
 				lockReturnData:null,//上锁参数
 				mainOrderHeight:'',
 				clickTimer:null,//定时器
 				isHasCateData:false,//分类页，Back to this category,判断当前加工产品是否有该类产品
 				isManager:2,//是否是管理员 1是 2否
+				userInfo:[],//当前登录用户信息
 				quantity:0,//新的加工数量
 				oldQuantity:0,//旧的加工数量
 				currentInterTime:null,//获取锁定结果的开始时间
@@ -483,6 +484,7 @@
 					console.log('登录信息----',res);
 					_this.isLoading=false
 					//获取登录信息
+					_this.userInfo = res.result.user_info
 					if (res.result.user_name) {
 						_this.userName = res.result.user_name
 						_this.businessName = res.result.business_name
@@ -802,6 +804,7 @@
 					var data = {
 						"uniqid":result.uniqid
 					}
+					// console.log('获取队参数----',data);
 					var _this=this
 					getData('product/prepLockProductResult', data, function (res) {
 						console.log('获取队列结果----',res);
@@ -813,7 +816,7 @@
 								_this.isLoading=false
 								_this.popBox('The server is busy, please try again later')
 							} else {
-								this.timeOutLock = setTimeout(() => {
+								_this.timeOutLock = setTimeout(() => {
 									// console.log('定时获取结果------');
 									_this.lockProductRes(result,item,index)
 								}, 100);
@@ -887,24 +890,47 @@
 						//判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
 						if(this.currentTime - this.lastTime > this.timeOut) {
 							//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
-							var _this = this
-							getData('product/loginOutPincode', '', function (res) {
-								_this.iskeyboardShow = true
-								_this.isClock = true
-								_this.psd=_this.psd2=_this.npsd=_this.npsd2=_this.nrpsd=_this.nrpsd2=''
-								_this.message=''
-								_this.isPsdCorrect=false
-								_this.isQuantityShow=false
-								_this.isShowLog=false
-								_this.isShowOperateQuantityLog=false
-							});
+							this.loginOutPincode()
 						}
 					}, 5000);
 				},
+				//退出登录公共操作方法
+				loginOutPincode(){
+					var _this = this
+					getData('product/loginOutPincode', '', function (res) {
+						_this.iskeyboardShow = true
+						_this.isClock = true
+						_this.psd=_this.psd2=_this.npsd=_this.npsd2=_this.nrpsd=_this.nrpsd2=''
+						_this.message=''
+						_this.isPsdCorrect=false
+						_this.isShowLog=false
+						_this.clearTime()
+						_this.isLoading=false
+					});
+				},
 				// 停止定时器
 				clear() {
-					clearInterval(this.intervalId); //清除计时器
-					this.intervalId = null; //设置为null
+					clearInterval(this.intervalId); //清除定时刷新数据计时器
+					this.intervalId = null //设置为null
+					clearInterval(this.timer);//清除锁屏倒计时计时器
+					this.timer = null
+					clearTimeout(this.timeOutLock);//清除锁定计时器
+					this.timeOutLock = null
+					clearTimeout(this.timeOutEvent);//清除弹窗提示定时器
+					this.timeOutEvent=null
+					clearTimeout(this.clickTimer);//判断点击事件计时器
+					this.clickTimer=null
+				},
+				// 切换用户/上锁时需要清除的定时器
+				clearTime() {
+					clearInterval(this.timer);//清除锁屏倒计时计时器
+					this.timer = null
+					clearTimeout(this.timeOutLock);//清除锁定计时器
+					this.timeOutLock = null
+					clearTimeout(this.timeOutEvent);//清除弹窗提示定时器
+					this.timeOutEvent=null
+					clearTimeout(this.clickTimer);//判断点击事件计时器
+					this.clickTimer=null
 				},
 				//判断用户10分钟内是否有操作，无操作则需要上锁，弹出pincode登录框
 				isDo() {
@@ -1089,6 +1115,7 @@
 					console.log('加工数量日志参数----', data)
 					var _this = this
 					_this.isLoading=true
+					_this.operateQuantityLog=[]
 					getData('product/processQuantityLog', data, function (res) {
 						_this.isLoading=false
 						console.log('加工数量日志结果----', res)
@@ -1106,6 +1133,7 @@
 							//如果当前登录用户存在，则默认选中并赋值
 							if(index >= 0){
 								$('.J_operatelog_item').eq(index).find('input').select()
+								$('.J_operatelog_item').eq(index).siblings().find('input').remove
 								var sum = _this.quantitySum()
 								if(_this.total > sum){
 									var main = _this.numSub(_this.total,sum)
@@ -1116,11 +1144,31 @@
 							}else{
 								_this.quantitySum()
 							}
+							//不是操作员没有权限更改操作日志
+							if(_this.handleListSort[_this.operateQuantityLogIndex]['operator_user_id'] != _this.userInfo[0].user_id){
+								for(var i in _this.operateQuantityLog){
+									$('.J_operatelog_item').eq(i).find('input').attr('disabled',"true");
+								}
+								//并去掉提交按钮
+								$('.J_quantity_submit').hide()
+							}else{
+								if($('.J_operatelog_item').eq(0).find('input').prop("disabled") == true){
+									for(var i in _this.operateQuantityLog){
+										$('.J_operatelog_item').eq(i).find('input').removeAttr("disabled")
+									}
+									$('.J_quantity_submit').show()
+								}
+							}
 						})
 					})
 				},
 				//获取所有输入的值,并将加工记录存入数据库
 				saveOperatorQuantityLog() {
+					//不是操作员没有权限更改操作日志
+					if(this.handleListSort[this.operateQuantityLogIndex]['operator_user_id'] != this.userInfo[0].user_id){
+						this.popBox('Only the processed person can update the info.')
+						return
+					}
 					var data = {
 						"oppd_id" : this.handleListSort[this.operateQuantityLogIndex].id,
 						"data" : []
@@ -1913,8 +1961,7 @@
 					this.message=''
 					this.editText='setting'
 					//退出pincode登录
-					getData('product/loginOutPincode', '', function (res) {
-					});
+					this.loginOutPincode()
 				},
 				//关闭keyboard
 				closeKeyboard(){
@@ -2036,28 +2083,30 @@
 						console.log(res);
 						_this.isDisable = false
 						if(res.status == 200){
+							_this.userInfo = res.result.user_info
 							if (res.result.user_name) {
 								_this.userName = res.result.user_name
 								_this.businessName = res.result.business_name
-								//管理员登录默认进入二级页面(需要再放开)
-								//如果当前登录账号的权限和上一个账号权限不一致，则重置操作员信息
-								if(res.result.is_manager!=_this.isManager && res.result.is_manager==1){
-									_this.list4=[{"user_id":"","user_name":"All Operator"}]
-									_this.currentOperatorIndex=0
-									_this.operator_user_id=""
-								}
-								_this.isManager = res.result.is_manager
-								//重置操作员默认信息-start(如果是操作员，操作员列表只有当前用户)
-								if(_this.isManager==2){
-									_this.list4 = res.result.user_info
-									_this.currentOperatorIndex=0
-									_this.operator_user_id = res.result.user_info[0]['user_id']
-								}
-								// if(res.result.is_manager == 1){
-								// 	_this.currentPage = 2
-								// 	_this.returnPage(2)
-								// }
 							}
+							//管理员登录默认进入二级页面(需要再放开)
+							//如果当前登录账号的权限和上一个账号权限不一致，则重置操作员信息
+							if(res.result.is_manager!=_this.isManager && res.result.is_manager==1){
+								_this.list4=[{"user_id":"","user_name":"All Operator"}]
+								_this.currentOperatorIndex=0
+								_this.operator_user_id=""
+							}
+							_this.isManager = res.result.is_manager
+							//重置操作员默认信息-start(如果是操作员，操作员列表只有当前用户)
+							if(_this.isManager==2){
+								_this.currentManageActionTypeIndex = 0
+								_this.list4 = res.result.user_info
+								_this.currentOperatorIndex=0
+								_this.operator_user_id = res.result.user_info[0]['user_id']
+							}
+							// if(res.result.is_manager == 1){
+							// 	_this.currentPage = 2
+							// 	_this.returnPage(2)
+							// }
 							//登录成功，隐藏密码框
 							_this.iskeyboardShow=false
 							_this.isClock=false
@@ -2068,6 +2117,9 @@
 							_this.isShowTypePincode2 = _this.isShowTypePincode3 = false
 							_this.pincodeType = 1 //默认显示pincode登录
 							_this.focusDatype = 10 //默认可直接输入密码
+							//清除定时任务
+							_this.clearTime()
+							_this.isLoading = false
 							//重置操作员默认信息-end
 							_this.inidata(_this.logistic_delivery_date)
 						} else {
@@ -2204,6 +2256,7 @@
 						this.isShowMessage=false
 						this.popMessage=''
 						clearTimeout(this.timeOutEvent);//清除定时器
+						this.timeOutEvent=null
 					},2000);//这里设置定时器，定义长按2000毫秒触发长按事件
 					return
 				},

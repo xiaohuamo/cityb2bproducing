@@ -248,11 +248,9 @@ class Order extends Model
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
             ['rm.proucing_item', '=', 1],
-            ['wcc.customer_buying_quantity','>',0]
+            ['wcc.customer_buying_quantity','>',0],
+            ['o.logistic_delivery_date','=',$logistic_delivery_date]
         ];
-        if($logistic_delivery_date){
-            $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
-        }
         //查找订单中的所有商品的汇总
         $order_goods = Db::name('wj_customer_coupon')
             ->alias('wcc')

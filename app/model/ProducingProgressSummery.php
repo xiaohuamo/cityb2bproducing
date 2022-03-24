@@ -21,19 +21,24 @@ class ProducingProgressSummery extends Model
      */
     public function addProgressSummary($data)
     {
-        if (!empty($data['pps_id'])) {
+        $pps_info = ProducingProgressSummery::getOne([
+            'business_userId'=>$data['business_userId'],
+            'delivery_date'=>$data['delivery_date'],
+            'product_id'=>$data['product_id'],
+            'guige1_id'=>$data['guige1_id'],
+            'isdeleted'=>0
+        ]);
+        if (!empty($pps_info)) {
             //1.判断数据是否有变动
-            if($data['pps_sum_quantities'] != $data['sum_quantities']){
+            if($pps_info['sum_quantities'] != $data['sum_quantities']){
                 $update_data['sum_quantities'] = $data['sum_quantities'];
-                if($data['isDone']==1 && $data['pps_sum_quantities'] < $data['sum_quantities']){
+                if($data['isDone']==1 && $pps_info['sum_quantities'] < $data['sum_quantities']){
                     $update_data['isDone'] = 0;
                 }
                 $res = self::getUpdate(['id' => $data['pps_id']], $update_data);
             }
         } else {
-            $data = [
-                'isDone' => 0
-            ];
+            $data['isDone'] = 0;
             $res = self::createData($data);
         }
         return $res;
