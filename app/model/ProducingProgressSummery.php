@@ -58,9 +58,8 @@ class ProducingProgressSummery extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$goods_sort=0,$category_id='',$source=1)
+    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$goods_sort=0,$category_id='',$source=1)
     {
-        $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
         $map = [];
         if($category_id){
             $map[] = ['rm.restaurant_category_id','=',$category_id];
@@ -74,26 +73,66 @@ class ProducingProgressSummery extends Model
                 break;
             default:$order_by = 'isDone asc,rc.category_sort_id asc,rm.menu_order_id asc';
         }
-        $goods_one_cate = Db::name('producing_progress_summery')
-            ->alias('pps')
-            ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
-            ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
-            ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
-            ->where($where)
-            ->where(['rm.proucing_item'=>1])
-            ->where($map)
-            ->group('product_id')
-            ->order($order_by)
-            ->select()->toArray();
+        if (!empty($logistic_truck_No)) {
+            $where = [
+                ['o.business_userId', '=', $businessId],
+                ['o.logistic_delivery_date','=',$logistic_delivery_date],
+                ['o.logistic_truck_no','=',$logistic_truck_No],
+            ];
+            $goods_one_cate = Db::name('wj_customer_coupon')
+                ->alias('wcc')
+                ->field('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
+                ->leftJoin('wj_customer_coupon wcc_done','wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
+                ->leftJoin('order o','wcc.order_id = o.orderId')
+                ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
+                ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+                ->leftJoin('producing_progress_summery pps',"pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
+                ->where($where)
+                ->where(['rm.proucing_item'=>1])
+                ->where($map)
+                ->group('wcc.restaurant_menu_id,pps.product_id')
+                ->order($order_by)
+                ->select()->toArray();
+        } else {
+            $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
+            $goods_one_cate = Db::name('producing_progress_summery')
+                ->alias('pps')
+                ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
+                ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
+                ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+                ->where($where)
+                ->where(['rm.proucing_item'=>1])
+                ->where($map)
+                ->group('product_id')
+                ->order($order_by)
+                ->select()->toArray();
+        }
         foreach($goods_one_cate as &$v){
             $v['sum_quantities'] = floatval($v['sum_quantities']);
             $v['finish_quantities'] = floatval($v['finish_quantities']);
             //获取是否有二级分类
-            $map = [
-                ['pps.product_id', '=', $v['product_id']],
-                ['pps.guige1_id', '>', 0],
-            ];
-            $two_cate_done_info = Db::name('producing_progress_summery')->alias('pps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
+            if (!empty($logistic_truck_No)) {
+                $map = [
+                    ['wcc.restaurant_menu_id', '=', $v['product_id']],
+                    ['wcc.guige1_id', '>', 0],
+                ];
+                $two_cate_done_info = Db::name('wj_customer_coupon')
+                    ->alias('wcc')
+                    ->field('IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id')
+                    ->leftJoin('wj_customer_coupon wcc_done','wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
+                    ->leftJoin('order o','wcc.order_id = o.orderId')
+                    ->leftJoin('producing_progress_summery pps',"pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
+                    ->where($where)
+                    ->where($map)
+                    ->group('wcc.restaurant_menu_id,pps.product_id,wcc.guige1_id')
+                    ->select()->toArray();
+            } else {
+                $map = [
+                    ['pps.product_id', '=', $v['product_id']],
+                    ['pps.guige1_id', '>', 0],
+                ];
+                $two_cate_done_info = Db::name('producing_progress_summery')->alias('pps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
+            }
             $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);
@@ -134,18 +173,40 @@ class ProducingProgressSummery extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsTwoCate($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$product_id)
+    public function getGoodsTwoCate($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id)
     {
-        $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No,$product_id);
-        $goods_two_cate = Db::name('producing_progress_summery')
-            ->alias('pps')
-            ->field('pps.product_id,pps.guige1_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
-            ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
-            ->leftJoin('restaurant_menu_option rmo','pps.guige1_id = rmo.id')
-            ->where($where)
-            ->where(['rm.proucing_item'=>1])
-            ->group('product_id,guige1_id')
-            ->select()->toArray();
+        if (!empty($logistic_truck_No)) {
+            $where = [
+                ['o.business_userId', '=', $businessId],
+                ['o.logistic_delivery_date','=',$logistic_delivery_date],
+                ['o.logistic_truck_no','=',$logistic_truck_No],
+                ['wcc.restaurant_menu_id','=',$product_id],
+                ['wcc.guige1_id','>',0]
+            ];
+            $goods_two_cate = Db::name('wj_customer_coupon')
+                ->alias('wcc')
+                ->field('wcc.restaurant_menu_id product_id,wcc.guige1_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->leftJoin('wj_customer_coupon wcc_done','wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
+                ->leftJoin('order o','wcc.order_id = o.orderId')
+                ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
+                ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
+                ->leftJoin('producing_progress_summery pps',"pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id = wcc.guige1_id and pps.isdeleted=0")
+                ->where($where)
+                ->where(['rm.proucing_item'=>1])
+                ->group('wcc.restaurant_menu_id,wcc.guige1_id,pps.product_id')
+                ->select()->toArray();
+        } else {
+            $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No,$product_id);
+            $goods_two_cate = Db::name('producing_progress_summery')
+                ->alias('pps')
+                ->field('pps.product_id,pps.guige1_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
+                ->leftJoin('restaurant_menu_option rmo','pps.guige1_id = rmo.id')
+                ->where($where)
+                ->where(['rm.proucing_item'=>1])
+                ->group('product_id,guige1_id')
+                ->select()->toArray();
+        }
         foreach($goods_two_cate as &$v){
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['sum_quantities'] = floatval($v['sum_quantities']);
@@ -177,36 +238,36 @@ class ProducingProgressSummery extends Model
             $where[] = ['pps.product_id','=',$product_id];
             $where[] = ['pps.guige1_id','>',0];
         }
-        if($logistic_truck_No){
-            $map = 'o.status=1 or o.accountPay=1';
-            $order_where = [
-                ['o.business_userId', '=', $businessId],
-                ['o.coupon_status', '=', 'c01']
-            ];
-            if($logistic_delivery_date){
-                $order_where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
-            }
-            $order_where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
-            //如果没有规格id,查询的是该司机所有的产品
-            if(empty($product_id)){
-                $product_id_arr = Db::name('wj_customer_coupon')
-                    ->alias('wcc')
-                    ->leftJoin('order o','o.orderId = wcc.order_id')
-                    ->where($order_where)
-                    ->where($map)
-                    ->group('restaurant_menu_id')->column('restaurant_menu_id');
-                $where[] = ['pps.product_id','in',$product_id_arr];
-            } else {
-                $order_where[] = ['wcc.restaurant_menu_id','=',$product_id];
-                $guige1_id_arr = Db::name('wj_customer_coupon')
-                    ->alias('wcc')
-                    ->leftJoin('order o','o.orderId = wcc.order_id')
-                    ->where($order_where)
-                    ->where($map)
-                    ->group('guige1_id')->column('guige1_id');
-                $where[] = ['pps.guige1_id','in',$guige1_id_arr];
-            }
-        }
+//        if($logistic_truck_No){
+//            $map = 'o.status=1 or o.accountPay=1';
+//            $order_where = [
+//                ['o.business_userId', '=', $businessId],
+//                ['o.coupon_status', '=', 'c01']
+//            ];
+//            if($logistic_delivery_date){
+//                $order_where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
+//            }
+//            $order_where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
+//            //如果没有规格id,查询的是该司机所有的产品
+//            if(empty($product_id)){
+//                $product_id_arr = Db::name('wj_customer_coupon')
+//                    ->alias('wcc')
+//                    ->leftJoin('order o','o.orderId = wcc.order_id')
+//                    ->where($order_where)
+//                    ->where($map)
+//                    ->group('restaurant_menu_id')->column('restaurant_menu_id');
+//                $where[] = ['pps.product_id','in',$product_id_arr];
+//            } else {
+//                $order_where[] = ['wcc.restaurant_menu_id','=',$product_id];
+//                $guige1_id_arr = Db::name('wj_customer_coupon')
+//                    ->alias('wcc')
+//                    ->leftJoin('order o','o.orderId = wcc.order_id')
+//                    ->where($order_where)
+//                    ->where($map)
+//                    ->group('guige1_id')->column('guige1_id');
+//                $where[] = ['pps.guige1_id','in',$guige1_id_arr];
+//            }
+//        }
         return $where;
     }
 

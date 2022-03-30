@@ -107,16 +107,16 @@
         loginData.name = username.val();
         loginData.pwd = password.val();
     $.ajax({
-      url: common.apiUrl+'product/loginByPassword',
+      url: "{:url('/product/loginByPassword')}",
       data: loginData,
       type: "POST",
       beforeSend : function() {
         isButtonLoading(true, loginButton)
       },
       success: function (res) {
-        console.log(res);
         if (res.status === 200) {
-          window.location.href = common.webUrl+'product/index';
+          var result = res.result
+          window.location.href = result['redirect_url'];
         } else {
           errorMessage.html(res.message);
         }

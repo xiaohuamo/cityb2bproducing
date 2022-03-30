@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="__STATIC__/assets/images/favicon.png" type="image/png">
+    <title>Cityb2b</title>
+
+    <!--Begin  Page Level  CSS -->
+    <link href="__STATIC__/assets/plugins/dropzone/dropzone.css" rel="stylesheet" type="text/css" />
+    <link href="__STATIC__/assets/plugins/morris-chart/morris.css" rel="stylesheet">
+    <link href="__STATIC__/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet"/>
+    <!--End  Page Level  CSS -->
+    <link href="__STATIC__/assets/css/icons.css" rel="stylesheet">
+    <link href="__STATIC__/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="__STATIC__/assets/css/style.css" rel="stylesheet">
+    <link href="__STATIC__/assets/css/responsive.css" rel="stylesheet">
+    <link rel="stylesheet" href="__STATIC__/assets/css/icons/font-awesome/font-awesome.css">
+    {block name="css"} {/block}
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="__STATIC__/js/html5shiv.min.js"></script>
+    <script src="__STATIC__/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body class="sticky-header">
+
+<!--Start left side Menu-->
+<div class="left-side sticky-left-side">
+    <!--logo-->
+    <div class="logo" style="margin: 16px 0 16px 0px;">
+        <img src="__STATIC__/assets/images/logo.png" alt="" style="max-width: 30%">
+    </div>
+
+    <!--logo-->
+    <div class="left-side-inner">
+        <!--Sidebar nav-->
+        <ul class="nav nav-pills nav-stacked custom-nav">
+            {volist name="menulist" id="vo" key="k"}
+            {if $vo.is_show == 1}
+                {present name="vo['two']"}
+                <li class="menu-list {$vo.class}"><a href="#"><i class="{$vo.icon}"></i> <span>{$vo.menu_name}</span></a>
+                {volist name="vo['two']" id="two_vo" key="two_k"}
+                    {if $vo.is_show == 1}
+                    <ul class="sub-menu-list">
+                        <li class="{$two_vo.class}"><a href="{$two_vo.url}">{$two_vo.menu_name}{if $mem_permissions.template_id == 0 AND $two_vo.version != ''}-{$two_vo.version}{/if}</a></li>
+                    </ul>
+                    {/if}
+                {/volist}
+                {else /}
+                 <li class="{$vo.class}"><a href="{$vo.url}"><i class="{$vo.icon}"></i> <span>{$vo.menu_name}{if $mem_permissions.template_id == 0 AND $vo.version != ''}-{$vo.version}{/if}</span></a>
+                {/present}
+                </li>
+            {/if}
+            {/volist}
+        </ul>
+    </div>
+</div>
+
+<!-- main content start-->
+<div class="main-content" >
+    <!-- header section start-->
+    <div class="header-section">
+        <a class="toggle-btn"><i class="fa fa-bars"></i></a>
+        <div class="menu-right">
+            <ul class="notification-menu">
+                <li>
+                    <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <img src="__STATIC__/assets/images/users/avatar.jpg" alt="">
+                        {$_info.user_name}
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-usermenu pull-right">
+                        <li data-toggle="modal" data-target="#modal-edit-password"> <a href="#"> <i class="fa fa-user"></i> Change the password </a> </li>
+                        <li class="J_logout"> <a href="#"><i class="fa fa-lock"></i> Logout </a></li>
+                    </ul>
+                </li>
+<!--                {if $is_scan == 1}-->
+<!--                <li>-->
+<!--                    <span>|</span>-->
+<!--                    <a href="#" class="btn btn-default dropdown-toggle" onclick='scanQrcode()'>-->
+<!--                        <img src="__STATIC__/assets/images/scan.png" alt="">-->
+<!--                    </a>-->
+<!--                </li>-->
+<!--                {/if}-->
+            </ul>
+        </div>
+        <!--notification menu end -->
+    </div>
+    <!-- header section end-->
+    <!--body wrapper start-->
+    <div class="wrapper">
+        <!--Start Page Title-->
+        <div class="page-title-box">
+            {block name="sub_title"}{/block}
+            <div class="clearfix"></div>
+        </div>
+        <!--End Page Title-->
+
+        <!--Start row-->
+        <div class="row">
+            <div class="container">
+                <div class="analytics-box">
+
+                </div>
+            </div>
+        </div>
+        <!--End row-->
+        {block name="content"} {/block}
+
+        <!--Start 修改密码 -->
+        <div  id="modal-edit-password" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Reset Password</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <input class="form-control password" placeholder="Enter a new password." type="text">
+                                <span class="help-block"><small><i class="fa fa-warning"></i> After the password is reset,you will be logged out.</small></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-warning outline-btn" data-dismiss="modal">cancel</button>
+                        <button type="button" class="btn btn-warning J_editpass">save</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!--End 修改密码 -->
+    </div>
+<!--Start  Footer -->
+    <footer class="footer-main">&nbsp;</footer>
+<!--End footer -->
+</div>
+<!--End main content -->
+<script src="__STATIC__/assets/js/jquery.min.js"></script>
+<script src="__STATIC__/assets/plugins/bootstrap-fileinput/fileinput.js"/></script>
+<script src="__STATIC__/js/common.js"></script>
+<script src="__STATIC__/assets/js/bootstrap.min.js"></script>
+<script src="__STATIC__/assets/plugins/moment/moment.js"></script>
+<script  src="__STATIC__/assets/js/jquery.slimscroll.js "></script>
+<script src="__STATIC__/assets/js/jquery.nicescroll.js"></script>
+<script src="__STATIC__/assets/js/functions.js"></script>
+<script src="__STATIC__/assets/plugins/sweetalert/sweet-alert.js"></script>
+<script src="__STATIC__/assets/pages/jquery.sweet-alert.custom.js"></script>
+<!-- End core plugin -->
+
+<script>
+
+    function scanQrcode(){
+        if({$is_scan} == 2){
+            promot_swal("You have no permission!");
+            return false;
+        }
+        if (window.app != null && typeof(window.app) != "undefined") {
+            window.app.scanQrcode();
+        } else {
+            promot_swal("Please replace the device scan code");
+            return false;
+        }
+    }
+    function qrcodeResult(inf){
+        getData('scanDecode',{scan_data:inf},function(res){
+            //扫码成功，跳转到扫一扫页面
+            window.location.href = common.webUrl+'scan';
+        });
+    }
+    //修改密码
+    $('.J_editpass').click(function () {
+        var password = $.trim($('.password').val());
+        if (password == '') {
+            promot_swal("password require!");
+            return false;
+        }
+        getData('editPassword',{password:password},function(res){
+            //修改成功，跳转到登录页面
+            window.location.href = common.webUrl + 'login';
+        });
+    });
+    //退出登录
+    $('.J_logout').click(function () {
+        swal({
+            title: "Are you sure?",
+            // text: "You will not be able to recover this imaginary file!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, I'm out!",
+            cancelButtonText: "No, stay plx!",
+            closeOnConfirm: false
+        }, function(){
+            getData('logout',{},function(res){
+                window.location.href = common.webUrl + 'login';
+            });
+        });
+    });
+</script>
+{block name="js"} {/block}
+</body>
+
+</html>

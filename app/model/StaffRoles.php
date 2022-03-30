@@ -18,7 +18,7 @@ class StaffRoles extends Model
     //判断用户是否有生产页面权限
     public function getProductPermission($staff_id)
     {
-        $map = "staff_id=$staff_id and (roles like '%,1,%' or roles like '%,9,%' or roles like '%,11,%')";
+        $map = "staff_id=$staff_id and (roles like '%,1,%' or roles like '%,9,%' or roles like '%,11,%' or roles like '%,12,%')";
         $info = Db::name('staff_roles')->where($map)->find();
         return $info;
     }

@@ -4,7 +4,6 @@ declare (strict_types = 1);
 namespace app\product\controller;
 
 use app\product\validate\IndexValidate;
-use think\facade\View;
 use think\facade\Db;
 use think\facade\Queue;
 use app\model\{
@@ -30,7 +29,7 @@ class PreProduct extends AuthBase
     public function index()
     {
         // 模板输出
-        return View::fetch('index');
+        return $this->fetch('index');
     }
 
     //获取加工日期(前7天+后30天)
@@ -101,7 +100,14 @@ class PreProduct extends AuthBase
         $user_id = $this->getMemberUserId();
         $User = new User();
         //2.获取对应日期的加工员工
-        $all_operator = $User->getUsers($businessId,$user_id);
+        //如果是管理者，则需要获取全部的全部的用户信息
+        $StaffRoles = new StaffRoles();
+        $is_permission = $StaffRoles->getProductPlaningPermission($user_id);
+        if($is_permission == 1){
+            $all_operator = $User->getUsers($businessId,0);
+        } else {
+            $all_operator = $User->getUsers($businessId,$user_id);
+        }
         $data = [
             'all_operator' => $all_operator,
         ];

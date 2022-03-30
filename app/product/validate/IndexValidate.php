@@ -16,6 +16,7 @@ class IndexValidate extends Validate
         'new_customer_buying_quantity' => 'require|float',
         'action_type' => 'require|in:1,2',//设置置顶操作 1-设置置顶 2-取消置顶
         'quantity' => 'require|float',//预加工数量
+        'orderId' => 'require',//订单id
     ];
 
     protected $scene = [
@@ -25,6 +26,7 @@ class IndexValidate extends Validate
         'setProductTop' => ['product_id','action_type'],//设置置顶
         'setProductPlaning' => ['logistic_delivery_date','product_id','action_type'],//设置预加工产品
         'addOrderProductPlaning' => ['logistic_delivery_date','product_id','guige1_id','quantity','action_type'],//添加预加工订单
+        'lockOrder' => ['logistic_delivery_date','orderId'],//锁定订单
     ];
 
     /**

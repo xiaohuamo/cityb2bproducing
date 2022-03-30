@@ -73,7 +73,15 @@ class Order extends Model
                 $default_k = $today_before_k;
                 return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
             }
-            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+            //判断当前供应商最近7天内是否有订单数据，如果有，则前端需要实时刷新数据，如果没有，则无需更新
+            $map = 'status=1 or accountPay=1';
+            $order_count = Db::name('order')->where([
+                    ['business_userId', '=', $businessId],
+                    ['coupon_status', '=', 'c01'],
+                    ['logistic_delivery_date','>',time()-3600*24*7],
+            ])->count();
+            $is_has_data = $order_count>0 ? 1 : 2;
+            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k,'is_has_data' => $is_has_data];
         }
     }
 
@@ -237,11 +245,15 @@ class Order extends Model
     }
 
     /**
-     * 将订单商品加入生产流程表队列
-     * @param $businessId 供应商id
-     * @return array
+     *  将订单商品加入生产流程表队列
+     * @param $businessId
+     * @param $logistic_delivery_date
+     * @param $type 1自动更新 2新增商家数据更新
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    public function addOrderGoodsToProgress($businessId,$logistic_delivery_date)
+    public function addOrderGoodsToProgress($businessId,$logistic_delivery_date,$type)
     {
         $map = 'o.status=1 or o.accountPay=1';
         $where = [
@@ -283,16 +295,138 @@ class Order extends Model
         //将商品信息加入队列依次插入数据库
         foreach($order_goods as $k=>$v){
             $v['proucing_center_id'] = 0;
-            $ProducingProgressSummery = new ProducingProgressSummery();
-           if(empty($v['pps_id']) || $v['pps_sum_quantities'] != $v['sum_quantities']) {
+            if(empty($v['pps_id']) || $v['pps_sum_quantities'] != $v['sum_quantities']) {
                 $isPushed = Queue::push('app\job\Job1', $v, 'producingProgressSummary');
                 // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
-                if ($isPushed !== false) {
-                    echo date('Y-m-d H:i:s') . " a new Job is Pushed to the MQ" . "<br>";
-                } else {
-                    echo 'Oops, something went wrong.';
+                if ($type == 1) {
+                    if ($isPushed !== false) {
+                        echo date('Y-m-d H:i:s') . " a new Job is Pushed to the MQ" . "<br>";
+                    } else {
+                        echo 'Oops, something went wrong.';
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * 将司机调度信息加入调度流程表队列
+     * @param $businessId 供应商id
+     * @return array
+     */
+    public function addDispatchingToProgress($businessId,$logistic_delivery_date)
+    {
+        $map = '(o.status=1 or o.accountPay=1) and o.logistic_truck_No != 0 and o.logistic_truck_No is not null';
+        $where = [
+            ['o.business_userId', '=', $businessId],
+            ['o.coupon_status', '=', 'c01'],
+//            ['wcc.customer_buying_quantity','>',0],
+            ['o.logistic_delivery_date','=',$logistic_delivery_date],
+        ];
+        //查找订单中的所有商品的汇总
+        $orders = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field('o.business_userId business_id,o.logistic_delivery_date delivery_date,o.orderId,o.logistic_truck_No truck_no,count(wcc.order_id) AS sum_quantities,dps.id pps_id,dps.sum_quantities dps_sum_quantities,dps.isDone')
+            ->leftJoin('order o','wcc.order_id = o.orderId')
+            ->leftJoin('dispatching_progress_summery dps',"dps.delivery_date = o.logistic_delivery_date and dps.business_id=$businessId and dps.orderId=o.orderId and dps.isdeleted=0")
+            ->where($where)
+            ->where($map)
+            ->group('wcc.order_id')
+            ->order('o.logistic_truck_No')
+            ->select()->toArray();
+//        dump($orders);
+        if (!empty($orders)) {
+            //查询当天已加入汇总表的调度信息
+            $dps_list = DispatchingProgressSummery::getAll(['business_id'=>$businessId,'delivery_date'=>$logistic_delivery_date,'isdeleted'=>0]);
+            //判断是否汇总信息是否有变动
+            $dps_has_list = [];//比对汇总表中仍然存在的信息
+            foreach($dps_list as $v){
+                foreach($orders as $vv) {
+                    if($v['orderId'] == $vv['orderId']){
+                        $dps_has_list[] = $v;
+                        break;
+                    }
+                }
+            }
+            if(count($dps_list) > 0 && count($dps_has_list) != count($dps_list)){
+                $dps_has_id_arr = array_column($dps_has_list,'id');
+                $dps_id_arr = array_column($dps_list,'id');
+                $result = array_diff($dps_id_arr,$dps_has_id_arr);
+                DispatchingProgressSummery::getUpdate([['id','in',$result]],['isdeleted'=>1]);
+            }
+            //将调度信息加入队列依次插入数据库
+//            $DispatchingProgressSummery = new DispatchingProgressSummery();
+            foreach($orders as $k=>$v){
+                if(empty($v['dps_id']) || $v['dps_sum_quantities'] != $v['sum_quantities']) {
+                    $isPushed = Queue::push('app\job\JobDispatching', $v, 'dispatchingProgressSummery');
+                    // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
+                    if ($isPushed !== false) {
+                        echo date('Y-m-d H:i:s') . " a new Job is Pushed to the MQ" . "<br>";
+                    } else {
+                        echo 'Oops, something went wrong.';
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取订单明细信息
+     * @param $orderId  订单id
+     * @return array
+     */
+    public function getProductOrderDetailList($businessId,$user_id,$orderId,$wcc_sort=0,$wcc_sort_type=1)
+    {
+        $where = [
+            ['wcc.order_id', '=', $orderId],
+        ];
+        switch ($wcc_sort){
+            case 1://进行中排序
+                if($wcc_sort_type == 1){
+                    $order_by = 'dispatching_is_producing_done asc,id asc';
+                } else {
+                    $order_by = 'dispatching_is_producing_done desc,id asc';
+                }
+                break;
+            case 2://已完成排序
+                if($wcc_sort_type == 1) {
+                    $order_by = 'dispatching_is_producing_done desc,id asc';
+                } else {
+                    $order_by = 'dispatching_is_producing_done asc,id asc';
+                }
+                break;
+            default://产品编号排序
+                if($wcc_sort_type == 1) {
+                    $order_by = 'rm.menu_id asc';
+                } else {
+                    $order_by = 'rm.menu_id desc';
+                }
+        }
+        //获取加工明细单数据
+        $order = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_sequence_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+            ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
+            ->leftJoin('order o','wcc.order_id = o.orderId')
+            ->leftJoin('user_factory uf','uf.user_id = o.userId')
+            ->leftJoin('dispatching_progress_summery dps',"dps.delivery_date = o.logistic_delivery_date and dps.business_id=$businessId and dps.orderId=o.orderId and dps.isdeleted=0")
+            ->where($where)
+            ->order($order_by)
+            ->select()->toArray();
+//        halt($order);
+        foreach($order as &$v){
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            //判断当前加工明细是否被锁定
+            $v['is_lock'] = 0;
+            $v['lock_type'] = 0;
+            if($v['operator_user_id'] > 0){
+                if($v['isDone'] == 0){
+                    $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                    $v['lock_type'] = $user_id == $v['operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
+                }
+            }
+        }
+        return $order;
     }
 }

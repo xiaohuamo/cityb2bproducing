@@ -140,7 +140,7 @@ a{
 }
 .arrIcon{
 	width: 6px;
-	margin-left: 5px;
+	/*margin-left: 5px;*/
 }
 .goodsMenu{
 	padding:15px 10px;
@@ -211,6 +211,9 @@ a{
 }
 .F14{
 	font-size: 14px;
+}
+.F15{
+	font-size: 15px;
 }
 .F18{
 	font-size: 18px;
@@ -389,8 +392,22 @@ a{
 	border-radius: 3px;
 }
 
+.rbtn6{
+	width: 175px;
+	height: 77px;
+	border-radius: 3px;
+	padding: 15px;
+	padding-top: 5px;
+	box-sizing: border-box;
+	margin-right: 10px;
+	text-align: center;
+}
 
-
+.num{
+	margin-right: 15px;
+	font-size: 28px;
+	color: #000;
+}
 
 .rsection1{
 	margin-bottom: 20px;
@@ -398,8 +415,13 @@ a{
 .rsection2{
 	margin-bottom: 20px;
 }
-
-
+.rsection1Box{
+	max-height: 348px;
+	overflow: auto;
+}
+.maT5{
+	margin-top: 5px;
+}
 .maT10{
   margin-top: 10px;
 }
@@ -426,6 +448,12 @@ a{
 }
 .pa5-10{
 	padding: 5px 10px;
+}
+.pabt20{
+	padding-bottom:20px;
+}
+.pa10-26{
+	padding:10px 26px 26px;
 }
 .mainBox{
 	padding:0 20px 1px;
@@ -750,6 +778,17 @@ a{
 	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
 	background-color: #555;
 }
+.rsection1Box::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+.rsection1Box::-webkit-scrollbar-thumb {
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+	background-color: #555;
+}
 .logContent table thead,
 tbody tr {
 	display: table;
@@ -798,4 +837,5 @@ tbody tr td{
 	display: inline-block;
 	padding: 5px;
 }
+
 

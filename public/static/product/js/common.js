@@ -14,6 +14,8 @@ function isButtonLoading(isLoading, button) {
 let common = {
     apiUrl: 'https://m.cityb2b.com/',//api接口地址
     webUrl: 'https://m.cityb2b.com/',//web访问地址
+    // apiUrl: 'http://192.168.50.105/',//api接口地址
+    // webUrl: 'http://192.168.50.105/',//web访问地址
 }
 
 function getData(url,data,callback){
@@ -22,7 +24,7 @@ function getData(url,data,callback){
         headers:{
             'Content-Type':'application/json',
         },
-        url:common.apiUrl+url,
+        url:url,
         // timeout:10000,
         data:JSON.stringify(data), //  字符串格式
         complete(xhr){

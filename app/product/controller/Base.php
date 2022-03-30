@@ -5,8 +5,11 @@ declare (strict_types = 1);
 namespace app\product\controller;
 
 use think\App;
-use app\model\User;
 use think\facade\Cookie;
+use app\model\{
+    User,
+    StaffRoles
+};
 
 /**
  * 控制器基础类
@@ -56,7 +59,28 @@ abstract class Base
                 $encrypt_data = md5( $user['id'].$user['name'].$user['password']);
                 $cookie_data = Cookie::get('remember_user_shell');
                 if ($encrypt_data == $cookie_data) {
-                    return redirect('index')->send();
+                    if ($user['role'] == 20) {//判断员工具体的职位是否有权限登录
+                        $StaffRoles = new StaffRoles();
+                        $isPermission = $StaffRoles->getProductPermission($user['id']);
+                        $roles = array_filter(explode(",", $isPermission['roles']));
+                    } else {
+                        $roles = [];
+                    }
+                    $user['roles'] = $roles;
+                    //判断当前域名
+                    $SERVER_NAME = $_SERVER['SERVER_NAME'];
+                    if($SERVER_NAME == M_SERVER_NAME){
+                        if($user['role'] == 3 || in_array(0,$roles) || in_array(1,$roles) || in_array(9,$roles) || in_array(11,$roles)) {
+                            return redirect('index')->send();
+                        }
+                    } elseif ($SERVER_NAME == D_SERVER_NAME) {
+                        //如果当前使拣货员页面，判断是否有拣货权限
+                        if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(12,$user['roles'])){
+                            return redirect('picking')->send();
+                        }
+                    } else {
+
+                    }
                 }
             }
         }

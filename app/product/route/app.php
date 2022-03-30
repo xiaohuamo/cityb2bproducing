@@ -4,9 +4,14 @@ use think\facade\Route;
 //页面路由
 //登录
 Route::get('login', 'Login/index');
+//生产员页面
 Route::get('index', 'Index/index');
+//打印标签页面（废弃）
 Route::get('labelprint', 'Index/labelprint');
+//预生产页面
 Route::get('preProduct', 'PreProduct/index');
+//拣货员页面
+Route::get('picking', 'Picking/index');
 
 
 //接口路由
@@ -63,38 +68,59 @@ Route::post('test', 'Index/test');
 
 //预加工项目路由--------start
 //获取加工日期
-Route::post('prepDeliveryDate', 'preProduct/deliveryDate');
+Route::post('prepDeliveryDate', 'PreProduct/deliveryDate');
 //获取操作员数据
-Route::post('operator', 'preProduct/operator');
+Route::post('operator', 'PreProduct/operator');
 //获取初始化数据
-Route::post('prepInidata', 'preProduct/inidata');
+Route::post('prepInidata', 'PreProduct/inidata');
 //切换商品时获取对应的数据
-Route::post('prepChangeGoods', 'preProduct/changeGoods');
+Route::post('prepChangeGoods', 'PreProduct/changeGoods');
 //切换商品时获取对应的加工明细单
-Route::post('prepProductOrderList', 'preProduct/productOrderList');
+Route::post('prepProductOrderList', 'PreProduct/productOrderList');
 //锁定加工状态
-Route::post('prepLockProduct', 'preProduct/lockProduct');
+Route::post('prepLockProduct', 'PreProduct/lockProduct');
 //获取锁定结果
-Route::post('prepLockProductResult', 'preProduct/lockProductResult');
+Route::post('prepLockProductResult', 'PreProduct/lockProductResult');
 //解锁
-Route::post('prepUnlockProduct', 'preProduct/unlockProduct');
+Route::post('prepUnlockProduct', 'PreProduct/unlockProduct');
 //修改加工数量
-Route::post('prepEditBuyingQuantity', 'preProduct/editBuyingQuantity');
+Route::post('prepEditBuyingQuantity', 'PreProduct/editBuyingQuantity');
 //加工状态变更
-Route::post('prepChangeProductOrderStatus', 'preProduct/changeProductOrderStatus');
+Route::post('prepChangeProductOrderStatus', 'PreProduct/changeProductOrderStatus');
 //获取当前加工产品
-Route::post('prepCurrentStockProduct', 'preProduct/currentStockProduct');
+Route::post('prepCurrentStockProduct', 'PreProduct/currentStockProduct');
 //设置预加工
-Route::post('setProductPlaning', 'preProduct/setProductPlaning');
+Route::post('setProductPlaning', 'PreProduct/setProductPlaning');
 //添加预加工订单
-Route::post('addOrderProductPlaning', 'preProduct/addOrderProductPlaning');
+Route::post('addOrderProductPlaning', 'PreProduct/addOrderProductPlaning');
 //获取加工日志
-Route::post('prepLogData', 'preProduct/logData');
+Route::post('prepLogData', 'PreProduct/logData');
 //添加预加工数量日志记录
-Route::post('addProcessQuantityLog', 'preProduct/addProcessQuantityLog');
+Route::post('addProcessQuantityLog', 'PreProduct/addProcessQuantityLog');
 //获取预加工数量日志记录
-Route::post('processQuantityLog', 'preProduct/processQuantityLog');
+Route::post('processQuantityLog', 'PreProduct/processQuantityLog');
 //预加工项目路由--------end
+
+//拣货员项目路由--------start
+//获取日期
+Route::post('pickDeliveryDate', 'Picking/deliveryDate');
+//获取初始化数据
+Route::post('pickInidata', 'Picking/inidata');
+//切换司机时获取司机信息
+Route::post('changeTruck', 'Picking/changeTruck');
+//获取订单明细信息
+Route::post('productOrderDetailList', 'Picking/productOrderDetailList');
+//锁定订单
+Route::post('lockOrder', 'Picking/lockOrder');
+//解锁订单
+Route::post('unlockOrder', 'Picking/unlockOrder');
+//获取锁定结果
+Route::post('pickLockProductResult', 'Picking/lockProductResult');
+//获取锁定结果
+Route::post('pickChangeProductOrderStatus', 'Picking/changeProductOrderStatus');
+//获取锁定结果
+Route::post('pickLogData', 'Picking/logData');
+//拣货员项目路由--------end
 
 //miss 路由
 Route::miss(function() {

@@ -480,7 +480,7 @@
 				//获取pincode显示得到样式
 				var _this = this
 				_this.isLoading=true
-				getData('product/loginInfo', '', function (res) {
+				getData("{:url('/product/loginInfo')}", '', function (res) {
 					console.log('登录信息----',res);
 					_this.isLoading=false
 					//获取登录信息
@@ -519,7 +519,7 @@
 				var data = {
 					'logistic_delivery_date':localStorage.logistic_delivery_date
 				}
-				getData('product/prepDeliveryDate', data, function (res) {
+				getData("{:url('/product/prepDeliveryDate')}", data, function (res) {
 					console.log(res)
 					_this.list = res.result.list
 					_this.choseDate1 = res.result.default
@@ -547,7 +547,7 @@
 						"type":type
 					}
 					console.log('初始化参数---',data)
-					getData('product/prepInidata', data, function (res) {
+					getData("{:url('/product/prepInidata')}", data, function (res) {
 						console.log('初始化结果---',res)
 						res = res.result
 						_this.operatorOrderDoneNum = res.operator_order_count.order_done_count
@@ -604,7 +604,7 @@
 						"operator_user_id":_this.operator_user_id,
 						"product_id":product_id
 					}
-					getData('product/prepChangeGoods', data, function (res) {
+					getData("{:url('/product/prepChangeGoods')}", data, function (res) {
 						res = res.result
 						if(type == 'refresh'){
 							//更新数据时，保持原数据位置不变
@@ -643,7 +643,7 @@
 						"wcc_sort_type":_this.wccSortType
 					}
 					console.log('获取产品加工明细单参数-----',data)
-					getData('product/prepProductOrderList', data, function (res) {
+					getData("{:url('/product/prepProductOrderList')}", data, function (res) {
 						_this.isLoading=false
 						res = res.result
 						if(type == 'refresh'){
@@ -742,7 +742,7 @@
 						//产品的锁定状态,status -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
 						_this.isLoading=true
 						if(item.status == 0){
-							getData('product/prepLockProduct', data, function (res) {
+							getData("{:url('/product/prepLockProduct')}", data, function (res) {
 								console.log('获取锁定结果-----',res)
 								if(res.status == 200){
 									//记录过期时间
@@ -756,7 +756,7 @@
 							});
 						}
 						if(item.status == 1){
-							getData('product/prepUnlockProduct', data, function (res) {
+							getData("{:url('/product/prepUnlockProduct')}", data, function (res) {
 								console.log('获取解锁结果-----',res)
 								_this.isLoading=false
 								if(res.status == 200){
@@ -806,7 +806,7 @@
 					}
 					// console.log('获取队参数----',data);
 					var _this=this
-					getData('product/prepLockProductResult', data, function (res) {
+					getData("{:url('/product/prepLockProductResult')}", data, function (res) {
 						console.log('获取队列结果----',res);
 						if (res.status == 119) {
 							_this.isLoading=true
@@ -897,7 +897,7 @@
 				//退出登录公共操作方法
 				loginOutPincode(){
 					var _this = this
-					getData('product/loginOutPincode', '', function (res) {
+					getData("{:url('/product/loginOutPincode')}", '', function (res) {
 						_this.iskeyboardShow = true
 						_this.isClock = true
 						_this.psd=_this.psd2=_this.npsd=_this.npsd2=_this.nrpsd=_this.nrpsd2=''
@@ -961,7 +961,7 @@
 					console.log('处理状态参数----',data)
 					var _this = this
 					_this.isLoading=true
-					getData('product/prepChangeProductOrderStatus', data, function (res) {
+					getData("{:url('/product/prepChangeProductOrderStatus')}", data, function (res) {
 						console.log('处理状态结果----',res)
 						_this.isLoading=false
 						if (res.status == 200) {
@@ -1116,7 +1116,7 @@
 					var _this = this
 					_this.isLoading=true
 					_this.operateQuantityLog=[]
-					getData('product/processQuantityLog', data, function (res) {
+					getData("{:url('/product/processQuantityLog')}", data, function (res) {
 						_this.isLoading=false
 						console.log('加工数量日志结果----', res)
 						_this.operateQuantityLog = res.result.data
@@ -1185,7 +1185,7 @@
 					console.log('保存操作原加工数量日志参数----',data);
 					var _this=this
 					_this.isLoading=true
-					getData('product/addProcessQuantityLog', data, function (res) {
+					getData("{:url('/product/addProcessQuantityLog')}", data, function (res) {
 						_this.isLoading=false
 						console.log('保存操作原加工数量日志参数结果----', res)
 						_this.isShowOperateQuantityLog=false
@@ -1302,7 +1302,7 @@
 					console.log('保存加工数量参数----',data)
 					var _this=this
 					_this.isLoading = true
-					getData('product/addOrderProductPlaning', data, function (res) {
+					getData("{:url('/product/addOrderProductPlaning')}", data, function (res) {
 						console.log('保存加工数量结果----', res)
 						_this.isLoading = false
 						if (res.status == 200) {
@@ -1483,7 +1483,7 @@
 					console.log('修改加工数量参数----',data)
 					var _this=this
 					_this.isLoading=true
-					getData('product/prepEditBuyingQuantity', data, function (res) {
+					getData("{:url('/product/prepEditBuyingQuantity')}", data, function (res) {
 						console.log('修改加工数量结果----',res)
 						_this.isLoading=false
 						if (res.status == 200) {
@@ -1676,7 +1676,7 @@
 					//获取客户数据
 					if(index==2){
 						var _this=this
-						getData('product/customer', '', function (res) {
+						getData("{:url('/product/customer')}", '', function (res) {
 							_this.list2 = [{"id":"","name":"All customers"}]
 							_this.list2 = _this.list2.concat(res.result.all_customers)
 						});
@@ -1687,7 +1687,7 @@
 						var data = {
 							'logistic_delivery_date':_this.logistic_delivery_date
 						}
-						getData('product/operator', data , function (res) {
+						getData("{:url('/product/operator')}", data , function (res) {
 							if(_this.isManager == 1){
 								_this.list4 = [{"user_id":"","user_name":"All Operator"}]
 								_this.list4 = _this.list4.concat(res.result.all_operator)
@@ -1708,7 +1708,7 @@
 					if(index == 2) {
 						//获取大类
 						var _this = this
-						getData('product/category', '', function (res) {
+						getData("{:url('/product/category')}", '', function (res) {
 							res.result.unshift({"id": -1, "category_en_name": "Current Plan"}, {
 								"id": 0,
 								"category_en_name": "Top"
@@ -1744,13 +1744,13 @@
 					console.log('获取大类产品参数----',data)
 					switch(cate_id){
 						case -1:
-							var url = 'product/prepCurrentStockProduct'
+							var url = "{:url('/product/prepCurrentStockProduct')}"
 							break;
 						case 0:
-							var url = 'product/topProduct'
+							var url = "{:url('/product/topProduct')}"
 							break;
 						default:
-							var url = 'product/categoryProduct'
+							var url = "{:url('/product/categoryProduct')}"
 					}
 					var _this=this
 					getData(url, data, function (res) {
@@ -1802,6 +1802,8 @@
 					}else{
 						this.isHandle=this.isHandle+1
 					}
+					//未进行排序前当前选中的产品id
+					var product_id = this.menudata2Sort[this.menudata2SortIndex].product_id
 					//将产品进行排序
 					this.menudata2Sort=JSON.parse(JSON.stringify(this.menudata2))
 					console.log('产品排序---',this.isHandle);
@@ -1811,10 +1813,23 @@
 						case 2:this.sortData(this.menudata2Sort,'menu_id',1);break;
 					}
 					//默认选中索引值归0
-					this.menudata2SortIndex=0
-					this.menudataTwoCateIndex=0
+					// this.menudata2SortIndex=0
+					// this.menudataTwoCateIndex=0
+					//排序之后-动态改变当前选中的索引id值
+					for (var i in this.menudata2Sort) {
+						if(this.menudata2Sort[i].product_id == product_id){
+							this.menudata2SortIndex = i
+							break;
+						}
+					}
+					for (var i in this.menudata2) {
+						if(this.menudata2[i].product_id == product_id){
+							this.currentContent = i
+							break;
+						}
+					}
 					//获取默认显示的二级类目
-					this.twoCateGoods(this.menudata2Sort[0].product_id)
+					// this.twoCateGoods(this.menudata2Sort[0].product_id)
 				},
 				//设置或取消置顶
 				cancelZD(item,index,action_type,source=''){
@@ -1823,7 +1838,7 @@
 						"action_type":action_type
 					}
 					var _this=this
-					getData('product/setTopProduct', data, function (res) {
+					getData("{:url('/product/setTopProduct')}", data, function (res) {
 						if(res.status == 200){
 							if(action_type == 1){
 								_this.goods[index]['is_set_top'] = 1
@@ -1869,7 +1884,7 @@
 					}
 					console.log('添加与加工产品参数---',data)
 					var _this=this
-					getData('product/setProductPlaning', data, function (res) {
+					getData("{:url('/product/setProductPlaning')}", data, function (res) {
 						console.log('添加与加工产品结果---',res)
 						_this.popBox(res.message)
 						if(res.status == 200){
@@ -1901,7 +1916,7 @@
 					}
 					console.log('获取日志参数---',data)
 					var _this=this
-					getData('product/prepLogData', data, function (res) {
+					getData("{:url('/product/prepLogData')}", data, function (res) {
 						console.log('获取日志结果---',res)
 						if(res.status == 200){
 							_this.logData = res.result
@@ -2009,7 +2024,7 @@
 							data = {
 								pincode: _this.psd,
 							}
-							url = 'product/loginByPincode'
+							url = "{:url('/product/loginByPincode')}"
 							break;
 						case 2:
 							if (_this.npsd==''||_this.npsd==null) {
@@ -2038,7 +2053,7 @@
 								new_pincode: _this.npsd,
 								sure_pincode: _this.nrpsd,
 							}
-							url = 'product/setPincode'
+							url = "{:url('/product/setPincode')}"
 							break;
 						case 3:
 							if (_this.psd==''||_this.psd==null) {
@@ -2074,7 +2089,7 @@
 								new_pincode: _this.npsd,
 								sure_pincode: _this.nrpsd,
 							}
-							url = 'product/editPincode'
+							url = "{:url('/product/editPincode')}"
 							break;
 					}
 					_this.isDisable = true
@@ -2126,7 +2141,7 @@
 							_this.message = res.message
 							_this.isPsdCorrect=true
 							switch(res.status){
-								case 104:
+								case 104://pincode输入错误
 									$('.J_pincode').attr('placeholder',_this.placeholderPincode);
 									_this.psd=_this.psd2=''
 									break;
@@ -2144,10 +2159,13 @@
 									$('.J_nr_pincode').attr('placeholder',_this.placeholderNRPincode);
 									_this.npsd=_this.npsd2=_this.nrpsd=_this.nrpsd2=''
 									break;
-								case 107:
+								case 107://old pincode输入错误
 									$('.J_o_pincode').attr('placeholder',_this.placeholderOPincode);
 									_this.psd=_this.psd2=''
 									break;
+								default:
+									$('.J_pincode').attr('placeholder',_this.placeholderPincode);
+									_this.psd=_this.psd2=''
 							}
 						}
 					});
@@ -2159,7 +2177,7 @@
 						return
 					}
 					_this.isDisable = true
-					getData('product/loginOut', '', function (res) {
+					getData("{:url('/product/loginOut')}", '', function (res) {
 						window.location.href = common.webUrl+'product/login';
 					})
 				},

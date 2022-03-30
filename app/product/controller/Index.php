@@ -9,7 +9,6 @@ use app\common\service\RedisService;
 use think\facade\Cookie;
 use think\facade\Db;
 use think\facade\Queue;
-use think\facade\View;
 use app\model\{
     User,
     Order,
@@ -27,7 +26,7 @@ class Index extends AuthBase
     public function index()
     {
         // 模板输出
-        return View::fetch('index');
+        return $this->fetch('index');
     }
 
     public function test()
@@ -83,6 +82,37 @@ class Index extends AuthBase
                 Cookie::set('user_pincode_error',$error);
                 return show(config('status.code')['pincode_error']['code'],config('status.code')['pincode_error']['msg']);
             }
+        }
+        //6.判断用户是否有权限可以登录生产页面(role=20-员工，role=3-owner)
+        $StaffRoles = new StaffRoles();
+        if (in_array($user['role'],[3,20])) {
+            if ($user['role'] == 20) {//判断员工具体的职位是否有权限登录
+                $isPermission = $StaffRoles->getProductPermission($user['id']);
+                if (!$isPermission) {
+                    return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
+                }
+                $roles = array_filter(explode(",",$isPermission['roles']));
+            } else {
+                $roles = [];
+            }
+            $user['roles'] = $roles;
+        } else {
+            return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
+        }
+        //判断当前域名
+        $SERVER_NAME = $_SERVER['SERVER_NAME'];
+        if($SERVER_NAME == M_SERVER_NAME){
+            //如果当前使生产页面，判断是否有生产权限
+            if($user['role'] != 3 && !in_array(0,$user['roles']) && !in_array(1,$user['roles']) && !in_array(9,$user['roles']) && !in_array(11,$user['roles'])){
+                return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
+            }
+        } elseif ($SERVER_NAME == D_SERVER_NAME) {
+            //如果当前使拣货员页面，判断是否有拣货权限
+            if($user['role'] != 3 && !in_array(0,$user['roles']) && !in_array(1,$user['roles']) && !in_array(9,$user['roles']) && !in_array(12,$user['roles'])){
+                return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
+            }
+        } else {
+            return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
         }
 
         //3.该供应商用户存在，比较当前登录用户和pincode是否一致，一致则可以直接登录，不一致则需要强制登录当前账号
@@ -213,13 +243,17 @@ class Index extends AuthBase
         $User = new User();
         $StaffRoles = new StaffRoles();
         $isPermission = $StaffRoles->getProductPlaningPermission($user['id']);
+        $user_info = $User->getUsers($businessId,$user['id']);
         $data = [
             "user_name" => $user_name,
             "business_name" => $business_name,
             "is_has_pincode" => $user['pincode'] ? 1 : 2,//是否设置pincode，1设置 2未设置
             "is_manager" => $isPermission,//判断用户是否是管理员
-            "user_info" => $User->getUsers($businessId,$user['id']),//获取当前用户信息
+            "user_info" => $user_info,//获取当前用户信息
         ];
+//        //将用户登录信息存入redis
+//        $redis = redis_connect();
+//        $redis->set('login_user',$user);
         return $data;
     }
 
@@ -300,6 +334,7 @@ class Index extends AuthBase
 //                return show(config('status.code')['no_need_refresh']['code'],config('status.code')['no_need_refresh']['msg']);
 //            }
 //        }
+
         $Order = new Order();
         $ProducingProgressSummery = new ProducingProgressSummery();
         //3.获取对应日期默认全部的司机的已加工订单数量和总的加工订单数量
@@ -536,9 +571,17 @@ class Index extends AuthBase
                 }
                 $finish_quantities = $pps_info['finish_quantities']+$wcc_info['customer_buying_quantity'];
                 $pps_data['finish_quantities'] = $finish_quantities;
-                if($finish_quantities == $pps_info['sum_quantities']){
+                if ($finish_quantities == $pps_info['sum_quantities']) {
                     $pps_data['isDone'] = 1;
                     $is_product_guige1_done = 1;
+                } else {
+                    //如果筛选了司机，判断当前司机的该产品对应的规格总量是否加工完毕
+                    if (!empty($param['logistic_truck_No'])) {
+                        $driver_no_process_count = $WjCustomerCoupon->getWccOrderDone('',$wcc_info['business_userId'],$wcc_info['logistic_delivery_date'],$param['logistic_truck_No'],$wcc_info['product_id']);
+                        if($driver_no_process_count == 0){
+                            $is_product_guige1_done = 1;
+                        }
+                    }
                 }
                 ProducingProgressSummery::getUpdate(['id' => $pps_info['id']],$pps_data);
                 //3.判断该订单是否全部加工完毕
@@ -568,8 +611,16 @@ class Index extends AuthBase
                         ['product_id','=',$wcc_info['product_id']],
                         ['isdeleted','=',0],
                     ])->column('isDone');
-                    if(!in_array(0,$isDone_arr)){
+                    if (!in_array(0,$isDone_arr)) {
                         $is_product_all_done = 1;
+                    } else {
+                        //如果筛选了司机，判断当前司机的所有产品总量是否加工完毕
+                        if (!empty($param['logistic_truck_No'])) {
+                            $driver_all_no_process_count = $WjCustomerCoupon->getWccOrderDone('',$wcc_info['business_userId'],$wcc_info['business_userId'],$wcc_info['logistic_delivery_date'],$param['logistic_truck_No']);
+                            if($driver_all_no_process_count == 0){
+                                $is_product_all_done = 1;
+                            }
+                        }
                     }
                 }
                 Db::commit();
@@ -816,7 +867,7 @@ class Index extends AuthBase
     public function labelprint()
     {
         // 模板输出
-        return View::fetch('labelprint');
+        return $this->fetch('labelprint');
     }
 
     //获取日志数据
