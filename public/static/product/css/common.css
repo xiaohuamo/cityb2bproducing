@@ -744,6 +744,12 @@ a{
 	font-weight: normal;
 	margin-left: 6px;
 }
+.cate2 {
+	width: 450px;
+	height: 50px;
+	line-height: 50px;
+	padding: 0 15px;
+}
 .rightCateMenu {
 	height: calc(100vh - 120px);
 	overflow: auto;

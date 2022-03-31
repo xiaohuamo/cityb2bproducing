@@ -481,84 +481,32 @@ class Picking extends AuthBase
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
-    //获取置顶产品信息
-    public function topProduct()
+    //获取所有订单产品类目
+    public function category()
     {
         //接收参数
         $param = $this->request->only(['logistic_delivery_date','logistic_truck_No']);
+        $param['logistic_delivery_date'] = $param['logistic_delivery_date']??'';
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
 
         $businessId = $this->getBusinessId();
-        $user_id = $this->getMemberUserId();
-
-        $RestaurantMenuTop = new RestaurantMenuTop();
-        $data = $RestaurantMenuTop->getTopProduct($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No']);
-        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
-    }
-
-    //设置产品置顶
-    public function setTopProduct()
-    {
-        $param = $this->request->only(['product_id','action_type']);
-        //1.验证数据
-        //validate验证机制
-        $validate = new IndexValidate();
-        if (!$validate->scene('setProductTop')->check($param)) {
-            return show(config('status.code')['param_error']['code'], $validate->getError());
-        }
-
-        $businessId = $this->getBusinessId();
-        $user_id = $this->getMemberUserId();
-
-        if($param['action_type'] == 1){
-            $data = [
-                'userId' => $user_id,
-                'business_userId' => $businessId,
-                'product_id' => $param['product_id'],
-                'created_at' => time()
-            ];
-            $res = RestaurantMenuTop::createData($data);
-        } else {
-            $where = [
-                'userId' => $user_id,
-                'business_userId' => $businessId,
-                'product_id' => $param['product_id'],
-            ];
-            $info = RestaurantMenuTop::getOne($where);
-            if($info){
-                $res = RestaurantMenuTop::deleteAll(['id' => $info['id']]);
-            }
-        }
-        if($res !== false){
-            return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
-        } else {
-            return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
-        }
-
-    }
-
-    //获取加工产品类目
-    public function category()
-    {
-        $businessId = $this->getBusinessId();
         $RestaurantCategory = new RestaurantCategory();
-        $cate = $RestaurantCategory->getCategory($businessId);
+
+        $cate = $RestaurantCategory->getOrderCategory($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$cate);
     }
 
     //获取对应大类的产品
     public function categoryProduct()
     {
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','goods_sort','category_id']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','category_id']);
+        $param['logistic_delivery_date'] = $param['logistic_delivery_date']??'';
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
-        $param['goods_sort'] = $param['goods_sort']??0;
-        $param['category_id'] = $param['category_id']??0;
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
 
-//        $ProducingProgressSummery = new ProducingProgressSummery();
-//        $data = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['goods_sort'],$param['category_id']);
         $RestaurantMenu = new RestaurantMenu();
         $data = $RestaurantMenu->getCateProduct($businessId,$user_id,$param['category_id']);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);

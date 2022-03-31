@@ -122,6 +122,10 @@ Route::post('pickChangeProductOrderStatus', 'Picking/changeProductOrderStatus');
 Route::post('pickLogData', 'Picking/logData');
 //修改数量
 Route::post('pickEditBuyingQuantity', 'Picking/editBuyingQuantity');
+//获取配送订单的类目
+Route::post('pickCategory', 'Picking/category');
+//获取对应类目的订单产品
+Route::post('pickCategoryProduct', 'Picking/categoryProduct');
 //拣货员项目路由--------end
 
 //miss 路由

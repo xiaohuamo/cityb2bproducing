@@ -24,4 +24,30 @@ class RestaurantCategory extends Model
         $category = Db::name('restaurant_category')->field('id,category_en_name')->where($where)->order('category_sort_id asc')->select();
         return $category;
     }
+
+    /**
+     * @param $businessId
+     * @param string $logistic_delivery_date
+     * @param string $logistic_truck_No
+     */
+    public function getOrderCategory($businessId,$logistic_delivery_date='',$logistic_truck_No=''){
+        $where = [
+            ['o.business_userId','=',$businessId]
+        ];
+        if(!empty($logistic_delivery_date)){
+            $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
+        }
+        if(!empty($logistic_truck_No)){
+            $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
+        }
+        $category = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field('rc.id,rc.category_en_name')
+            ->leftJoin('order o','o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
+            ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+            ->group('rm.restaurant_category_id')
+            ->select();
+        return $category;
+    }
 }

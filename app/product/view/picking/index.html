@@ -52,12 +52,12 @@
 					Picking Sum
 					<img src="__STATIC__/product/img/arrow.png" class="arrIcon"/>
 				</div>
-				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-show="currentPage==1">
+				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(3)" v-show="currentPage==1">
 					<img src="__STATIC__/product/img/goodsIcon.png" class="goodsIcon"/>
 					Driver & orders
 					<img src="__STATIC__/product/img/arrow.png" class="arrIcon"/>
 				</div>
-				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-show="currentPage==2">
+				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-show="currentPage==2||currentPage==3">
 					<img src="__STATIC__/product/img/return.png" class="returnIcon"/>
 					Return
 				</div>
@@ -73,9 +73,19 @@
 						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
 					</div>
 				</div>
+				<div v-show="currentPage==3" class="leftMenu2">
+					<div :class="['J_cate_'+item.logistic_truck_No,{'bgFFF7F3 col5e5656':item.status==0&&menudata2SortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudata2SortIndex==index,'bgFD6921 blink':item.status==1,'bgGrey blink':item.status==2,'bg34C079 colfff':item.status==3}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.logistic_truck_No">
+						<div>{{item.truck_name}}-{{item.plate_number}}</div>
+						<div>{{item.name}}</div>
+						<!--						<div>Dep:{{item.schedule_time}}</div>-->
+						<!--						<div>{{item.remain_time}}</div>-->
+						<img v-if="item.status==1&&item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
+						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="menudata2SortIndex==index"/>
+					</div>
+				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="['J_cate_'+item.cate_id,{'bgFFF7F3 col5e5656':item.status==0&&menudata2SortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudata2SortIndex==index,'bgFD6921 blink':item.status==1,'bgGrey blink':item.status==2,'bg34C079 colfff':item.status==3}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.logistic_truck_No">
+					<div :class="['J_cate_'+item.logistic_truck_No,{'bgFFF7F3 col5e5656':item.status==0&&menudata2SortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudata2SortIndex==index,'bgFD6921 blink':item.status==1,'bgGrey blink':item.status==2,'bg34C079 colfff':item.status==3}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.logistic_truck_No">
 						<div>{{item.truck_name}}-{{item.plate_number}}</div>
 						<div>{{item.name}}</div>
 <!--						<div>Dep:{{item.schedule_time}}</div>-->
@@ -258,6 +268,18 @@
 										</div>
 									</div>
 								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div v-show="currentPage==3" class="rightCateMenu">
+					<div class="F20 hand cate2 mb10 bgFD6921 colfff" @click="goto(menudata2Sort[menudata2SortIndex],menudata2SortIndex,'.J_cate_'+menudata2Sort[menudata2SortIndex].logistic_truck_No,2)">{{menudata2Sort[menudata2SortIndex].truck_name}}&nbsp;&nbsp;{{menudata2Sort[menudata2SortIndex].plate_number}}&nbsp;&nbsp;{{menudata2Sort[menudata2SortIndex].name}}&nbsp;&nbsp;{{menudata2Sort[menudata2SortIndex].schedule_time}}&nbsp;&nbsp;{{menudata2Sort[menudata2SortIndex].remain_time}}</div>
+					<div class="flexbox2">
+						<div :class="{'bgFFF7F3 col5e5656':item.status==0&&menudataTwoCateSortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudataTwoCateSortIndex==index,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn6 relative mb10" v-for="(item,index) in menudataTwoCateSort"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
+							<div :class="item.status==1||item.status==2?'blink':''">
+								<div style="text-align:left;"><span class="num">{{item.logistic_sequence_No}}</span>{{item.finish_quantities}}/{{item.sum_quantities}}</div>
+								<div :class="item.name_length>12?'F13 maT5':'F20'">{{item.nickname}}</div>
+								<img v-if="item.status==1||item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 							</div>
 						</div>
 					</div>
@@ -540,11 +562,13 @@
 								//获取默认显示的二级类目
 								_this.twoCate(type)
 							}else{
-								//vue获取顶部位置方法
-								_this.$nextTick(()=> {
-									var order_top = $('.J_main_order').offset().top+'px'
-									_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
-								})
+								if(_this.currentPage == 1){
+									//vue获取顶部位置方法
+									_this.$nextTick(()=> {
+										var order_top = $('.J_main_order').offset().top+'px'
+										_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
+									})
+								}
 								_this.menudataTwoCate = _this.menudataTwoCateSort =_this.handleList=_this.handleListSort=[]
 								_this.menudataTwoCateIndex = _this.menudataTwoCateSortIndex = 0
 								//默认加载第一个产品的第一个规格的所有加工明细
@@ -576,11 +600,13 @@
 							_this.menudataTwoCate = _this.menudataTwoCateSort = res.order
 						}
 						console.log('二级类目数据-----',_this.menudataTwoCate)
-						//vue获取顶部位置和左侧位置的方法
-						_this.$nextTick(()=> {
-							var order_top = $('.J_main_order').offset().top+'px'
-							_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
-						})
+						if(_this.currentPage == 1) {
+							//vue获取顶部位置和左侧位置的方法
+							_this.$nextTick(() => {
+								var order_top = $('.J_main_order').offset().top + 'px'
+								_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
+							})
+						}
 						if(_this.menudataTwoCateSort.length > 0){
 							//获取当前默认选中的订单id
 							if(_this.orderId==''){
@@ -1438,20 +1464,24 @@
 						});
 					}
 				},
-				//index-1:返回首页 2:返回类目页
+				//index-1:返回首页 2:返回类目页 3:返回司机和订单页面
  				returnPage(index){
 					this.currentPage=index
 					//返回首页时，将默认获取第一个分类的信息
 					this.currentMenu=0
 					//获取大类
 					var _this=this
-					getData("{:url('/product/category')}", '', function (res) {
-						res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
-						_this.menudata = res.result
-						console.log('获取产品大类目---',_this.menudata)
-						//获取默认的展示产品
-						_this.cetegoryProduct(_this.menudata[0]['id']);
-					});
+					if(returnPage == 2){
+						getData("{:url('/product/category')}", '', function (res) {
+							res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
+							_this.menudata = res.result
+							console.log('获取产品大类目---',_this.menudata)
+							//获取默认的展示产品
+							_this.cetegoryProduct(_this.menudata[0]['id']);
+						});
+					}
+					if(returnPage == 3){
+					}
 				},
 				//切换分类
 				clickMenu(item,index){

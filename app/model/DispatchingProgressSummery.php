@@ -193,7 +193,7 @@ class DispatchingProgressSummery extends Model
         foreach ($data as &$v){
             $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];//司机姓名
             $v['schedule_time'] = $v['logisitic_schedule_time'] > 0 ? date('h:ia',$v['logisitic_schedule_time']) : '';//发车时间
-            $v['remain_time'] = $v['logisitic_schedule_time'] > 0 ? 0 : 0;//距离发车剩余时间
+            $v['remain_time'] = '';//$v['logisitic_schedule_time'] > 0 ? 0 : 0;//距离发车剩余时间
             //获取司机对应的所有订单
             $map = ['dps.truck_no'=>$v['logistic_truck_No']];
             $two_cate_done_info = Db::name('dispatching_progress_summery')->alias('dps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();

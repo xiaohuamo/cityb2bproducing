@@ -81,4 +81,21 @@ class WjCustomerCoupon extends Model
             ->count();
         return $count;
     }
+
+    /**
+     * 获取订单的产品信息
+     * @param $id
+     * @param $businessId
+     */
+//    public function getWccInfo($id,$businessId)
+//    {
+//        $wcc_info = WjCustomerCoupon::alias('wcc')
+//            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done')
+//            ->leftJoin('order o','o.orderId = wcc.order_id')
+//            ->where([
+//                ['wcc.id','=',$id],
+//                ['o.business_userId','=',$businessId]
+//            ])->find();
+//        return $wcc_info;
+//    }
 }
