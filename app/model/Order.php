@@ -230,7 +230,7 @@ class Order extends Model
             ->order($order_by)
             ->select()->toArray();
         foreach($order as &$v){
-            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;
@@ -311,16 +311,20 @@ class Order extends Model
 
     /**
      * 将司机调度信息加入调度流程表队列
-     * @param $businessId 供应商id
-     * @return array
+     * @param $businessId
+     * @param $logistic_delivery_date
+     * @param $type 1自动更新 2新增商家数据更新
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    public function addDispatchingToProgress($businessId,$logistic_delivery_date)
+    public function addDispatchingToProgress($businessId,$logistic_delivery_date,$type)
     {
         $map = '(o.status=1 or o.accountPay=1) and o.logistic_truck_No != 0 and o.logistic_truck_No is not null';
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
-//            ['wcc.customer_buying_quantity','>',0],
+            ['wcc.customer_buying_quantity','>',0],
             ['o.logistic_delivery_date','=',$logistic_delivery_date],
         ];
         //查找订单中的所有商品的汇总
@@ -335,31 +339,32 @@ class Order extends Model
             ->order('o.logistic_truck_No')
             ->select()->toArray();
 //        dump($orders);
-        if (!empty($orders)) {
-            //查询当天已加入汇总表的调度信息
-            $dps_list = DispatchingProgressSummery::getAll(['business_id'=>$businessId,'delivery_date'=>$logistic_delivery_date,'isdeleted'=>0]);
-            //判断是否汇总信息是否有变动
-            $dps_has_list = [];//比对汇总表中仍然存在的信息
-            foreach($dps_list as $v){
-                foreach($orders as $vv) {
-                    if($v['orderId'] == $vv['orderId']){
-                        $dps_has_list[] = $v;
-                        break;
-                    }
+        //查询当天已加入汇总表的调度信息
+        $dps_where = "business_id=$businessId and delivery_date=$logistic_delivery_date and truck_no != 0 and truck_no is not null and isdeleted=0";
+        $dps_list = DispatchingProgressSummery::getAll($dps_where);
+        //判断是否汇总信息是否有变动
+        $dps_has_list = [];//比对汇总表中仍然存在的信息
+        foreach($dps_list as $v){
+            foreach($orders as $vv) {
+                if($v['orderId'] == $vv['orderId'] && $v['truck_no'] == $vv['truck_no']){
+                    $dps_has_list[] = $v;
+                    break;
                 }
             }
-            if(count($dps_list) > 0 && count($dps_has_list) != count($dps_list)){
-                $dps_has_id_arr = array_column($dps_has_list,'id');
-                $dps_id_arr = array_column($dps_list,'id');
-                $result = array_diff($dps_id_arr,$dps_has_id_arr);
-                DispatchingProgressSummery::getUpdate([['id','in',$result]],['isdeleted'=>1]);
-            }
-            //将调度信息加入队列依次插入数据库
+        }
+        if(count($dps_list) > 0 && count($dps_has_list) != count($dps_list)){
+            $dps_has_id_arr = array_column($dps_has_list,'id');
+            $dps_id_arr = array_column($dps_list,'id');
+            $result = array_diff($dps_id_arr,$dps_has_id_arr);
+            DispatchingProgressSummery::getUpdate([['id','in',$result]],['isdeleted'=>1]);
+        }
+        //将调度信息加入队列依次插入数据库
 //            $DispatchingProgressSummery = new DispatchingProgressSummery();
-            foreach($orders as $k=>$v){
-                if(empty($v['dps_id']) || $v['dps_sum_quantities'] != $v['sum_quantities']) {
-                    $isPushed = Queue::push('app\job\JobDispatching', $v, 'dispatchingProgressSummery');
-                    // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
+        foreach($orders as $k=>$v){
+            if(empty($v['dps_id']) || $v['dps_sum_quantities'] != $v['sum_quantities']) {
+                $isPushed = Queue::push('app\job\JobDispatching', $v, 'dispatchingProgressSummery');
+                // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
+                if ($type == 1) {
                     if ($isPushed !== false) {
                         echo date('Y-m-d H:i:s') . " a new Job is Pushed to the MQ" . "<br>";
                     } else {
@@ -405,7 +410,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_sequence_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
@@ -416,7 +421,7 @@ class Order extends Model
             ->select()->toArray();
 //        halt($order);
         foreach($order as &$v){
-            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;

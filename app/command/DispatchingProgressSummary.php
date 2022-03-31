@@ -11,6 +11,7 @@ use think\console\Output;
 use app\model\{
     Order
 };
+use think\facade\Db;
 
 class DispatchingProgressSummary extends Command
 {
@@ -18,16 +19,38 @@ class DispatchingProgressSummary extends Command
     {
         // 指令配置
         $this->setName('dispatchingprogresssummary')
+            ->addArgument('businessId', Argument::OPTIONAL, "businessId")
             ->setDescription('the dispatchingprogresssummary command');
     }
 
     protected function execute(Input $input, Output $output)
     {
-        $Order = new Order();
+        //查询当前所有在线的商家id
+        $new_businessId = $input->getArgument('businessId');
         //默认获取当天所有的加工订单
         $today_time = strtotime(date('Y-m-d',time()));
-        //供应商id目前先写死，后期优化
-        $businessId = 319188;
+        if(empty($new_businessId)){
+            //获取当前汇总表中的所有供应商id
+            $businessId_arr = Db::name('dispatching_progress_summery')->group('business_id')->column('business_id');
+            foreach ($businessId_arr as $v) {
+                $this->addData($today_time,$v,1);
+            }
+        } else {
+            $this->addData($today_time,$new_businessId,2);
+        }
+        // 指令输出
+        $output->writeln('dispatchingprogresssummary');
+    }
+
+    /**
+     * 更新加工数据
+     * @param $today_time
+     * @param $businessId
+     * @param $type 1自动更新 2新增商家数据更新
+     */
+    public function addData($today_time,$businessId,$type)
+    {
+        $Order = new Order();
         //获取订单加工的最新日期
         $logistic_delivery_date = Order::where(['business_userId'=>$businessId])->order('logistic_delivery_date desc')->value('logistic_delivery_date');
         //获取两个日期的差值
@@ -35,15 +58,13 @@ class DispatchingProgressSummary extends Command
         if($diffDays >= 0){
             for($i=0;$i<=$diffDays;$i++){
                 $time = strtotime("+$i day",$today_time);
-                $Order->addDispatchingToProgress($businessId,$time);
+                $Order->addDispatchingToProgress($businessId,$time,$type);
             }
             //加载前7天的数据
             for($i=1;$i<=7;$i++){
                 $time = strtotime("-$i day",$today_time);
-                $Order->addDispatchingToProgress($businessId,$time);
+                $Order->addDispatchingToProgress($businessId,$time,$type);
             }
         }
-        // 指令输出
-        $output->writeln('dispatchingprogresssummary');
     }
 }

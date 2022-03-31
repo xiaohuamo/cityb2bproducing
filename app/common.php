@@ -143,7 +143,7 @@ if (!function_exists('behaviorType')) {
             case 1: $desc = 'Locked';break;
             case 2: $desc = 'Unlock';break;
             case 3: $desc = 'Processed';break;
-            case 4: $desc = 'PeProcess';break;
+            case 4: $desc = 'PreProcess';break;
             case 5: $desc = 'Modify the processing quantity';break;
             case 6: $desc = 'Add planing quantity';break;
             case 7:  $desc = 'Modify planing quantity';break;

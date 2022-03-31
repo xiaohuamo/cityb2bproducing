@@ -103,8 +103,27 @@ a{
 	width: 12px;
 }
 .numicon{
+	position: relative;
 	cursor: pointer;
 	width: 36px;
+	height: 36px;
+	line-height: 30px;
+	border-radius: 50%;
+	text-align: center;
+	font-weight: bold;
+	font-size: 30px;
+	color: #fff;
+}
+.numiconSub{
+	display: block;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 16px;
+	height: 3px;
+	margin-top: -1.5px;
+	margin-left: -8px;
+	background-color: #fff;
 }
 .inputW{
 	/*width: 60px;*/
@@ -208,6 +227,12 @@ a{
 }
 .bg1d95b9{
 	background: #1d95b9;
+}
+.bgFA8752{
+	background: #FA8752;
+}
+.F13{
+	font-size: 13px;
 }
 .F14{
 	font-size: 14px;
@@ -836,6 +861,14 @@ tbody tr td{
 .sumBox{
 	display: inline-block;
 	padding: 5px;
+}
+.outStock{
+	margin-right: 10px;
+	height: 36px;
+	line-height: 36px;
+	padding: 0 5px;
+	color: #fff;
+	border-radius: 3px;
 }
 
 

@@ -12,10 +12,10 @@ function isButtonLoading(isLoading, button) {
 }
 
 let common = {
-    apiUrl: 'https://m.cityb2b.com/',//api接口地址
     webUrl: 'https://m.cityb2b.com/',//web访问地址
-    // apiUrl: 'http://192.168.50.105/',//api接口地址
+    dWebUrl: 'https://d.cityb2b.com/',//web访问地址
     // webUrl: 'http://192.168.50.105/',//web访问地址
+    // dWebUrl: 'http://127.0.0.1/',//web访问地址
 }
 
 function getData(url,data,callback){

@@ -130,7 +130,7 @@ class Login extends Base
                 $output = Console::call('producingprogresssummary', [(string)$business_id]);
             }
         } elseif ($SERVER_NAME == D_SERVER_NAME) {
-            $is_exist = DispatchingProgressSummery::is_exist(['business_userId' => $business_id]);
+            $is_exist = DispatchingProgressSummery::is_exist(['business_id' => $business_id]);
             if(empty($is_exist)){
                 $output = Console::call('dispatchingprogresssummary', [(string)$business_id]);
             }

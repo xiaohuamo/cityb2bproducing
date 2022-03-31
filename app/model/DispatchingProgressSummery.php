@@ -105,7 +105,15 @@ class DispatchingProgressSummery extends Model
                 $default_k = $today_before_k;
                 return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
             }
-            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+            //判断当前供应商最近7天内是否有订单数据，如果有，则前端需要实时刷新数据，如果没有，则无需更新
+            $map = 'status=1 or accountPay=1';
+            $order_count = Db::name('order')->where([
+                ['business_userId', '=', $businessId],
+                ['coupon_status', '=', 'c01'],
+                ['logistic_delivery_date','>',time()-3600*24*7],
+            ])->count();
+            $is_has_data = $order_count>0 ? 1 : 2;
+            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k,'is_has_data' => $is_has_data];
         }
     }
 
@@ -174,9 +182,9 @@ class DispatchingProgressSummery extends Model
         }
         $data = Db::name('dispatching_progress_summery')
             ->alias('dps')
-            ->field('dps.truck_No logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,o.logisitic_schedule_time')
+            ->field('dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,o.logisitic_schedule_time')
             ->leftJoin('order o','o.orderId = dps.orderId')
-            ->leftJoin('truck t',"t.truck_no = dps.truck_No and t.business_id=$businessId")
+            ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
             ->leftjoin('user u','u.id=t.current_driver')
             ->where($where)
             ->group('dps.truck_No')
@@ -187,10 +195,8 @@ class DispatchingProgressSummery extends Model
             $v['schedule_time'] = $v['logisitic_schedule_time'] > 0 ? date('h:ia',$v['logisitic_schedule_time']) : '';//发车时间
             $v['remain_time'] = $v['logisitic_schedule_time'] > 0 ? 0 : 0;//距离发车剩余时间
             //获取司机对应的所有订单
-            $where = [
-                ['dps.truck_No', '=', $v['logistic_truck_No']],
-            ];
-            $two_cate_done_info = Db::name('dispatching_progress_summery')->alias('dps')->field('operator_user_id,isDone')->where($where)->select()->toArray();
+            $map = ['dps.truck_no'=>$v['logistic_truck_No']];
+            $two_cate_done_info = Db::name('dispatching_progress_summery')->alias('dps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
             $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
             //判断处理状态 0-未处理 1-自己正在处理 2-其他人正在处理 3-处理完成
             $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);

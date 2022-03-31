@@ -140,7 +140,7 @@ class OrderProductPlaning extends Model
             ->select()->toArray();
         foreach($order as &$v){
             $v['nickname'] = $v['nickname']?:$nickname;
-            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;

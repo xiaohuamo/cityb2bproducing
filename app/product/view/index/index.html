@@ -1277,7 +1277,7 @@
 					this.whichPopShow=-1
 					//如果是预加工类型，跳转到预加工页面
 					if(index==1){
-						window.location.href=common.webUrl+'product/preProduct'
+						window.location.href="{:url('/product/preProduct')}"
 					}
 				},
 				//切换日期
@@ -1791,7 +1791,7 @@
 					}
 					_this.isDisable = true
 					getData("{:url('/product/loginOut')}", '', function (res) {
-						window.location.href = common.webUrl+'product/login';
+						window.location.href = "{:url('/product/login')}"
 					})
 				},
 				//删除code

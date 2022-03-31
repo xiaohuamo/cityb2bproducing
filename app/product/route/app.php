@@ -120,6 +120,8 @@ Route::post('pickLockProductResult', 'Picking/lockProductResult');
 Route::post('pickChangeProductOrderStatus', 'Picking/changeProductOrderStatus');
 //获取锁定结果
 Route::post('pickLogData', 'Picking/logData');
+//修改数量
+Route::post('pickEditBuyingQuantity', 'Picking/editBuyingQuantity');
 //拣货员项目路由--------end
 
 //miss 路由

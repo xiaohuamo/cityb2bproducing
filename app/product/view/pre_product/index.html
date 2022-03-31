@@ -1569,7 +1569,7 @@
 					this.whichPopShow=-1
 					//如果是客户订单类型，跳转到客户订单页面
 					if(index==1){
-						window.location.href=common.webUrl+'product/index'
+						window.location.href="{:url('/product/index')}"
 					}
 				},
 				//选择操作类型
@@ -2178,7 +2178,7 @@
 					}
 					_this.isDisable = true
 					getData("{:url('/product/loginOut')}", '', function (res) {
-						window.location.href = common.webUrl+'product/login';
+						window.location.href = "{:url('/product/login')}"
 					})
 				},
 				//删除code

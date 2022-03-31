@@ -426,14 +426,13 @@ class Picking extends AuthBase
         if($wcc_info['new_customer_buying_quantity'] != $param['new_customer_buying_quantity']){
             $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
             if ($res) {
-                $ProducingBehaviorLog = new ProducingBehaviorLog();
+                $DispatchingBehaviorLog = new DispatchingBehaviorLog();
                 $log_data = [
-                    "product_id" => $wcc_info['product_id'],
-                    "guige1_id" => $wcc_info['guige1_id'],
+                    "orderId" => $wcc_info['order_id'],
                     "wj_customer_coupon_id" => $param['id'],
                     "new_customer_buying_quantity" => $param['new_customer_buying_quantity']
                 ];
-                $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,5,$wcc_info['logistic_delivery_date'],$log_data);
+                $DispatchingBehaviorLog->addBehaviorLog($user_id,$businessId,5,$wcc_info['logistic_delivery_date'],$log_data);
                 return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
             } else {
                 return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
