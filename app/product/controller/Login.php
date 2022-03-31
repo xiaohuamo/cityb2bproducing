@@ -88,7 +88,7 @@ class Login extends Base
             return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
         }
         //判断当前域名
-        $SERVER_NAME = $_SERVER['SERVER_NAME'];
+        $SERVER_NAME = $_SERVER['HTTP_HOST'];
         if($SERVER_NAME == M_SERVER_NAME){
             //如果当前使生产页面，判断是否有生产权限
             if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(11,$user['roles'])){

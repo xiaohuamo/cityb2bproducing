@@ -68,7 +68,7 @@ abstract class Base
                     }
                     $user['roles'] = $roles;
                     //判断当前域名
-                    $SERVER_NAME = $_SERVER['SERVER_NAME'];
+                    $SERVER_NAME = $_SERVER['HTTP_HOST'];
                     if($SERVER_NAME == M_SERVER_NAME){
                         if($user['role'] == 3 || in_array(0,$roles) || in_array(1,$roles) || in_array(9,$roles) || in_array(11,$roles)) {
                             return redirect('index')->send();

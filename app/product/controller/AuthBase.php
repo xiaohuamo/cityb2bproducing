@@ -70,7 +70,7 @@ class AuthBase extends Base
         ];
         if (in_array($action, $allow)) {
             //判断当前域名,是否和操作页面相符合
-            $SERVER_NAME = $_SERVER['SERVER_NAME'];
+            $SERVER_NAME = $_SERVER['HTTP_HOST'];
             if ($action == $allow[2]) {
                 if($SERVER_NAME != D_SERVER_NAME){
                     $this->_empty();
