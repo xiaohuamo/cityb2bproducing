@@ -8,7 +8,7 @@ use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
-use think\Facade\Db;
+use think\facade\Db;
 use app\model\{
     Order,
     ProducingProgressSummery

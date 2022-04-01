@@ -46,7 +46,9 @@ class RestaurantCategory extends Model
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
             ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+            ->where($where)
             ->group('rm.restaurant_category_id')
+            ->order('rc.category_sort_id asc')
             ->select();
         return $category;
     }

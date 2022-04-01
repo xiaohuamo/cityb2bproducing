@@ -503,12 +503,13 @@ class Picking extends AuthBase
         $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','category_id']);
         $param['logistic_delivery_date'] = $param['logistic_delivery_date']??'';
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param['category_id'] = $param['category_id']??'';
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
 
-        $RestaurantMenu = new RestaurantMenu();
-        $data = $RestaurantMenu->getCateProduct($businessId,$user_id,$param['category_id']);
+        $WjCustomerCoupon = new WjCustomerCoupon();;
+        $data = $WjCustomerCoupon->getWccList($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['category_id']);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 

@@ -360,6 +360,14 @@ a{
 	padding: 15px 0;
 }
 
+.lbtn4{
+	margin: 0 6px 10px;
+	box-sizing: border-box;
+	padding: 15px;
+	min-width: 220px;
+	height: 108px;
+}
+
 .rbtn{
 	max-width: 380px;
 	/*height: 67px;*/
@@ -731,8 +739,8 @@ a{
 	text-align: left;
 	padding: 0 5px;
 }
-.userBox>span{
-	margin-right: 5px;
+.userBox,.twoCateBox>span{
+	margin-right: 10px;
 }
 .cater {
 	/*border: 6px solid #80d7c7;*/

@@ -87,15 +87,65 @@ class WjCustomerCoupon extends Model
      * @param $id
      * @param $businessId
      */
-//    public function getWccInfo($id,$businessId)
-//    {
-//        $wcc_info = WjCustomerCoupon::alias('wcc')
-//            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done')
-//            ->leftJoin('order o','o.orderId = wcc.order_id')
-//            ->where([
-//                ['wcc.id','=',$id],
-//                ['o.business_userId','=',$businessId]
-//            ])->find();
-//        return $wcc_info;
-//    }
+    public function getWccList($businessId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='')
+    {
+        $where = [
+            ['o.business_userId','=',$businessId]
+        ];
+        if(!empty($logistic_delivery_date)){
+            $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
+        }
+        if(!empty($logistic_truck_No)){
+            $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
+        }
+        if(!empty($category_id)){
+            $where[] = ['rc.id','=',$category_id];
+        }
+        $data = WjCustomerCoupon::alias('wcc')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.menu_en_name,rm.unit_en,rm.menu_id,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name')
+            ->leftJoin('order o','o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
+            ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
+            ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+            ->where($where)
+            ->group('wcc.restaurant_menu_id,wcc.guige1_id')
+            ->order('rc.category_sort_id asc')
+            ->select()->toArray();
+        $list = [];
+        foreach($data as &$v){
+            if(!isset($list[$v['cate_id']])){
+                $list[$v['cate_id']] = [
+                    'cate_id' => $v['cate_id'],
+                    'category_en_name' => $v['category_en_name'],
+                ];
+            }
+            if(!isset($list[$v['cate_id']]['product'][$v['product_id']])) {
+                $list[$v['cate_id']]['product'][$v['product_id']] = [
+                    'product_id' => $v['product_id'],
+                    'menu_id' => $v['menu_id'],
+                    'menu_en_name' => $v['menu_en_name'],
+                    'unit_en' => $v['unit_en'],
+                    'sum_quantities' => $v['customer_buying_quantity'],
+                ];
+            } else {
+                $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] += $v['customer_buying_quantity'];
+            }
+            if($v['guige1_id'] > 0){
+                $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 1;
+                $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][] = [
+                    'guige1_id' => $v['guige1_id'],
+                    'guige_name' => $v['guige_name'],
+                    'customer_buying_quantity' => $v['customer_buying_quantity']
+                ];
+            } else {
+                $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 2;
+                $list[$v['cate_id']]['product'][$v['product_id']]['customer_buying_quantity'] = $v['customer_buying_quantity'];
+            }
+        }
+        $list = array_values($list);
+        foreach($list as $k=>$v){
+            $list[$k]['product'] = array_values($list[$k]['product']);
+        }
+        return $list;
+    }
 }
