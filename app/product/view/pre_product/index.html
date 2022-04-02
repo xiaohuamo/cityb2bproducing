@@ -36,7 +36,7 @@
 				</div>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
-				<span class="blink">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
+				<span class="blink1">{{choseDate1?choseDate1.date+' '+choseDate1.date_day:list[0].date+' '+choseDate1.date_day}}</span>
 				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
 					<div class="mb10 F20" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
@@ -1777,7 +1777,8 @@
 							this.inidata()
 						}
 						this.$nextTick(()=> {
-							var h = $(selector).offset().top-$(selector).height()-150
+							var scroll_top = $(".J_left_menu_1").scrollTop()
+							var h = $(selector).offset().top-$(selector).height()-150+scroll_top
 							console.log('计算出滚动的高度---',$(selector).offset().top,$(selector).height())
 							$(".J_left_menu_1").animate({scrollTop:h},1000)
 						})

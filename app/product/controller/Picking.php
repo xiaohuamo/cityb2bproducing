@@ -82,9 +82,12 @@ class Picking extends AuthBase
     public function changeTruck()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','tw_sort','tw_sort_type']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','tw_sort','tw_sort_type','type']);
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param['choose_logistic_truck_No'] = $param['choose_logistic_truck_No']??'';
         $param['tw_sort'] = $param['tw_sort']??0;//排序字段
         $param['tw_sort_type'] = $param['tw_sort_type']??1;//1-正向排序 2-反向排序
+        $param['type'] = $param['type']??'';//=空时-切换司机获取订单信息  =‘allDriverOrder’-获取所有司机的订单信息
 
         $businessId = $this->getBusinessId();
 
@@ -92,7 +95,7 @@ class Picking extends AuthBase
 
         //1.获取对应日期加司机的订单信息
         $user_id = $this->getMemberUserId();
-        $order = $DispatchingProgressSummery->getOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['tw_sort'],$param['tw_sort_type']);
+        $order = $DispatchingProgressSummery->getOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['choose_logistic_truck_No'],$param['tw_sort'],$param['tw_sort_type'],$param['type']);
         //2.获取对应日期的司机的已加工订单数量和总的加工订单数量
         $driver_order_count = $DispatchingProgressSummery->getDispatchingOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
         $data = [

@@ -711,6 +711,22 @@ a{
     50.01% { opacity: 1; color:#fff; }
     100% { opacity: 1; color:#fff; }
 }
+
+.blink1{
+	animation: blink1 2s linear infinite;
+	/* 其它浏览器兼容性前缀 */
+	-webkit-animation: blink1 2s linear infinite;
+	-moz-animation: blink1 2s linear infinite;
+	-ms-animation: blink1 2s linear infinite;
+	-o-animation: blink1 2s linear infinite;
+}
+
+@-webkit-keyframes blink1 {
+	0% { opacity: 1; color:#5e5656;}
+	50% { opacity: 1; color:#5e5656; }
+	50.01% { opacity: 1; color:#FD6921; }
+	100% { opacity: 1; color:#FD6921; }
+}
 [v-cloak]{
 	display: none;
 }
@@ -772,7 +788,7 @@ a{
 	position: relative;
 }
 .log img{
-	width: 50px;
+	width: 36px;
 }
 .logContent{
 	position: absolute;

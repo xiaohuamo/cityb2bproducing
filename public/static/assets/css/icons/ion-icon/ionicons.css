@@ -1095,51 +1095,51 @@
 
 .ion-lock-combination:before { content: "\f4d4"; }
 
-.ion-locked:before { content: "\f200"; }
+.ion-locked:before { content: "\F180"; }
 
 .ion-log-in:before { content: "\f29e"; }
 
 .ion-log-out:before { content: "\f29f"; }
 
-.ion-loop:before { content: "\f201"; }
+.ion-loop:before { content: "\F181"; }
 
 .ion-magnet:before { content: "\f2a0"; }
 
 .ion-male:before { content: "\f2a1"; }
 
-.ion-man:before { content: "\f202"; }
+.ion-man:before { content: "\F182"; }
 
-.ion-map:before { content: "\f203"; }
+.ion-map:before { content: "\F183"; }
 
 .ion-medkit:before { content: "\f2a2"; }
 
 .ion-merge:before { content: "\f33f"; }
 
-.ion-mic-a:before { content: "\f204"; }
+.ion-mic-a:before { content: "\F184"; }
 
-.ion-mic-b:before { content: "\f205"; }
+.ion-mic-b:before { content: "\F185"; }
 
-.ion-mic-c:before { content: "\f206"; }
+.ion-mic-c:before { content: "\F186"; }
 
-.ion-minus:before { content: "\f209"; }
+.ion-minus:before { content: "\F189"; }
 
-.ion-minus-circled:before { content: "\f207"; }
+.ion-minus-circled:before { content: "\F187"; }
 
-.ion-minus-round:before { content: "\f208"; }
+.ion-minus-round:before { content: "\F188"; }
 
 .ion-model-s:before { content: "\f2c1"; }
 
-.ion-monitor:before { content: "\f20a"; }
+.ion-monitor:before { content: "\F18a"; }
 
-.ion-more:before { content: "\f20b"; }
+.ion-more:before { content: "\F18b"; }
 
 .ion-mouse:before { content: "\f340"; }
 
-.ion-music-note:before { content: "\f20c"; }
+.ion-music-note:before { content: "\F18c"; }
 
-.ion-navicon:before { content: "\f20e"; }
+.ion-navicon:before { content: "\F18e"; }
 
-.ion-navicon-round:before { content: "\f20d"; }
+.ion-navicon-round:before { content: "\F18d"; }
 
 .ion-navigate:before { content: "\f2a3"; }
 
@@ -1157,7 +1157,7 @@
 
 .ion-paper-airplane:before { content: "\f2c3"; }
 
-.ion-paperclip:before { content: "\f20f"; }
+.ion-paperclip:before { content: "\F18f"; }
 
 .ion-pause:before { content: "\f210"; }
 
