@@ -1315,9 +1315,9 @@
 					var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
 					var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
 					if(is_has_two_cate == 1){
-						preview(item,item.num1,goods,goodsTwoCate,this.businessName,this.userName)
+						print(item,item.num1,goods,goodsTwoCate,this.businessName,this.userName)
 					}else{
-						preview(item,item.num1,goods,[],this.businessName,this.userName)
+						print(item,item.num1,goods,[],this.businessName,this.userName)
 					}
 				},
 				numSub(arg1,arg2){

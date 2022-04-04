@@ -7,6 +7,11 @@ function preview(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessNa
     LODOP.PREVIEW();
 }
 
+function print(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessName) {
+    init(parsedOrders,totalCopy,goods,goodsTwoCate,userName,businessName);
+    LODOP.PRINT();
+}
+
 var LODOP;
 var PRINT_MODE_SINGLE_LABEL_PER_PAGE = 'SINGLE_LABEL_PER_PAGE';
 var PRINT_MODE_THREE_LABEL_PER_PAGE = 'THREE_LABEL_PER_PAGE';
