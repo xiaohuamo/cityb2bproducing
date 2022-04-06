@@ -95,7 +95,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="right pa10-26">
+			<div class="right pa10">
 				<div v-show="currentPage==1">
 					<div>
 						<!-- 头部 -->
@@ -118,6 +118,7 @@
 									<div style="text-align:left;"><span class="num">{{item.logistic_sequence_No}}</span>{{item.finish_quantities}}/{{item.sum_quantities}}</div>
 									<div :class="item.name_length>12?'F13 maT5':'F18'">{{item.nickname}}</div>
 									<img v-if="item.status==1||item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
+									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataTwoCateSortIndex==index"/>
 								</div>
 							</div>
 <!--							<div class="bgGrey colfff rbtn">-->
@@ -172,14 +173,15 @@
 							</div>
 							<!-- 主体部分 -->
 							<div class="mainBox J_main_box F18" style="flex: auto;">
+								<div class="remarkBox pa18-0 mb15 blink" style="width: 60%;" v-if="orderRemarkMessage"><div class="pa0-26">{{orderRemarkMessage}}</div></div>
 								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
 									<div class="log" @click="log(item,index)">
 										<img src="__STATIC__/product/img/log.png">
 									</div>
-									<div class="flexbox1 pa18-0 w70" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+									<div class="flexbox1 pa18-0 orderDetail" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
-											<div class="col666 F24" style="width: 150px;">{{item.menu_id}}</div>
-											<div class="col666" style="width: 350px;">{{item.menu_en_name}} {{item.guige_name}}</div>
+											<div class="col666 F24" style="width: 100px;">{{item.menu_id}}</div>
+											<div class="col666">{{item.menu_en_name}} {{item.guige_name}}</div>
 										</div>
 										<div class="flexbox2">
 											<div class="outStock" :class="item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock',$event)">out stock</div>
@@ -191,10 +193,10 @@
 									<div class="flexbox1 pa18-0 F18" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event)"><span class="numiconSub"></span></div>
-											<input class="inputW F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>
+											<input class="inputW4 F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>
 											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event)">+</div>
 										</div>
-										<img src="__STATIC__/product/img/echo.png" class="echo" @click="print(item,index)"/>
+										<img src="__STATIC__/product/img/echo.png" class="echo echoMl" @click="print(item,index)"/>
 									</div>
 									<div class="rbtn3 F18 bg34C079 colfff relative" v-if="item.dispatching_is_producing_done==1" @click="handle(index)">
 										processed
@@ -412,6 +414,7 @@
 				logData:[],//日志数据
 				allDriverOrder:[],//获取所有司机的订单数据
 				currentPage3LeftIndex:0,//Driver&Order页面左侧选中的数据
+				orderRemarkMessage:'',//订单备注信息
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -641,6 +644,7 @@
 							_this.handleListSort = []
 							_this.handleList = res.order
 							_this.handleListSort = res.order
+							_this.orderRemarkMessage = res.message
 						}
 						console.log('获取产品加工明细单2222-----',_this.handleList)
 					});
@@ -741,11 +745,25 @@
 										}
 									}
 									//修改对应的加工明细单为可处理
+									var renew_id_arr = [];//判断是否需要更新handleList的值
 									$.each(_this.handleListSort,function(i,n){
 										_this.handleList[i]['is_lock'] = 0
 										_this.handleList[i]['lock_type'] = 0
 										_this.handleListSort[i]['lock_type'] = 0
+										if(_this.handleListSort[i]['dispatching_is_producing_done'] == 2){
+											renew_id_arr.push(_this.handleListSort[i].id)
+											_this.handleListSort[i]['dispatching_is_producing_done'] = 0
+										}
 									});
+									if (renew_id_arr.length > 0) {
+										for(var i in _this.handleList){
+											for(var j in renew_id_arr) {
+												if (_this.handleList[i]['id'] == j) {
+													_this.handleList[i]['dispatching_is_producing_done'] = 0
+												}
+											}
+										}
+									}
 									//修改可编辑数量和标签数量为可编辑状态
 									$('.J_edit_quantity').attr("disabled","disabled")
 									$('.J_edit_lable').attr("disabled","disabled")
@@ -892,7 +910,9 @@
 					}
 					if(item.dispatching_is_producing_done == 0){
 						if(item.is_lock!=1){
-							this.popBox('Please lock the order')
+							//如果未锁定，点击自动锁定
+							this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
+							// this.popBox('Please lock the order')
 							return
 						}
 						if(item.lock_type!=1){

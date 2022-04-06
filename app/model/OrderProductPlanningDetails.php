@@ -65,4 +65,18 @@ class OrderProductPlanningDetails extends Model
             ->find();
         return $info;
     }
+
+    /**
+     * 获取订单的产品信息
+     * @param $where
+     * @param $data
+     */
+    public function updateWccData($where,$data)
+    {
+        $res = OrderProductPlanningDetails::alias('oppd')
+            ->leftJoin('order_product_planing opp','opp.orderId = oppd.order_id')
+            ->where($where)
+            ->update($data);
+        return $res;
+    }
 }

@@ -115,6 +115,7 @@
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 									<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
+									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataTwoCateIndex==index"/>
 								</div>
 							</div>
 <!--							<div class="bgGrey colfff rbtn">-->
@@ -780,12 +781,26 @@
 										}
 									}
 									//修改对应的加工明细单为可处理
+									var renew_id_arr = [];//判断是否需要更新handleList的值
 									$.each(_this.handleListSort,function(i,n){
 										_this.handleList[i]['is_lock'] = 0
 										_this.handleList[i]['lock_type'] = 0
 										_this.handleListSort[i]['is_lock'] = 0
 										_this.handleListSort[i]['lock_type'] = 0
+										if(_this.handleListSort[i]['is_producing_done'] == 2){
+											renew_id_arr.push(_this.handleListSort[i].id)
+											_this.handleListSort[i]['is_producing_done'] = 0
+										}
 									});
+									if (renew_id_arr.length > 0) {
+										for(var i in _this.handleList){
+											for(var j in renew_id_arr) {
+												if (_this.handleList[i]['id'] == j) {
+													_this.handleList[i]['is_producing_done'] = 0
+												}
+											}
+										}
+									}
 									//修改可编辑数量和标签数量为可编辑状态
 									$('.J_edit_quantity').attr("disabled","disabled")
 									$('.J_edit_lable').attr("disabled","disabled")
@@ -945,7 +960,12 @@
 					}
 					if(item.is_producing_done == 0){
 						if(item.is_lock!=1){
-							this.popBox('Please lock the product')
+							if(item.guige1_id>0){
+								this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
+							}else{
+								this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
+							}
+							// this.popBox('Please lock the product')
 							return
 						}
 						if(item.lock_type!=1){

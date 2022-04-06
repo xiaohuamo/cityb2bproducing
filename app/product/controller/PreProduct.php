@@ -273,36 +273,50 @@ class PreProduct extends AuthBase
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();//当前操作用户
-
-        //1.获取加工产品信息
-        $pps_info = ProducingPlaningProgressSummery::getOne([
-            'business_userId' => $businessId,
-            'delivery_date' => $param['logistic_delivery_date'],
-            'product_id' => $param['product_id'],
-            'guige1_id' => $param['guige1_id'],
-            'isdeleted' => 0
-        ]);
-        if (!$pps_info) {
-            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
-        }
-        //如果该产品已加工完，不可重复点击锁定解锁
-        if ($pps_info['isDone'] == 1) {
-            return show(config('status.code')['lock_processed_error']['code'], config('status.code')['lock_processed_error']['msg']);
-        }
-        //判断该产品是否是当前上锁人解锁的
-        if ($pps_info['operator_user_id'] != $user_id) {
-            return show(config('status.code')['unlock_user_error']['code'], config('status.code')['unlock_user_error']['msg']);
-        }
-        //解锁
-        $res = ProducingPlaningProgressSummery::getUpdate(['id' => $pps_info['id']],[
-            'operator_user_id' => 0
-        ]);
-        if ($res) {
+        try{
+            Db::startTrans();
+            //1.获取加工产品信息
+            $pps_info = ProducingPlaningProgressSummery::getOne([
+                'business_userId' => $businessId,
+                'delivery_date' => $param['logistic_delivery_date'],
+                'product_id' => $param['product_id'],
+                'guige1_id' => $param['guige1_id'],
+                'isdeleted' => 0
+            ]);
+            if (!$pps_info) {
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
+            //如果该产品已加工完，不可重复点击锁定解锁
+            if ($pps_info['isDone'] == 1) {
+                return show(config('status.code')['lock_processed_error']['code'], config('status.code')['lock_processed_error']['msg']);
+            }
+            //判断该产品是否是当前上锁人解锁的
+            if ($pps_info['operator_user_id'] != $user_id) {
+                return show(config('status.code')['unlock_user_error']['code'], config('status.code')['unlock_user_error']['msg']);
+            }
+            //解锁
+            $res = ProducingPlaningProgressSummery::getUpdate(['id' => $pps_info['id']],[
+                'operator_user_id' => 0
+            ]);
+            //同时还原该产品所有的processing的加工明细状态改为待加工 is_producing_done=2=》is_producing_done=0
+            $wcc_where = [
+                ['opp.business_userId','=',$businessId],
+                ['opp.logistic_delivery_date','=',$param['logistic_delivery_date']],
+                ['oppd.restaurant_menu_id','=',$param['product_id']],
+                ['oppd.guige1_id','=',$param['guige1_id']],
+                ['oppd.is_producing_done','=',2]
+            ];
+            $wcc_data = ['oppd.is_producing_done' => 0];
+            $OrderProductPlanningDetails = new OrderProductPlanningDetails();
+            $OrderProductPlanningDetails->updateWccData($wcc_where,$wcc_data);
+            Db::commit();
             $ProducingBehaviorLog = new ProducingPlaningBehaviorLog();
             $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,2,$param['logistic_delivery_date'],$param);
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
-        } else {
-            return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return show(config('status.code')['system_error']['code'], $e->getMessage());
         }
     }
 
@@ -744,6 +758,7 @@ class PreProduct extends AuthBase
                     'coupon_status' => 'c01',
                     'bonus_title' => $goods_info['menu_cn_name'],
                     'customer_buying_quantity' => $param['quantity'],
+                    'new_customer_buying_quantity' => $param['quantity'],
                     'menu_id' => $goods_info['menu_id'],
                     'guige1_id' => $param['guige1_id'],
                     'business_id' => $businessId,

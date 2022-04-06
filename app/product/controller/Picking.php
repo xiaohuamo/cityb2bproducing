@@ -121,7 +121,8 @@ class Picking extends AuthBase
         //获取对应日期的加工订单
         $order = $Order->getProductOrderDetailList($businessId,$user_id,$param['orderId'],$param['wcc_sort'],$param['wcc_sort_type']);
         $data = [
-            'order' => $order
+            'order' => $order,
+            'message' => Order::getVal(['orderId' => $param['orderId']],'message_to_business'),//订单备注信息
         ];
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
@@ -201,34 +202,48 @@ class Picking extends AuthBase
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();//当前操作用户
 
-        //1.获取订单信息
-        $dps_info = DispatchingProgressSummery::getOne([
-            'business_id' => $businessId,
-            'delivery_date' => $param['logistic_delivery_date'],
-            'orderId' => $param['orderId'],
-            'isdeleted' => 0
-        ]);
-        if (!$dps_info) {
-            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
-        }
-        //如果该产品已加工完，不可重复点击锁定解锁
-        if ($dps_info['isDone'] == 1) {
-            return show(config('status.code')['lock_processed_error']['code'], config('status.code')['lock_processed_error']['msg']);
-        }
-        //判断该产品是否是当前上锁人解锁的
-        if ($dps_info['operator_user_id'] != $user_id) {
-            return show(config('status.code')['unlock_user_error']['code'], config('status.code')['unlock_user_error']['msg']);
-        }
-        //解锁
-        $res = DispatchingProgressSummery::getUpdate(['id' => $dps_info['id']],[
-            'operator_user_id' => 0
-        ]);
-        if ($res) {
+        try{
+            Db::startTrans();
+            //1.获取订单信息
+            $dps_info = DispatchingProgressSummery::getOne([
+                'business_id' => $businessId,
+                'delivery_date' => $param['logistic_delivery_date'],
+                'orderId' => $param['orderId'],
+                'isdeleted' => 0
+            ]);
+            if (!$dps_info) {
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
+            //如果该产品已加工完，不可重复点击锁定解锁
+            if ($dps_info['isDone'] == 1) {
+                return show(config('status.code')['lock_processed_error']['code'], config('status.code')['lock_processed_error']['msg']);
+            }
+            //判断该产品是否是当前上锁人解锁的
+            if ($dps_info['operator_user_id'] != $user_id) {
+                return show(config('status.code')['unlock_user_error']['code'], config('status.code')['unlock_user_error']['msg']);
+            }
+            //解锁
+            $res = DispatchingProgressSummery::getUpdate(['id' => $dps_info['id']],[
+                'operator_user_id' => 0
+            ]);
+            //同时还原该产品所有的processing的加工明细状态改为待加工 is_producing_done=2=》is_producing_done=0
+            $wcc_where = [
+                ['o.business_userId','=',$businessId],
+                ['o.logistic_delivery_date','=',$param['logistic_delivery_date']],
+                ['wcc.order_id','=',$param['orderId']],
+                ['wcc.dispatching_is_producing_done','=',2]
+            ];
+            $wcc_data = ['wcc.dispatching_is_producing_done' => 0];
+            $WjCustomerCoupon = new WjCustomerCoupon();
+            $WjCustomerCoupon->updateWccData($wcc_where,$wcc_data);
+            Db::commit();
             $DispatchingBehaviorLog = new DispatchingBehaviorLog();
             $DispatchingBehaviorLog->addBehaviorLog($user_id,$businessId,2,$param['logistic_delivery_date'],$param);
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
-        } else {
-            return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return show(config('status.code')['system_error']['code'], $e->getMessage());
         }
     }
 

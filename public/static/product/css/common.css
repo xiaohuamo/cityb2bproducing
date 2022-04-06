@@ -47,6 +47,12 @@ a{
 	justify-content: center;
 	align-items: center;
 }
+.flexbox5{
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
 
 
 
@@ -107,7 +113,7 @@ a{
 	cursor: pointer;
 	width: 36px;
 	height: 36px;
-	line-height: 30px;
+	line-height: 36px;
 	border-radius: 50%;
 	text-align: center;
 	font-weight: bold;
@@ -129,6 +135,16 @@ a{
 	/*width: 60px;*/
 	/*height: 22px;*/
 	width: 80px;
+	height: 36px;
+	background: #FFFFFF;
+	border-radius: 3px;
+	border: none;
+	outline: none;
+	margin: 0 10px;
+	text-align: center;
+}
+.inputW4{
+	width: 40px;
 	height: 36px;
 	background: #FFFFFF;
 	border-radius: 3px;
@@ -278,6 +294,9 @@ a{
 	padding:13px 10px;
 }
 
+.w40{
+	width: 40px;
+}
 .w70{
 	width: 55%;
 }
@@ -467,6 +486,9 @@ a{
 .mb10{
 	margin-bottom:10px;
 }
+.ml10{
+	margin-left: 10px;
+}
 .ml160{
 	margin-left: 160px;
 }
@@ -487,6 +509,9 @@ a{
 }
 .pa10-26{
 	padding:10px 26px 26px;
+}
+.pa0-26{
+	padding:0 26px;
 }
 .mainBox{
 	padding:0 20px 1px;
@@ -555,6 +580,15 @@ a{
 	top: 50%;
 	transform: translate(0, -50%);
 	position: absolute;
+}
+.menusjbottom{
+	position: absolute;
+	top: 97%;
+	left: 50%;
+	width: 9px;
+	margin-left: -4.5px;
+	-moz-transform:rotate(90deg);
+	-webkit-transform:rotate(90deg);
 }
 
 .returnIcon{
@@ -790,6 +824,15 @@ a{
 .log img{
 	width: 36px;
 }
+.log1{
+	position: relative;
+	height: 56px;
+}
+.log1 img{
+	width: 36px;
+	height: 36px;
+	margin-top: 10px;
+}
 .logContent{
 	position: absolute;
 	top: 50%;
@@ -899,6 +942,26 @@ tbody tr td{
 	padding: 0 5px;
 	color: #fff;
 	border-radius: 3px;
+}
+
+.orderDetail {
+	width: 55%;
+}
+.echoMl {
+	margin-left: 50px;
+}
+@media screen and (max-width:1230px) {
+	.orderDetail {
+		width: 40%;
+	}
+	.echoMl {
+		margin-left: 10px;
+	}
+}
+.remarkBox {
+	background: #FA8752 url('../img/remark.png') no-repeat 10px center;
+	background-size: 20px;
+	word-wrap: break-word;
 }
 
 

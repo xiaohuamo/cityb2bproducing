@@ -125,6 +125,7 @@ class OrderProductPlaning extends Model
                 'user_id' => $user_id,
                 'nickname' => $nickname,
                 'factory_sales_id' => $businessId,
+                'xero_name' => '',
             ]);
         }
         //获取加工明细单数据

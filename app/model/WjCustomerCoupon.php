@@ -148,4 +148,18 @@ class WjCustomerCoupon extends Model
         }
         return $list;
     }
+
+    /**
+     * 获取订单的产品信息
+     * @param $id
+     * @param $businessId
+     */
+    public function updateWccData($where,$data)
+    {
+        $res = WjCustomerCoupon::alias('wcc')
+            ->leftJoin('order o','o.orderId = wcc.order_id')
+            ->where($where)
+            ->update($data);
+        return $res;
+    }
 }
