@@ -179,6 +179,9 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
     // html+='	<span >'+order.logistic_suppliers_info+'</span>';
     // html+='</div>';
     if(businessName.length>20 || goods.menu_en_name.length>20 || (goods.is_has_two_cate == 1 && goodsTwoCate.guige_name.length > 20)){
+        if(businessName.length>25){
+            businessName = businessName.substr(0,25)
+        }
         html += '<div style="font-size: 15px;padding: 5px 15px;">\n' +
             '        <div style="margin: 4px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n' +
             '        <p style="margin: 4px 0;">'+order.nickname+'</p>\n' +
