@@ -180,8 +180,8 @@
 									</div>
 									<div class="flexbox1 pa18-0 orderDetail" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
-											<div class="col666 F24" style="width: 100px;">{{item.menu_id}}</div>
-											<div class="col666">{{item.menu_en_name}} {{item.guige_name}}</div>
+											<div class="col666 F20" style="width: 80px;">{{item.menu_id}}</div>
+											<div class="col666" style="width: 130px;">{{item.menu_en_name}} {{item.guige_name}}</div>
 										</div>
 										<div class="flexbox2">
 											<div class="outStock" :class="item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock',$event)">out stock</div>

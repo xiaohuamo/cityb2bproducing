@@ -95,6 +95,7 @@
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 									<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
+									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataTwoCateIndex==index"/>
 								</div>
 							</div>
 <!--							<div class="bgGrey colfff rbtn">-->
@@ -149,21 +150,24 @@
 							</div>
 							<!-- 主体部分 -->
 							<div class="mainBox J_main_box F20" style="flex: auto;">
-								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
-									<div class="log" @click="log(item,index)">
+								<div class="flexbox5 mb15" v-for="(item,index) in handleListSort">
+									<div class="log1" @click="log(item,index)">
 										<img src="__STATIC__/product/img/log.png">
 									</div>
-									<div class="flexbox1 pa5-10 w70" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
-										<div class="flexbox2">
-											<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
-											<div class="col666" style="width: 350px;">{{item.nickname}}</div>
+									<div class="w70">
+										<div class="flexbox1 pa5-10" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+											<div class="flexbox2">
+												<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
+												<div class="col666" style="width: 350px;">{{item.nickname}}</div>
+											</div>
+											<div class="flexbox2">
+												<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
+												<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-',$event)" v-else/>
+												<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
+												<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+',$event)"/>
+											</div>
 										</div>
-										<div class="flexbox2">
-											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-',$event)" v-else/>
-											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+',$event)"/>
-										</div>
+										<div class="remarkBox w70 pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
 									</div>
 									<div class="flexbox1 pa18-0 F20" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
@@ -711,12 +715,26 @@
 										}
 									}
 									//修改对应的加工明细单为可处理
+									var renew_id_arr = [];//判断是否需要更新handleList的值
 									$.each(_this.handleListSort,function(i,n){
 										_this.handleList[i]['is_lock'] = 0
 										_this.handleList[i]['lock_type'] = 0
 										_this.handleListSort[i]['is_lock'] = 0
 										_this.handleListSort[i]['lock_type'] = 0
+										if(_this.handleListSort[i]['is_producing_done'] == 2){
+											renew_id_arr.push(_this.handleListSort[i].id)
+											_this.handleListSort[i]['is_producing_done'] = 0
+										}
 									});
+									if (renew_id_arr.length > 0) {
+										for(var i in _this.handleList){
+											for(var j in renew_id_arr) {
+												if (_this.handleList[i]['id'] == j) {
+													_this.handleList[i]['is_producing_done'] = 0
+												}
+											}
+										}
+									}
 									//修改可编辑数量和标签数量为可编辑状态
 									$('.J_edit_quantity').attr("disabled","disabled")
 									$('.J_edit_lable').attr("disabled","disabled")
@@ -875,7 +893,12 @@
 					}
 					if(item.is_producing_done == 0){
 						if(item.is_lock!=1){
-							this.popBox('Please lock the product')
+							if(item.guige1_id>0){
+								this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
+							}else{
+								this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
+							}
+							// this.popBox('Please lock the product')
 							return
 						}
 						if(item.lock_type!=1){
