@@ -174,7 +174,7 @@
 							<!-- 主体部分 -->
 							<div class="mainBox J_main_box F18" style="flex: auto;">
 								<div class="remarkBox pa18-0 mb15 blink" style="width: 60%;" v-if="orderRemarkMessage"><div class="pa0-26">{{orderRemarkMessage}}</div></div>
-								<div class="flexbox1 mb15" v-for="(item,index) in handleListSort">
+								<div class="flexbox1 mb15 J_order_detail" v-for="(item,index) in handleListSort">
 									<div class="log" @click="log(item,index)">
 										<img src="__STATIC__/product/img/log.png">
 									</div>
@@ -186,7 +186,7 @@
 										<div class="flexbox2">
 											<div class="outStock" :class="item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock',$event)">out stock</div>
 											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'-',$event)"><span class="numiconSub"></span></div>
-											<input class="inputW F18 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
+											<input class="inputW F18 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
 											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'+',$event)">+</div>
 										</div>
 									</div>
@@ -828,9 +828,11 @@
 									_this.handleList[i]['lock_type'] = 1
 									_this.handleListSort[i]['is_lock'] = 1
 									_this.handleListSort[i]['lock_type'] = 1
+									if(_this.handleListSort[i]['proucing_item'] != 1){
+										$('.J_order_detail').eq(i).find('.J_edit_quantity').removeAttr("disabled")
+									}
 								});
-								//修改可编辑数量和标签数量为可编辑状态
-								$('.J_edit_quantity').removeAttr("disabled")
+								//查询是是生产明细，生产明细的不可变更，其他可以变更为可编辑状态，修改可编辑数量和标签数量为可编辑状态
 								$('.J_edit_lable').removeAttr("disabled")
 							}else{
 								_this.popBox(res.message)
@@ -1345,14 +1347,14 @@
 				    try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
 				    try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
 				    m=Math.pow(10,Math.max(r1,r2))
-				    return (arg1*m-arg2*m)/m;
+				    return ((arg1*m-arg2*m)/m).toFixed(2);
 				},
 				numAdd(arg1, arg2) {
 				    var r1, r2, m;
 				    try { r1 = arg1.toString().split(".")[1].length; } catch (e) { r1 = 0; }
 				    try { r2 = arg2.toString().split(".")[1].length; } catch (e) { r2 = 0; }
 				    m = Math.pow(10, Math.max(r1, r2));
-				    return (arg1 * m + arg2 * m) / m;
+				    return ((arg1 * m + arg2 * m) / m).toFixed(2);;
 				},
 				//切换日期
 				choseDay(item,index){

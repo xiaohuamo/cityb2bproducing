@@ -163,7 +163,7 @@
 											<div class="flexbox2">
 												<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
 												<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-',$event)" v-else/>
-												<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
+												<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
 												<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+',$event)"/>
 											</div>
 										</div>
@@ -1285,14 +1285,14 @@
 				    try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
 				    try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
 				    m=Math.pow(10,Math.max(r1,r2))
-				    return (arg1*m-arg2*m)/m;
+				    return ((arg1*m-arg2*m)/m).toFixed(2);
 				},
 				numAdd(arg1, arg2) {
 				    var r1, r2, m;
 				    try { r1 = arg1.toString().split(".")[1].length; } catch (e) { r1 = 0; }
 				    try { r2 = arg2.toString().split(".")[1].length; } catch (e) { r2 = 0; }
 				    m = Math.pow(10, Math.max(r1, r2));
-				    return (arg1 * m + arg2 * m) / m;
+				    return ((arg1 * m + arg2 * m) / m).toFixed(2);
 				},
 				//切换加工类型
 				choseProductType(item,index){
