@@ -951,9 +951,9 @@ tbody tr td{
 	margin-left: 50px;
 }
 @media screen and (max-width:1230px) {
-	.orderDetail {
-		width: 40%;
-	}
+	/*.orderDetail {*/
+	/*	width: 40%;*/
+	/*}*/
 	.echoMl {
 		margin-left: 10px;
 	}
