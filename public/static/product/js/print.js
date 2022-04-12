@@ -184,7 +184,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
         }
         html += '<div style="font-size: 15px;padding: 5px 15px;">\n' +
             '        <div style="margin: 4px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n'
-        if(order.truck_info){
+        if(!jQuery.isEmptyObject(order.truck_info)){
             html += '        <div style="margin: 4px 0;"><span>'+order.truck_info.name+'-'+order.truck_info.truck_name+'-'+order.truck_info.plate_number+'</span></div>\n'
         }
         html += '        <p style="margin: 4px 0;">'+order.nickname+'</p>\n' +
@@ -200,7 +200,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName) {
     } else {
         html += '<div style="font-size: 18px;padding: 5px 15px;">\n' +
             '        <div style="margin: 8px 0;">'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</div>\n'
-        if(order.truck_info){
+        if(!jQuery.isEmptyObject(order.truck_info)){
             html += '        <div style="margin: 8px 0;"><span>'+order.truck_info.name+'-'+order.truck_info.truck_name+'-'+order.truck_info.plate_number+'</span></div>\n'
         }
         html += '        <div style="margin: 8px 0;">'+order.nickname+'</div>\n' +
