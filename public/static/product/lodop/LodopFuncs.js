@@ -135,7 +135,7 @@ function getLodop(oOBJECT, oEMBED) {
         }
         //===如下空白位置适合调用统一功能(如注册语句、语言选择等):==
         LODOP.SET_LICENSES("","075ADF287C19B1D1EBF789DC61AAFE9B335","","");
-        alert("SET_LICENSES执行了");
+        // alert("SET_LICENSES执行了");
 
         //=======================================================
         return LODOP;
