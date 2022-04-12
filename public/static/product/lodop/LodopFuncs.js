@@ -51,7 +51,7 @@ function loadCLodop() {
     var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
     var JS1 = document.createElement("script");
     var JS2 = document.createElement("script");
-    JS1.src = "http://localhost:8000/CLodopfuncs.js";  
+    JS1.src = "http://localhost:8000/CLodopfuncs.js";
     JS2.src = "http://localhost:18000/CLodopfuncs.js";
     JS1.onload  = JS2.onload  = function()    {CLodopJsState = "complete";}
     JS1.onerror = JS2.onerror = function(evt) {CLodopJsState = "complete";}
@@ -134,7 +134,8 @@ function getLodop(oOBJECT, oEMBED) {
                 document.body.innerHTML = (is64IE ? strHtm64_Update : strHtmUpdate) + document.body.innerHTML;
         }
         //===如下空白位置适合调用统一功能(如注册语句、语言选择等):==
-
+        LODOP.SET_LICENSES("","075ADF287C19B1D1EBF789DC61AAFE9B335","","");
+        alert("SET_LICENSES执行了");
 
         //=======================================================
         return LODOP;
