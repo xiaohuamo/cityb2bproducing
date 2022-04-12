@@ -426,7 +426,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,wcc.message')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,wcc.message')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
@@ -436,8 +436,24 @@ class Order extends Model
             ->order($order_by)
             ->select()->toArray();
 //        halt($order);
+        //获取所有的司机信息
+        $logistic_truck_No_arr = array_filter(array_unique(array_column($order,'logistic_truck_No')));
+        $truck_data_arr = [];//存储司机的信息
+        if($logistic_truck_No_arr){
+            $truck_data_arr = Truck::alias('t')
+                ->leftjoin('user u','u.id=t.current_driver')
+                ->where([
+                    ['t.business_id','=',$businessId],
+                    ['t.truck_no','in',$logistic_truck_No_arr],
+                ])
+                ->column('t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname','t.truck_no');
+            foreach ($truck_data_arr as &$v){
+                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];
+            }
+        }
         foreach($order as &$v){
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;
@@ -555,7 +571,7 @@ class Order extends Model
     public function getDriverOrderList($logistic_delivery_date,$businessId,$logistic_truck_No,$o_sort=0,$o_sort_type=1)
     {
         //获取当前用户对应的司机编号
-        $map = 'o.status=1 or o.accountPay=1';
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.logistic_delivery_date', '=', $logistic_delivery_date],
             ['o.business_userId', '=', $businessId],
@@ -586,7 +602,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,uf.nickname user_name,u.nickname business_name,u.name')
+            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxs,o.displayName,o.first_name,o.last_name,uf.nickname user_name,u.nickname business_name,u.name')
             ->leftJoin('user_factory uf','uf.user_id = o.userId')
             ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)
@@ -596,6 +612,7 @@ class Order extends Model
         foreach($order as &$v){
             $v['delivery_date'] = date('m/d/Y',$v['logistic_delivery_date']);
             $v['business_name'] = $v['business_name'] ?: $v['name'];
+            $v['business_shortcode'] = $v['displayName'] ?: $v['first_name'].' '.$v['last_name'];
         }
         return $order;
     }
