@@ -534,15 +534,57 @@ class Order extends Model
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
      * @param string $logistic_truck_No 配送司机id
+     * @param int $type 1。获取boxs的统计信息 2.获取订单的统计信息
      * @return array
      */
-    public function getDriverOrderCount($businessId,$logistic_delivery_date,$logistic_truck_No)
+    public function getDriverOrderCount($businessId,$logistic_delivery_date,$logistic_truck_No,$type=2)
     {
-        $map = 'o.status=1 or o.accountPay=1';
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.logistic_delivery_date', '=', $logistic_delivery_date],
-//            ['o.coupon_status', '=', 'c01'],
+            ['o.logistic_truck_No', '=', $logistic_truck_No]
+        ];
+        $sql_model = Db::name('order')
+            ->alias('o')
+            ->where($where)
+            ->where($map);
+        //获取需要配送的订单总数
+        if($type == 2){
+            $order_count = $sql_model->count();
+        } else {
+            $order_count = $sql_model->sum('boxs');
+        }
+        //获取已加工的订单总数
+        $where[] = ['o.driver_receipt_status', '=', 1];
+        $sql_model1 = Db::name('order')
+            ->alias('o')
+            ->where($where)
+            ->where($map);
+        if($type == 2){
+            $order_done_count = $sql_model1->count();
+        } else {
+            $order_done_count = $sql_model1->sum('boxs');
+        }
+        return [
+            'order_done_count' => $order_done_count,
+            'order_count' => $order_count
+        ];
+    }
+
+    /**
+     * 获取司机端的订单数（已加工订单数/总订单数）
+     * @param $businessId  供应商id
+     * @param string $logistic_delivery_date 配送日期
+     * @param string $logistic_truck_No 配送司机id
+     * @return array
+     */
+    public function getDriverBoxCount($businessId,$logistic_delivery_date,$logistic_truck_No)
+    {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['o.business_userId', '=', $businessId],
+            ['o.logistic_delivery_date', '=', $logistic_delivery_date],
             ['o.logistic_truck_No', '=', $logistic_truck_No]
         ];
         //获取需要配送的订单总数
@@ -550,14 +592,14 @@ class Order extends Model
             ->alias('o')
             ->where($where)
             ->where($map)
-            ->count();
+            ->sum('boxs');
         //获取已加工的订单总数
         $where[] = ['o.driver_receipt_status', '=', 1];
         $order_done_count = Db::name('order')
             ->alias('o')
             ->where($where)
             ->where($map)
-            ->count();
+            ->sum('boxs');
         return [
             'order_done_count' => $order_done_count,
             'order_count' => $order_count
@@ -602,7 +644,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxs,o.displayName,o.first_name,o.last_name,uf.nickname user_name,u.nickname business_name,u.name')
+            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxs,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name')
             ->leftJoin('user_factory uf','uf.user_id = o.userId')
             ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)
