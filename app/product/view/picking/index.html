@@ -255,7 +255,7 @@
 						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time}}</div>
 						<div class="flexbox2">
 							<div v-for="(item1,index1) in item.order" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgOrange':item1.status==1,'bgGreen':item1.status==3,'bgGrey':item1.status==2}" class="colfff rbtn6 relative mb10">
-								<div :class="item1.status==1||item1.status==2?'blink':''">
+								<div :class="item1.status==1||item1.status==2?'blink':''" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1,item1)">
 									<div style="text-align:left;"><span class="num">{{item1.logistic_sequence_No}}</span>{{item1.finish_quantities}}/{{item1.sum_quantities}}</div>
 									<div :class="item1.name_length>12?'F13 maT5':'F18'">{{item1.nickname}}</div>
 									<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -560,8 +560,9 @@
 						}
 					});
 				},
-				//获取二级类目
-				twoCate(type=''){
+				//获取二级类目 type=allDriverOrder：获取driver&orders页面的数据 refresh:定时刷新数据
+				//item1 当前选中的二级类目数据
+				twoCate(type='',item1=''){
 					var _this = this
 					if(type == 'allDriverOrder'){
 						var data = {
@@ -579,6 +580,7 @@
 							"type":type
 						}
 					}
+					// console.log('获取二级类目参数----',_this.twSort,_this.twSortType,data);
 					getData("{:url('/product/changeTruck')}", data, function (res) {
 						res = res.result
 						//改变司机对应的订单数
@@ -602,6 +604,24 @@
 									var order_top = $('.J_main_order').offset().top + 'px'
 									_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
 								})
+							}
+							//driver&order页面的跳转判断，如果有二级类目数据，需要选中对应的二级类目
+							if(item1 != ''){
+								if(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId != item1.orderId){
+									for(var i in _this.menudataTwoCateSort){
+										if(_this.menudataTwoCateSort[i].orderId == item1.orderId){
+											_this.menudataTwoCateSortIndex = i
+											break;
+										}
+									}
+									for(var i in _this.menudataTwoCate){
+										if(_this.menudataTwoCate[i].orderId == item1.orderId){
+											_this.menudataTwoCateIndex = i
+											break;
+										}
+									}
+								}
+								_this.orderId = item1.orderId
 							}
 							if(_this.menudataTwoCateSort.length > 0){
 								//获取当前默认选中的订单id
@@ -1084,7 +1104,7 @@
 					this.currentHandlePop=-1
 				},
 				//切换一级类目
-				clickOneCate(item,index){
+				clickOneCate(item,index,item1=''){
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
 						this.isLoading=true
@@ -1103,7 +1123,7 @@
 						this.wccSortType=1
 						//重置加工明细排序信息-end
 						//获取二级类目
-						this.twoCate()
+						this.twoCate('',item1)
 						//如果没有二级类目，则直接获取订单
 						if(item.is_has_two_cate == 2){
 							//获取一级类目对应的订单
@@ -1528,14 +1548,21 @@
 					});
 				},
 				//类目页面跳转到加工页面对应的产品位置  type-1:当前备货页面点击跳转+定位 2：返回此分类点击跳转+定位 3:拣货员当前备货页面分类定位
-				goto(item,index,selector,type=1){
+				//index 选中的索引值id
+				//selector 选中对象
+				//item1 选中的二级类目数据
+				goto(item,index,selector,type=1,item1=''){
 					switch(type){
 						case 1:
 							this.currentPage=1
 							//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
 							var index = $(selector).index()
 							if(this.menudata2SortIndex != index){
-								this.clickOneCate(this.menudata2Sort[index],index)
+								this.clickOneCate(this.menudata2Sort[index],index,item1)
+							} else {
+								if(item1 != ''){
+									this.twoCate('',item1)
+								}
 							}
 							var obj = '.J_left_menu_1'
 							break;
