@@ -136,6 +136,7 @@ a{
 	/*height: 22px;*/
 	width: 80px;
 	height: 36px;
+	line-height: 36px;
 	background: #FFFFFF;
 	border-radius: 3px;
 	border: none;
@@ -246,6 +247,9 @@ a{
 }
 .bgFA8752{
 	background: #FA8752;
+}
+.bgf9f20c{
+	background: #f9f20c;
 }
 .F13{
 	font-size: 13px;
@@ -616,7 +620,7 @@ a{
 	position: fixed;
 	left: 50%;
 	top: 50%;
-	margin-left:-18.85rem;
+	margin-left:-12.845rem;
 	margin-top:-4.125rem;
 	font-weight:500;
 	padding: 0 0.5rem;
@@ -625,7 +629,7 @@ a{
 	position: fixed;
 	left: 50%;
 	top: 50%;
-	margin-left:-230px;
+	margin-left:-115px;
 	margin-top:-135px;
 	background: #FFFFFF;
 	border-radius: 5px;
@@ -681,6 +685,35 @@ a{
 	margin-bottom: 10px;
 	cursor: pointer;
 }
+.number1{
+	width: 32%;
+	height: 4.426rem;
+	line-height: 4.426rem;
+	background: #FFFFFF;
+	border-radius: 7px;
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+.number2{
+	width: 100%;
+	height: 4.426rem;
+	line-height: 5rem;
+	background: #FFFFFF;
+	border-radius: 7px;
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+.enterNumber{
+	width: 100%;
+	height: 9.476rem;
+	background: #FFFFFF;
+	border-radius: 7px;
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+.enterNumberH{
+	padding-top: 3.538rem;
+}
 .keyboardBox{
 	position: absolute;
 	bottom: 0;
@@ -690,6 +723,25 @@ a{
 	margin-top: -224.8px;
 	margin-left: -210px;
 	width: 420px;
+}
+.keyboardBox1{
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	top:30%;
+	margin-top: -14.05rem;
+	margin-left: -13.125rem;
+	width: 26.25rem;
+}
+.keyboardBoxLeft{
+	width: 19.69rem;
+	background-color: #F2F2F2;
+	box-sizing: border-box;
+}
+.keyboardBoxRight{
+	width: 6.56rem;
+	background-color: #F2F2F2;
+	box-sizing: border-box;
 }
 .w100{
 	width: 100%;
@@ -713,6 +765,18 @@ a{
 	text-align: center;
 	color: #EF7E2E;
 	font-size: 25px;
+}
+.keyboard1{
+	background: #FFFFFF;
+	border-radius: 7px;
+	/*width: 100%;*/
+	height: 4.426rem;
+	line-height: 4.426rem;
+	box-sizing: border-box;
+	text-align: center;
+	color: #000;
+	font-size: 25px;
+	margin-bottom: 10px;
 }
 .input:empty::before{
 	content:attr(placeholder);
@@ -760,6 +824,17 @@ a{
 	50% { opacity: 1; color:#5e5656; }
 	50.01% { opacity: 1; color:#FD6921; }
 	100% { opacity: 1; color:#FD6921; }
+}
+.arrow_box{
+	border-style: solid;
+	border-width: 3px;
+	animation: glow 2s linear infinite;
+}
+@keyframes glow {
+	0% {border-color: #5e5656;}
+	50% { border-color: #5e5656;}
+	50.01% {border-color: #FD6921;}
+	100% {border-color: #FD6921;}
 }
 [v-cloak]{
 	display: none;

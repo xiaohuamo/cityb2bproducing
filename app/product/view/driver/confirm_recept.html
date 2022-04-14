@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+	<title>driver management</title>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/orderGoods.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/placeOrder.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/cart.css"/>
+	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="__STATIC__/product/js/jquery.base64.js"></script>
+	<script src="__STATIC__/product/js/vue.min.js"></script>
+	<script src="__STATIC__/product/js/common.js"></script>
+	<!--引入公共组件-->
+	<script src="__STATIC__/product/js/driver_footer.js"></script>
+</head>
+<body class="bgF2F2F2">
+<div id="photo" v-cloak>
+	<div class="head bgfff mb10">
+		<div class="f38 col333 f500 bold center">photograph</div>
+	</div><div style="height:3.5rem;"></div>
+	<!-- 主体部分开始 -->
+	<div class="ma15 borR7 bgfff">
+		<div class="flexBox2 pa15 bold">{{orderInfo.name}}</div>
+		<div class="flexBox2 pa0-15 pmb10">
+			<a class="col000" :href="'tel:'+orderInfo.phone"><img src="__STATIC__/product/img/service3.png" class="location2"/>
+				{{orderInfo.phone}}</a>
+		</div>
+		<div class="flexBox2 pa0-15 pmb10">
+			<img src="__STATIC__/product/img/location2.png" class="location2"/>
+		   {{orderInfo.address}}
+		</div>
+		<div class="pa0-15">
+			<img src="__STATIC__/product/img/big.png" class="w100"/>
+		</div>
+		<div style="height: 200px;" class="pa0-15">
+			  此处是地图
+		</div>
+	</div>
+
+	<div class="ma15 pa15 borR7 bgfff">
+		<div class="photoBox borR7" v-if="uploadPhotoText!=''">
+			<img src="__STATIC__/product/img/photo.png"/>
+			<div class="f35 col0F0F0F bold">{{uploadPhotoText}}</div>
+		</div>
+		<div class="photoBox borR7" v-else>
+			<img src="__STATIC__/product/img/photo.png"/>
+		</div>
+	</div>
+	<div class="ma0-15 pa0-15 bold pmb15">
+		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>
+	</div>
+	<!--自定义的组件使用-->
+	<common-footer current-menu="3"></common-footer>
+</div>
+</body>
+</html>
+<script>
+	new Vue({
+		el:"#photo",
+		data:{
+			nickname:'Nick name',
+			orderInfo:[],//订单详情
+			isLoading: false,//是否显示加载图标
+			uploadPhotoText:'Please upload a picture',//上传图片文字描述
+		},
+		mounted:function(){
+			var driverInfo = JSON.parse(decodeBase64(localStorage.getItem('driver_info')))
+			this.nickname = driverInfo.name
+			//获取订单详情
+			var _this = this
+			_this.isLoading=true
+			var data = {
+				'orderId':localStorage.getItem('orderId')
+			}
+			getData("{:url('/product/driverOrderDetail')}", data, function (res) {
+				console.log('获取订单详情结果---',res);
+				_this.orderInfo = res.result
+				if(res.result.hasOwnProperty('receipt_picture')){
+					res.result.receipt_picture = JSON.stringify(res.result.receipt_picture)
+					if(res.result.receipt_picture!=="null" && res.result.receipt_picture!=="undefined" && res.result.receipt_picture!==""){
+						_this.uploadPhotoText = ''
+					}
+				}
+			});
+		},
+		methods:{
+			//确定成功
+			sure(){
+
+			}
+		}
+	})
+</script>

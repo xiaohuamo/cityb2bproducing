@@ -12,6 +12,14 @@ Route::get('labelprint', 'Index/labelprint');
 Route::get('preProduct', 'PreProduct/index');
 //拣货员页面
 Route::get('picking', 'Picking/index');
+//司机页面-我的
+Route::get('me', 'Driver/me');
+//司机页面-收货页面
+Route::get('order', 'Driver/order');
+//司机页面-确认收货
+Route::get('confirmRecept', 'Driver/confirmRecept');
+//司机页面-客户查询
+Route::get('customerSearch', 'Driver/customerSearch');
 
 
 //接口路由
@@ -127,6 +135,23 @@ Route::post('pickCategory', 'Picking/category');
 //获取对应类目的订单产品
 Route::post('pickCategoryProduct', 'Picking/categoryProduct');
 //拣货员项目路由--------end
+
+//司机端项目路由--------start
+//登录信息
+Route::post('driverLoginInfo', 'Driver/loginInfo');
+//获取司机配送日期
+Route::post('driverDeliveryDate', 'Driver/deliveryDate');
+//获取订单
+Route::post('driverOrder', 'Driver/driverOrder');
+//修改订单状态
+Route::post('changeReceiptStatus', 'Driver/changeReceiptStatus');
+//获取订单详情
+Route::post('driverOrderDetail', 'Driver/orderDetail');
+//图片上传
+Route::post('uploadImage', 'Driver/uploadImage');
+//确定货物送到
+Route::post('confirmOrderFinish', 'Driver/confirmOrderFinish');
+//司机端项目路由--------end
 
 //miss 路由
 Route::miss(function() {

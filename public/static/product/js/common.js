@@ -11,11 +11,10 @@ function isButtonLoading(isLoading, button) {
     }
 }
 
-let common = {
+const common = {
     webUrl: 'https://m.cityb2b.com/',//web访问地址
     dWebUrl: 'https://d.cityb2b.com/',//web访问地址
-    // webUrl: 'http://192.168.50.105/',//web访问地址
-    // dWebUrl: 'http://127.0.0.1/',//web访问地址
+    driverWebUrl: 'https://driver.cityb2b.com/',//web访问地址
 }
 
 function getData(url,data,callback){
@@ -35,4 +34,48 @@ function getData(url,data,callback){
             alert(msg)
         }
     })
+}
+
+//加密方法。没有过滤首尾空格，即没有trim.
+//加密可以加密N次，对应解密N次就可以获取明文
+function encodeBase64(mingwen,times){
+    var code="";
+    var num=1;
+    if(typeof times=='undefined'||times==null||times==""){
+        num=1;
+    }else{
+        var vt=times+"";
+        num=parseInt(vt);
+    }
+    if(typeof mingwen=='undefined'||mingwen==null||mingwen==""){
+    }else{
+        $.base64.utf8encode = true;
+        code=mingwen;
+        for(var i=0;i<num;i++){
+            code=$.base64.btoa(code);
+        }
+    }
+    return code;
+}
+
+//解密方法。没有过滤首尾空格，即没有trim
+//加密可以加密N次，对应解密N次就可以获取明文
+function decodeBase64(mi,times){
+    var mingwen="";
+    var num=1;
+    if(typeof times=='undefined'||times==null||times==""){
+        num=1;
+    }else{
+        var vt=times+"";
+        num=parseInt(vt);
+    }
+    if(typeof mi=='undefined'||mi==null||mi==""){
+    }else{
+        $.base64.utf8encode = true;
+        mingwen=mi;
+        for(var i=0;i<num;i++){
+            mingwen=$.base64.atob(mingwen);
+        }
+    }
+    return mingwen;
 }

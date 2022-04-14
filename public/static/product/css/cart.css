@@ -1,0 +1,374 @@
+
+
+
+.cartTitle{
+	border-bottom:1px solid #E7E8EA;
+	padding:10px;
+}
+
+.cartIcon{
+	width: 1.406rem;
+	height: 1.406rem;
+	border-radius: 50%;
+}
+
+.item{
+	background: #FFFFFF;
+	margin: 12px 15px;
+	border-radius: 5px;
+}
+.cartImg{
+	width: 6.25rem;
+	height: 6.25rem;
+	margin-right: 10px;
+}
+
+.cartImg2{
+	width: 100%;
+	height: 6.25rem;
+}
+
+
+
+
+input[type='checkbox'] {
+    width:1.406rem;
+  	height:1.406rem;
+  	border:solid 1px #ACACAC;
+  	-webkit-border-radius:50%;
+  	border-radius:50%;
+  	font-size:0.8rem;
+  	margin:0;
+  	padding:0;
+  	position:relative;
+  	display:inline-block;
+  	vertical-align:top;
+  	cursor:default;
+  	-webkit-appearance:none;
+  	-webkit-user-select:none;
+	margin-right:10px;
+}
+.mycheckbox2{
+	position:relative;
+	top: 2.42rem;
+}
+input[type='checkbox']:checked::after {
+  position: absolute;
+  top:-1px;
+  left:-1px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width:1.406rem;
+  height:1.406rem;
+  content: '';
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  background: url(../img/cartActive.png) no-repeat;
+  background-size: 100% 100%;
+  border-radius: 50%;
+  margin-right:10px;
+}
+
+.btn{
+	width:1.406rem;
+	height:1.406rem;
+	border-radius: 50%;
+}
+
+.goodInfo{
+	padding:10px;
+}
+.goodInfoBox{
+	border-bottom:1px solid #ECEDEE;
+	position: relative;
+	overflow: hidden;
+}
+.goodInfo2{
+	height: 6.25rem;
+	position: relative;
+	width: calc(100% - 9rem);
+}
+
+.goodInfo2_{
+	height: 6.25rem;
+	position: relative;
+	width: 100%;
+}
+
+.goodsbox{
+	width: 48%;
+	box-sizing: border-box;
+	margin-top: 10px;
+}
+
+.price{
+	position:absolute;
+	left: 0;
+	bottom: 0;
+	width:100%;
+}
+.numreduce{
+	width: 1.3125rem;
+	height: 1.3125rem;
+	background: url(../img/reduce.png);
+	background-size:100% 100%;
+	margin-right: 10px;
+}
+.numInput{
+	width:2rem;
+	height: 2rem;
+	text-align: center;
+}
+.numadd{
+	background:url(../img/add.png);
+	background-size:100% 100%;
+	width: 1.3125rem;
+	height: 1.3125rem;
+	border-radius: 50%;
+	text-align: center;
+	color: #FFFFFF;
+	line-height: 1.3125rem;
+	margin-left: 10px;
+}
+.cartBtn{
+	width: 4.0625rem;
+	height: 1.6875rem;
+	text-align: center;
+	line-height: 1.6875rem;
+	border-radius: 12px;
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+}
+.again{
+	background: #FFFFFF !important;
+	border: 1px solid #FD5204;
+	margin-right: 5px;
+}
+.cartDelete{
+	width: 1.03rem;
+}
+.bottomItem{
+	padding: 15px;
+}
+
+.touchRemove{
+	background: #fd5203;
+	width: 3rem;
+	position: absolute;
+	right: -4rem;
+	top: 0;
+	text-align: center;
+	height: 6.25rem;
+	margin-top: 10px;
+	color: #FFFFFF;
+	line-height: 6.125rem;
+}
+.touchStart {
+  transform: translateX(-3rem);
+  transition: all 1s ease;
+}
+.touchStart2 {
+  transform: translateX(0rem);
+  transition: all 1s ease;
+}
+.touchEnd{
+	transform: translateX(0px);
+	transition: all 1s ease;
+}
+.touchRemoveActive{
+	transform: translateX(-4rem);
+	transition: all 1s ease;
+}
+.touchRemoveActive2{
+	transform: translateX(0rem);
+	transition: all 1s ease;
+}
+
+
+
+ /* 商品详情 */
+ 
+ .detail_btn{
+	width: 31%;
+	height: 2.375rem;
+	background: #F5F5F5;
+	border-radius: 5px; 
+	line-height: 2.375rem;
+	text-align: center;
+	color: #666666;
+	margin-right: 5px;
+	margin-bottom: 10px;
+ }
+ .checkedBtn{
+	 background: #FD5001;
+	 color: #FFFFFF;
+ }
+ 
+ 
+ 
+ .joinCartBtnBox{
+	 height: 3rem;
+	 margin-top: 15px;
+	 padding-bottom: 15px;
+ }
+ .joinCartBtn{
+	 position: absolute;
+	 right: 15px;
+	 top: 6px;
+	 width: 6.625rem;
+	 height: 2.218rem;
+	 line-height: 2.218rem;
+	 border-radius: 20px;
+	 color: #FFFFFF;
+	 background: linear-gradient(-87deg, #FD5001, #FC8E4E);
+ }
+ 
+ .pop2{
+	 top:calc(15% + 1.5rem);
+	 max-height:70%;
+	 overflow: auto;
+	 background: #fff;
+	 position: absolute;
+	 top: 15%;
+	 width: 80%;
+	 left: 10%;
+	 border-radius: 7px;
+ }
+ 
+ .popBox{
+	 width:90%;
+	 position: fixed;
+	 left:5%;
+	 top:20%;
+	 background: #FFFFFF;
+	 border-radius: 10px;
+	 padding:19px;
+	 box-sizing:border-box;
+	 max-height:60%;
+ } 
+ .close2{
+	 position: absolute;
+	 right: -12px;
+	 top: -30px;
+	 width: 1.25rem;
+	 height: 1.25rem;
+ }
+ .close3{
+ 	 position: absolute;
+ 	 right: 5px;
+ 	 top: -30px;
+ 	 width: 1.25rem;
+ 	 height: 1.25rem;
+ }
+ 
+ 
+ .cartPop{
+	position:absolute;
+	bottom:3.5rem;
+	left:0;
+	width:100%;
+	border-radius: 5px 5px 0 0;
+	max-height: 80%;
+	overflow: auto;
+}
+
+
+.xxx{
+  width: 1.25rem;
+}
+.classify{
+  	background: #FFFFFF;
+  	border-radius: 20px;
+	padding: 2px 10px;
+	margin-right: 5px;
+	display: inline-block; /*切记不能使用flex*/
+}
+
+.classify2{
+	display: inline-block; /*切记不能使用flex*/
+	margin-right: 10px;
+	position: relative;
+	min-height: 28px;
+}
+.classify2Active{
+	position: absolute;
+	bottom:0;
+	left: 50%;
+	margin-left: -5px;
+	width: 10px;
+	height: 5px;
+}
+.bigclassify{
+	width: calc(100% - 4rem);
+	overflow: scroll; /*超出部分滚动不换行*/
+	white-space: nowrap; /*超出不换行，必须加，否则横向超出部分会自动换行*/
+}
+.bigclassify2{
+	width: calc(100% - 3rem);
+}
+.bigclassify2 .classify{
+	margin-bottom: 10px;
+}
+
+
+
+.classifyBox{
+	position: fixed;
+	width: 100%;
+	box-sizing: border-box;
+	background: #F2F2F2;
+	z-index: 4;
+	max-width: 1024px;
+}
+
+.classifyBox2{
+	width: 100%;
+	box-sizing: border-box;
+	background: #F2F2F2;
+	z-index: 4;
+	position: relative;
+}
+.classifyPop2{
+	width: 100%;
+	left: 0;
+	box-sizing: border-box;
+	z-index:4;
+	position: absolute;
+	top: 80px;
+}
+
+/*有两级分类*/
+.classifyPop{
+	position: fixed;
+	width: 100%;
+	box-sizing: border-box;
+	top:calc(90px + 3.5rem);
+	z-index:4;
+	max-width: 1024px;
+}
+
+/*只有一级分类*/
+.classifyPop2{
+	position: fixed;
+	width: 100%;
+	box-sizing: border-box;
+	top:calc(80px + 3.5rem);
+	left:0;
+	z-index:4;
+}
+
+
+div::-webkit-scrollbar {
+  width: 0;
+}
+
+
+.add2{
+	top: 3rem;
+	right: 10px;
+	height: 7.31rem;
+}
+.add2 div{
+	height:50%;
+}

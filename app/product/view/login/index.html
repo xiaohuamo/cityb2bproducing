@@ -93,6 +93,7 @@
 <!-- Customized jquery file  -->
 <script src="__STATIC__/product/js/main.js"></script>
 <!-- Custom Js -->
+<script src="__STATIC__/product/js/jquery.base64.js"></script>
 <script src="__STATIC__/product/js/common.js"></script>
 <script>
   const errorMessage = $('#error-message');
@@ -116,7 +117,14 @@
       success: function (res) {
         if (res.status === 200) {
           var result = res.result
-          window.location.href = result['redirect_url'];
+          //司机端登录时，将登录数据保存到本地缓存
+          if(result.user.redirect_type == 3){
+            //获取登录信息
+            localStorage.driver_info = encodeBase64(JSON.stringify(result.truck_info))
+            localStorage.business_id = encodeBase64(result.truck_info.business_id.toString())
+            localStorage.user_id = encodeBase64(result.truck_info.user_id.toString())
+          }
+          window.location.href = result['user']['redirect_url'];
         } else {
           errorMessage.html(res.message);
         }

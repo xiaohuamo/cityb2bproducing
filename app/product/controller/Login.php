@@ -12,7 +12,8 @@ use app\model\{
     StaffRoles,
     Order,
     ProducingProgressSummery,
-    DispatchingProgressSummery
+    DispatchingProgressSummery,
+    Truck
 };
 
 class Login extends Base
@@ -87,11 +88,18 @@ class Login extends Base
         } else {
             return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
         }
+
+        if($user['role'] == 20){
+            $business_id = $user['user_belong_to_user'];
+        } else {
+            $business_id = $user['id'];
+        }
         //判断当前域名
         $SERVER_NAME = $_SERVER['HTTP_HOST'];
         if($SERVER_NAME == M_SERVER_NAME){
             //如果当前使生产页面，判断是否有生产权限
             if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(11,$user['roles'])){
+                $user['redirect_type'] = 1;
                 $user['redirect_url'] = M_SITE_URL.'product/index';
             } else {
                 return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
@@ -99,19 +107,25 @@ class Login extends Base
         } elseif ($SERVER_NAME == D_SERVER_NAME) {
             //如果当前使拣货员页面，判断是否有拣货权限
             if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(12,$user['roles'])){
+                $user['redirect_type'] = 2;
                 $user['redirect_url'] = D_SITE_URL.'product/picking';
             } else {
                 return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
             }
+        } elseif ($SERVER_NAME == DRIVER_SERVER_NAME) {
+            //如果当前使拣货员页面，判断是否有拣货权限
+            if(in_array(16,$user['roles'])){
+                $user['redirect_type'] = 3;
+                $user['redirect_url'] = DRIVER_SITE_URL.'product/me';
+            } else {
+                return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
+            }
+            $truck = new Truck();
+            $truck_info = $truck->getTruckInfo($business_id,$user['id']);
         } else {
             return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
         }
 
-        if($user['role'] == 20){
-            $business_id = $user['user_belong_to_user'];
-        } else {
-            $business_id = $user['id'];
-        }
         //7.登录成功，存储cookie信息
         Cookie::set('remember', $remember, 60 * 60 * 24 * 365);
         if ($remember) {
@@ -137,6 +151,7 @@ class Login extends Base
         } else {
 
         }
-        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$user);
+        $truck_info = $truck_info??[];
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],['user'=>$user,'truck_info'=>$truck_info]);
     }
 }

@@ -145,6 +145,26 @@ return [
         'distribute_quantity_error' => [
             'code' => 132,//分配加工数量不正确
             'msg' => 'Incorrect quantity to be processed'
-        ]
+        ],
+        'driver_receipt_status_error' => [
+            'code' => 133,//司机状态不正确
+            'msg' => 'Incorrect driver status'
+        ],
+        'log_out' => [
+            'code' => 134,//需要退出登录
+            'msg' => 'please login again'
+        ],
+        'picture_error' => [
+            'code' => 135,//图片错误
+            'msg' => 'Please upload the image again'
+        ],
+        'finish_order_status_error' => [
+            'code' => 136,//确定完成送货状态不正确
+            'msg' => 'Please confirm receipt first'
+        ],
+        'finish_order_error' => [
+            'code' => 137,//该订单已完成送货
+            'msg' => 'You have completed the delivery'
+        ],
     ]
 ];

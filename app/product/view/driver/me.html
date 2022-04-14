@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+	<title>driver management</title>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/placeOrder.css"></script>
+	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="__STATIC__/product/js/jquery.base64.js"></script>
+	<script src="__STATIC__/product/js/vue.min.js"></script>
+	<script src="__STATIC__/product/js/common.js"></script>
+	<!--引入公共组件-->
+	<script src="__STATIC__/product/js/driver_footer.js"></script>
+</head>
+<body class="bgF2F2F2">
+<div id="me" v-cloak>
+	<div class="head bgfff mb10">
+		<div class="relative center">
+			<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>
+			<div class="f38 col333 f500 bold">driver management</div>
+		</div>
+	</div><div style="height:3.5rem;"></div>
+	<!-- 头像部分 -->
+	<div class="flexBox1 personInfoBox">
+		<div class="flexBox2">
+			<img src="__STATIC__/product/img/portrait.png" class="portrait"/>
+			<span class="f35 bold">{{nickname}}</span>
+		</div>
+		<img src="__STATIC__/product/img/arrow2.png" class="Me_arrow" />
+	</div>
+
+	<div class="maT15 infoSetting">
+		<div class="flexBox1 settingBox" current-menu=1 @click="changeMenu(1)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/storeMe2.png" class="icon"/>
+				<span class="col1C1C1C f30">register</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+		<Child ref="child"/>
+		<div class="flexBox1 settingBox" current-menu=2 @click="changeMenu(2)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/driverMe2.png" class="icon"/>
+				<span class="col1C1C1C f30">receipt</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+		<Child ref="child"/>
+		<div class="flexBox1 settingBox" @click="changeMenu(3)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/driverMe1.png" class="icon"/>
+				<span class="col1C1C1C f30">navigation</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+		<Child ref="child"/>
+		<div class="flexBox1 settingBox" @click="changeMenu(4)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/wancheng.png" class="icon"/>
+				<span class="col1C1C1C f30">knock off</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+		<Child ref="child"/>
+	</div>
+	<div class="signOut f35 col1C1C1C" v-if="isLogin==1"  @click="LogOut">Log out</div>
+	<div class="signOut f35 col1C1C1C" v-else  @click="LogIn">Log in</div>
+	<!--自定义的组件使用-->
+	<common-footer current-menu="5"></common-footer>
+</div>
+</body>
+</html>
+<script>
+	new Vue({
+		el:"#me",
+		data:{
+			nickname:'Nick name',
+			isLogin: 2,//是否登录 1登录 2未登录
+		},
+		mounted:function(){
+			this.isLogin = localStorage.getItem('user_id') != null ? 1 : 2
+			var driverInfo = JSON.parse(decodeBase64(localStorage.getItem('driver_info')))
+			this.nickname = driverInfo.name
+		},
+		methods:{
+			changeMenu:function(index){
+				switch(index){
+					case 1://登记
+						window.location.href=common.driverWebUrl+'product/check_in'
+						break;
+					case 2://收货
+						window.location.href=common.driverWebUrl+'product/order'
+						break;
+					case 3://导航
+						window.location.href=common.driverWebUrl+'product/customerSearch'
+						break;
+					case 4://收工
+						window.location.href=common.driverWebUrl+'product/knock_off'
+						break;
+					default:
+				}
+			},
+			//退出登录
+			LogOut(){
+				var _this = this
+				if (_this.isDisable) {
+					return
+				}
+				_this.isDisable = true
+				getData("{:url('/product/loginOut')}", '', function (res) {
+					//清空本地存储信息，并跳转到登录页面
+					localStorage.clear();
+					window.location.href = "{:url('/product/login')}"
+				})
+			},
+			//登录
+			LogIn(){
+				window.location.href = "{:url('/product/login')}"
+			},
+		}
+	})
+</script>

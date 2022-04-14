@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>司机管理</title>
+  <link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+  <link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
+  {block name="css"} {/block}
+  <script src="__STATIC__/product/js/vue.min.js"></script>
+  <script src="__STATIC__/product/js/common.js"></script>
+</head>
+<body class="bgF2F2F2">
+  <div id="main" v-cloak>
+    <!-- 主体内容区 -->
+    {block name="content"} {/block}
+    <!-- 底部菜单 -->
+    <div style="height:3.125rem;"></div>
+    <div class="flexBox1 menuBox">
+      <div @click="changeMenu(1)">
+        <img src="__STATIC__/product/img/menu3.png"/>
+        <span class="col333 f26">登记</span>
+      </div>
+      <div @click="changeMenu(2)">
+        <img src="__STATIC__/product/img/driverMenu2.png" />
+        <span class="col333 f26">收货</span>
+      </div>
+      <div @click="changeMenu(3)">
+        <img src="__STATIC__/product/img/driverMenu1.png" />
+        <span class="col333 f26">导航</span>
+      </div>
+      <div @click="changeMenu(4)">
+        <img src="__STATIC__/product/img/driverMenu4.png" />
+        <span class="col333 f26">收工</span>
+      </div>
+      <div @click="changeMenu(5)">
+        <img src="__STATIC__/product/img/menu5.png" />
+        <span class="colFD5506 f26">我的</span>
+      </div>
+<!--      <div @click="changeMenu('1')">-->
+<!--        <img src="__STATIC__/product/img/driverMenu1.png"/>-->
+<!--        <span class="col333 f26">拍照</span>-->
+<!--      </div>-->
+<!--      <div @click="changeMenu('2')">-->
+<!--        <img src="__STATIC__/product/img/driverMenu2.png" />-->
+<!--        <span class="col333 f26">物流查询</span>-->
+<!--      </div>-->
+<!--      <div @click="changeMenu('3')">-->
+<!--        <img src="__STATIC__/product/img/driverMenu3.png" />-->
+<!--        <span class="col333 f26">客户查询</span>-->
+<!--      </div>-->
+<!--      <div>-->
+<!--        <img src="__STATIC__/product/img/menu5_.png" />-->
+<!--        <span class="colFD5506 f26">我的</span>-->
+<!--      </div>-->
+    </div>
+  </div>
+</body>
+</html>
+{block name="js"} {/block}

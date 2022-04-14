@@ -75,9 +75,11 @@ abstract class Base
                         }
                     } elseif ($SERVER_NAME == D_SERVER_NAME) {
                         //如果当前使拣货员页面，判断是否有拣货权限
-                        if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(12,$user['roles'])){
+                        if ($user['role'] == 3 || in_array(0, $user['roles']) || in_array(1, $user['roles']) || in_array(9, $user['roles']) || in_array(12, $user['roles'])) {
                             return redirect('picking')->send();
                         }
+                    } elseif ($SERVER_NAME == DRIVER_SERVER_NAME) {
+//                        return redirect('me')->send();
                     } else {
 
                     }

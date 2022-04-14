@@ -1,0 +1,360 @@
+.personInfoBox{
+	padding:1.28rem 1.28rem  1.69rem 1.28rem;
+	background: #FFFFFF;
+}
+
+.portrait{
+	width: 3.9rem;
+	height: 3.9rem;
+	border-radius: 50%;
+	margin-right: 20px;
+}
+
+.Me_arrow{
+	width: 1.25rem;
+	height: 1.25rem;
+}
+.Meicon{
+	width: 2.81rem;
+	height: 2.81rem;
+}
+.order{
+	width:48%;
+	height:4.875rem;
+	background: #FFFFFF;
+	border-radius: 7px;
+	padding: 0 15px;
+	box-sizing: border-box;
+}
+.orderBox{
+	padding:15px;
+}
+
+.infoSetting{
+	background: #FFFFFF;
+	border-radius: 7px;
+	background: #FFFFFF;
+	margin: 0 15px;
+}
+.settingBox{
+	padding:1.25rem;
+	border-bottom:1px solid #ECEDEE;
+}
+.settingBox .icon{
+	width: 1.5625rem;
+	height: 1.5625rem;
+	margin-right: 10px;
+}
+
+.signOut{
+	background: #FDFDFD;
+	border-radius: 7px;
+	margin:15px;
+	height: 3.375rem;
+	line-height: 3.375rem;
+	text-align: center;
+}
+
+
+/* 新增地址 */
+
+
+.H30{
+	height: 40px;
+	background: #F2F2F2;
+}
+
+.mytextarea{
+	background: #F2F2F2;
+	border: none;
+	height: 60px;
+	padding-right: 40px;
+	box-sizing: border-box;
+}
+.inputW{
+	width: calc(100% - 4rem);
+	border-radius: 7px;
+	padding-left: 10px;
+	box-sizing: border-box;
+	color: #686868;
+	font-size: 0.9375rem;
+}
+
+.inputCommon{
+	border-radius: 7px;
+	padding-left: 10px;
+	box-sizing: border-box;
+	color: #686868;
+	font-size: 0.9375rem;
+}
+
+.checked{
+	position: absolute;
+	right: 25px;
+	top: 25px;
+}
+
+.labelW{
+	width: 5rem;
+}
+.inputW2{
+	width: calc(100% - 4rem);
+	border-radius: 7px;
+	padding-left: 10px;
+	box-sizing: border-box;
+	color: #686868;
+	font-size: 0.9375rem;
+}
+.yys{
+	background: #FEE9DF;
+	border-radius: 7px;
+	color: #FD5405;
+	width: 3.94rem;
+	height: 2.5rem;
+	line-height: 2.5rem;
+	text-align: center;
+}
+.yys2{
+	background:linear-gradient(-87deg, #FD5001, #FC8F4F);
+	border-radius: 7px;
+	color: #fff;
+	width: 3.94rem;
+	height: 2.5rem;
+	line-height: 2.5rem;
+	text-align: center;
+}
+
+
+
+
+.activeDH{
+	width: 1.0625rem;
+}
+.addIcon{
+	width: 1.343rem;
+	height: 1.343rem;
+}
+
+
+
+/* 账户切换 */
+
+.pa70-0{
+	padding: 2.1875rem;
+}
+
+.currentAccount{
+	background: #FFF4EF;
+	border: 1px solid #FD5204;
+}
+.default{
+	background: #FDE2D5;
+	border-radius: 4px;
+	color: #FD5001;
+	padding:3px 8px;
+}
+
+/* 关于我们 */
+
+.R{
+	width:15px;
+}
+
+.cicon1{
+	width: 4px;
+	height: 15px;
+	background: #00B063;
+	position: absolute;
+	left: 0;
+}
+.cicon2{
+	width: 4px;
+	height: 15px;
+	background: #FD5001;
+	position: absolute;
+	left: 0;
+}
+
+
+
+/* 司機端物流管理 */
+
+.sjgl{
+	flex-wrap: wrap;
+	background: #FFFFFF;
+	padding: 10px;
+}
+.sjgl .div1{
+	width: 48%;
+	text-align: center;
+	background: #F7F8FC;
+	margin-bottom: 10px;
+	padding: 15px 0;
+	position: relative;
+}
+.sjgl .div2{
+	width: 32%;
+	text-align: center;
+	background: #F7F8FC;
+	margin-bottom: 10px;
+	padding: 15px 0;
+	position: relative;
+}
+.sjgl img{
+   position: absolute;
+   /*right: 10px;*/
+   top: 13px;
+   width: 1.56rem;
+}
+.pullBox{
+	width: 100% !important;
+	position: absolute;
+	background: #F7F8FC;
+	z-index: 3;
+	top:50px;
+	border-radius:0px 0px 7px 7px;
+}
+.pullBox div{
+	padding:10px 0;
+	border-top: 1px solid #dcdcdc;
+}
+.wlmask{
+	background: rgba(0,0,0,0.4);
+	width:100%;
+	height:100%;
+	position: fixed;
+	left: 0;
+	top: 125px;
+	z-index: 2;
+}
+
+
+
+.no{
+	margin-bottom: 0px !important;
+}
+
+.wlbtn1{
+	min-width: 5.8rem;
+	height: 2.28rem;
+	background: #FFCEB6;
+	border: 1px solid #FD5103;
+	border-radius: 7px;
+	text-align: center;
+	line-height: 2.28rem;
+	color: #000;
+	font-size: 1.56rem;
+	font-weight: bold;
+}
+.wlbtn2{
+	min-width: 6.8rem;
+	height: 2.28rem;
+	background: linear-gradient(-87deg, #45A009, #78DB36);
+	border-radius: 7px;
+	text-align: center;
+	line-height: 2.28rem;
+	color: #fff;
+}
+.wlbtn3{
+	min-width: 5.8rem;
+	height: 2.28rem;
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+	border-radius: 7px;
+	text-align: center;
+	line-height: 2.28rem;
+	color: #fff;
+}
+
+
+
+
+
+
+.wldate{
+	background: #F7F8FC;
+	box-shadow: 0px 0px 13px 0px rgba(80, 80, 80, 0.2);
+}
+.jm{
+	background: #FCD633;
+	border-radius: 7px;
+	display: inline-block;
+	padding: 0 5px;
+}
+
+
+/* 客戶訂貨查詢 */
+
+.dateBox{
+   border: 1px solid #EEEEEE;
+   width: 22%;
+   padding: 10px 0;
+   text-align: center;
+   height: 2.5rem;
+   position: relative;
+}
+
+.dateBox img{
+	position: absolute;
+	width: 1.25rem;
+	right: 0;
+	bottom: 0;
+}
+
+
+.dateBox2{
+	margin-right: 3%;
+	margin-top: 15px;
+}
+.shz{
+	width: 1.406rem;
+	height: 1.406rem;
+}
+
+.checkedData{
+	border: 1px solid #FD5304;
+}
+
+
+/* 修改订单 */
+
+.menuBox2{
+  padding:13px;
+}
+.menu1{
+	min-width: 40%;
+}
+.menu2{
+	min-width: 20%;
+	text-align: center;
+}
+.menu4{
+	min-width: 20%;
+	text-align: center;
+}
+
+
+.menu2Input{
+	min-width: 20%;
+	background: #F2F2F2;
+	border-radius: 7px;
+	text-align: center;
+}
+
+.btnL{
+	width: 48%;
+	text-align: center;
+	height: 40px;
+	line-height: 40px;
+	border-radius: 22px;
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+	color: #fff;
+}
+.btnR{
+	width: 48%;
+	text-align: center;
+	height: 40px;
+	line-height: 40px;
+	border-radius: 22px;
+	color: #FD5102;
+	border: 1px solid #FD5204;
+}

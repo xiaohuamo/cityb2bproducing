@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+		<title>司机管理</title>
+		<link rel="stylesheet" type="text/css" href="__STATIC__/product/common.css"/>
+		<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
+		<script src="__STATIC__/product/js/vue.min.js"></script>
+	</head>
+	<body class="bgF2F2F2">
+		<div id="me" v-cloak>
+			<div class="head bgfff mb10">
+				<div class="relative center">
+					<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>
+					<div class="f38 col333 f500 bold">司机管理</div>
+				</div>
+			</div><div style="height:3.5rem;"></div>
+			<!-- 头像部分 -->
+			<div class="flexBox1 personInfoBox">
+				<div class="flexBox2">
+					<img src="__STATIC__/product/img/portrait.png" class="portrait"/>
+					<span class="f35 bold">昵称</span>
+				</div>
+				<img src="__STATIC__/product/img/arrow2.png" class="Me_arrow" />
+			</div>
+
+			<div class="maT15 infoSetting">
+				<div class="flexBox1 settingBox" @click="changeMenu('1')">
+					<div class="flexBox1">
+						<img src="__STATIC__/product/img/driverMe1.png" class="icon"/>
+						<span class="col1C1C1C f30">拍照上传</span>
+					</div>
+					<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+				</div>
+				<div class="flexBox1 settingBox" @click="changeMenu('2')">
+					<div class="flexBox1">
+						<img src="__STATIC__/product/img/driverMe2.png" class="icon"/>
+						<span class="col1C1C1C f30">物流查询</span>
+					</div>
+					<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+				</div>
+				<div class="flexBox1 settingBox" @click="changeMenu('3')">
+					<div class="flexBox1">
+						<img src="__STATIC__/product/img/driverMe3.png" class="icon"/>
+						<span class="col1C1C1C f30">客户查询</span>
+					</div>
+					<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+				</div>
+			</div>
+			<div class="signOut f35 col1C1C1C">退出登录</div>
+
+			<!-- 底部菜单 -->
+
+			<div style="height:3.125rem;"></div>
+			<div class="flexBox1 menuBox">
+				<div @click="changeMenu('1')">
+					<img src="__STATIC__/product/img/driverMenu1.png"/>
+					<span class="col333 f26">拍照</span>
+				</div>
+				<div @click="changeMenu('2')">
+					<img src="__STATIC__/product/img/driverMenu2.png" />
+					<span class="col333 f26">物流查询</span>
+				</div>
+				<div @click="changeMenu('3')">
+					<img src="__STATIC__/product/img/driverMenu3.png" />
+					<span class="col333 f26">客户查询</span>
+				</div>
+				<div>
+					<img src="__STATIC__/product/img/menu5_.png" />
+					<span class="colFD5506 f26">我的</span>
+				</div>
+			</div>
+
+		</div>
+	</body>
+	<script>
+		new Vue({
+			el:"#me",
+			data:{
+				currentMenu:4,   // 当前菜单
+			},
+		    methods:{
+				changeMenu:function(index){
+					this.currentMenu=index
+					switch(index){
+					case '1':
+					    window.location.href="DriverPhoto.html"
+						break;
+					case '2':
+				        window.location.href="DriverWLSearch.html"
+						break;
+					case '3':
+					    window.location.href="DriverCustomerSearch.html"
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		})
+	</script>
+</html>

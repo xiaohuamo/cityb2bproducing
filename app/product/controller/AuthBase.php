@@ -21,6 +21,11 @@ class AuthBase extends Base
     //权限校验
     public function authCheck()
     {
+        //判断当前域名,是否和操作页面相符合
+        $SERVER_NAME = $_SERVER['HTTP_HOST'];
+        if(in_array($SERVER_NAME,[DRIVER_SERVER_NAME])){
+            return;
+        }
         $member_user_id = $this->getMemberUserId();
         //校验当前用户信息是否正确，不正确跳转到登录页面，重新登录
         $map['id'] = $member_user_id;
@@ -69,8 +74,6 @@ class AuthBase extends Base
             'product/picking/index',    //拣货员页面
         ];
         if (in_array($action, $allow)) {
-            //判断当前域名,是否和操作页面相符合
-            $SERVER_NAME = $_SERVER['HTTP_HOST'];
             if ($action == $allow[2]) {
                 if($SERVER_NAME != D_SERVER_NAME){
                     $this->_empty();

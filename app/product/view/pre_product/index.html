@@ -97,7 +97,7 @@
 				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="['J_cate_'+item.cate_id,{'bgFFF7F3 col5e5656':item.status==0&&menudata2SortIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudata2SortIndex==index,'bgFD6921 blink':item.status==1,'bgGrey blink':item.status==2,'bg34C079 colfff':item.status==3,'bg1d95b9 colfff':item.status==4}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="(item.status!=4&&currentManageActionTypeIndex==0)&&gtouchstart(item,index,1);(item.status==4||currentManageActionTypeIndex==1)&&popQuantityBox(item,index,1);" :id="'anchor-'+item.product_id">
+					<div :class="['J_cate_'+item.cate_id,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921 blink':item.status==1,'bgGrey blink':item.status==2,'bg34C079 colfff':item.status==3,'bg1d95b9 colfff':item.status==4}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="(item.status!=4&&currentManageActionTypeIndex==0)&&gtouchstart(item,index,1);(item.status==4||currentManageActionTypeIndex==1)&&popQuantityBox(item,index,1);" :id="'anchor-'+item.product_id">
 						<div>{{item.menu_en_name}}</div>
 						<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 						<div>{{item.menu_id}}</div>
@@ -110,7 +110,7 @@
 				<div v-show="currentPage==1">
 					<div>
 						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element">
-							<div :class="{'bgFFF7F3 col5e5656':item.status==0&&menudataTwoCateIndex!=index,'bgFFF7F3 col5e5656 checkStyle':item.status==0&&menudataTwoCateIndex==index,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2,'bg1d95b9':item.status==4}" class="colfff rbtn relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="(item.status!=4&&currentManageActionTypeIndex==0)&&gtouchstart(item,index,2);(item.status==4||currentManageActionTypeIndex==1)&&popQuantityBox(item,index,2);">
+							<div :class="{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2,'bg1d95b9':item.status==4}" class="colfff rbtn relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="(item.status!=4&&currentManageActionTypeIndex==0)&&gtouchstart(item,index,2);(item.status==4||currentManageActionTypeIndex==1)&&popQuantityBox(item,index,2);">
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div>{{item.guige_name}}</div>
 									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
@@ -182,7 +182,7 @@
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
 											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-',$event)" v-else/>
-											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;
+											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;
 											<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+',$event)"/>
 										</div>
 									</div>

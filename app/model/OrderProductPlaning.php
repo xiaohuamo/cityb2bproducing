@@ -131,7 +131,7 @@ class OrderProductPlaning extends Model
         //获取加工明细单数据
         $order = Db::name('order_product_planning_details')
             ->alias('oppd')
-            ->field('oppd.id,oppd.restaurant_menu_id product_id,oppd.guige1_id,opp.orderId,opp.logistic_delivery_date,opp.logistic_sequence_No,uf.nickname,oppd.customer_buying_quantity,oppd.new_customer_buying_quantity,oppd.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone')
+            ->field('oppd.id,oppd.restaurant_menu_id product_id,oppd.guige1_id,opp.orderId,opp.logistic_delivery_date,opp.logistic_sequence_No,uf.nickname,oppd.customer_buying_quantity,oppd.new_customer_buying_quantity,oppd.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone,rm.unit_en')
             ->leftJoin('restaurant_menu rm','rm.id = oppd.restaurant_menu_id')
             ->leftJoin('order_product_planing opp','oppd.order_id = opp.orderId')
             ->leftJoin('user_factory uf','uf.user_id = opp.userId')

@@ -1,0 +1,344 @@
+
+.pmb5{
+	margin-bottom: 5px;
+}
+.pmb10{
+	margin-bottom: 10px;
+}
+.pmb15{
+	margin-bottom: 15px;
+}	
+.pTitle{
+	max-width: 1024px;
+	position: relative;
+	z-index: 3;
+	height: 3rem;
+	line-height: 3rem;
+	text-align: center;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	padding-left: 15px;
+	box-sizing: border-box;
+	background: #FFFFFF;
+	text-align: center;
+	font-weight: bold;
+	color: #333333;
+	font-size: 1.1875rem;
+}
+.wx{
+	width: 4.06rem;
+	height: 4.06rem;
+}
+
+.pHead{
+	padding:15px;
+	margin:15px;
+	background:#FFFFFF;
+	border-radius:7px;
+}
+
+.pbtn{
+	width: 4.44rem;
+	height: 1.6875rem;
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+	border-radius: 12px;
+	text-align: center;
+	line-height: 1.6875rem;
+}
+.pbody{
+	margin:15px;
+	background:#FFFFFF;
+	border-radius:7px;
+}
+
+.plocation{
+	width:1.25rem;
+	height:1.25rem;
+}	
+.pbody_head{
+	background: #fff;
+	margin:0 15px;
+	border-radius: 7px;
+}
+
+.H80{
+	height: 2.5rem;
+	background: #F2F2F2;
+	width: calc(100% - 4rem);
+	padding-left: 20px;
+	box-sizing: border-box;
+	border-radius: 7px;
+}
+
+
+
+
+.pbody_body{
+	border-top: 1px solid #ECEDEE;
+}
+
+.cartIcon{
+	width: 1.406rem;
+	height: 1.406rem;
+	border-radius: 50%;
+}
+
+.cartImg{
+	width: 6.25rem;
+	height: 6.25rem;
+	margin-right: 10px;
+}
+.price{
+	position:absolute;
+	left: 0;
+	bottom: 0;
+	width:100%;
+}
+.cartTitle{
+	border-bottom:1px solid #E7E8EA;
+	padding:10px 15px;
+}
+.pgoodsList{
+	margin:15px;
+	background: #fff;
+	border-radius: 7px;
+}
+.goodInfo{
+	padding:10px 15px;
+	position:relative;
+	border-bottom:1px solid #ECEDEE;
+}
+.goodInfo2{
+	height: 6.25rem;
+	position: relative;
+	width:100%;
+}
+.pinfoBox{
+	padding-bottom:15px;
+}
+.pinfoBox div{
+	text-align: right;
+	margin-top: 10px;
+	margin-right: 10px;
+}
+
+.discount{
+	padding:15px;
+	margin:15px;
+	background:#FFFFFF;
+	border-radius:7px;
+}
+.messageArea{
+	border-radius:7px;
+	margin:15px;
+	background:#FFFFFF;
+}
+.messageAreaTitle{
+	padding: 15px;
+	border-bottom: 1px solid #ECEDEE;
+}
+textarea {
+    resize: none;
+	border: none;
+	width: 100%;
+	height: 4.6875rem;
+	padding: 15px;
+	box-sizing: border-box;
+	outline: none;
+}
+.fixBottom{
+	width: 100%;
+	box-sizing: border-box;
+	position: fixed;
+	height:3.875rem ;
+	background: #FFFFFF;
+	bottom:0;
+	max-width: 1024px;
+	padding: 0 1.875rem;
+}
+.againBtn{
+	background: #FFF;
+	border: 1px solid #FD5204;
+}
+.haveBtn{
+	background: #FEE9DF;
+	color: #FD5305;
+}
+
+
+.success{
+	width: 10rem;
+	margin-top: 1.718rem;
+}
+
+.lookOrder{
+	background: #FEE9DF;
+	border-radius: 22px;
+	height: 2.656rem;
+	line-height:2.656rem;
+	color: #FD5102;
+	width: 48%;
+	text-align: center;
+	font-weight: bold;
+	margin-top: 12px;
+	margin-bottom: 20px;
+}
+.returnHome{
+	background: #fff;
+	border: 1px solid #FD5204;
+	border-radius: 22px;
+	height: 2.656rem;
+	line-height:2.656rem;
+	color: #FD5102;
+	width: 48%;
+	text-align: center;
+	font-weight: bold;
+	margin-top: 12px;
+	margin-bottom: 20px;
+}
+.continue{
+	height: 2.656rem;
+	line-height:2.656rem;
+	text-align: center;
+	color: #FFFFFF;
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+	border-radius: 21px;
+	background-size: 100% 100%;
+	margin-top: 2.1875rem;
+}
+
+ /* 订单详细 */
+	
+.infoBox{
+	background: #FFFFFF;
+	border-radius: 7px;
+	margin: 15px;
+}
+.infoTitle{
+	padding:15px;
+	text-align:center;
+	border-bottom:1px solid #ECEDEE;
+}
+
+.serviceLeft{
+	width: calc(100% - 4.5rem);
+}
+
+	
+.journal{
+	background: #F5F6F6;
+	border-radius: 2px;
+	width: 48%;
+	color: #282828;
+	height: 2.1875rem;
+	line-height: 2.1875rem;
+	text-align: center;
+}
+
+
+
+.photoBox{
+	background: #F2F2F2;
+	text-align: center;
+	padding: 30px 0;
+}
+
+.photoBox img{
+	width:3.625rem;
+}
+
+
+
+.couponBox{
+	min-width: calc(100% - 45px);
+	margin-left: 15px;
+}
+
+.couponR{
+	width: 6.84rem;
+	height: 6.25rem;
+	background: #ECBD52;
+	border-radius: 0px 12px 12px 0px;
+	text-align: center;
+	padding-top: 1.2rem;
+	box-sizing: border-box;
+}
+.couponChecked{
+	width: 0.9375rem;
+}
+
+.counponMask{
+	position: fixed;
+	left: 0;
+	top: 0;
+	background: rgba(0,0,0,0.4);
+	width: 100%;
+	height: 100%;
+	z-index: 3;
+}
+
+.counponPop{
+	width: 80%;
+	height: 13.28rem;
+	border-radius: 7px;
+	position: absolute;
+	left: 10%;
+	top: 50%;
+	margin-top: -6.64rem;
+}
+
+.counponBtn{
+	width: 80%;
+	height: 3.125rem;
+	line-height: 3.125rem;
+	text-align: center;
+	background: #FD5001;
+	border-radius: 25px;
+	margin-left: 10%;
+}
+
+.ma115-88{
+	margin:3.59rem 0 2.75rem;
+}
+
+
+
+
+.updateBox{
+	width: 50%;
+	height: 200px;
+	position: absolute;
+	left: 25%;
+	top: 50%;
+	margin-top: -100px;
+}
+
+.updateBox img{
+	position: absolute;
+	right: -10px;
+	top: -18px;
+	width: 1.25rem;
+	
+}
+
+
+.codePop{
+	width: 100%;
+	position: fixed;
+	max-width: 1024px;
+	bottom: 0;
+	padding-bottom: 30px;
+}
+
+.codePop img{
+	width: 3.375rem;
+	margin:30px 0 15px;
+	
+}
+.codePop .text{
+	margin-bottom:10px;
+}
+.codePop .btn{
+	margin-top: 30px;
+}
