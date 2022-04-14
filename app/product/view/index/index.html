@@ -163,7 +163,7 @@
 											<div class="flexbox2">
 												<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
 												<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-')" v-else/>
-												<div class="inputW F20 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @click="item.is_lock==1&&item.lock_type==1&&showKeyBoxQuantity(item,index)" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/>{{item.new_customer_buying_quantity}}</div><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;
+												<div class="inputW F20 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @click="item.is_lock==1&&item.lock_type==1&&showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;
 												<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+')"/>
 											</div>
 										</div>

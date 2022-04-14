@@ -346,7 +346,7 @@ class Order extends Model
         //查找订单中的所有商品的汇总
         $orders = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('o.business_userId business_id,o.logistic_delivery_date delivery_date,o.orderId,o.logistic_truck_No truck_no,count(wcc.order_id) AS sum_quantities,dps.id pps_id,dps.sum_quantities dps_sum_quantities,dps.isDone')
+            ->field('o.business_userId business_id,o.logistic_delivery_date delivery_date,o.orderId,o.logistic_truck_No truck_no,count(wcc.order_id) AS sum_quantities,dps.id dps_id,dps.sum_quantities dps_sum_quantities,dps.isDone')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('dispatching_progress_summery dps',"dps.delivery_date = o.logistic_delivery_date and dps.business_id=$businessId and dps.orderId=o.orderId and dps.isdeleted=0")
             ->where($where)

@@ -33,8 +33,10 @@ class DispatchingProgressSummery extends Model
                 $update_data['sum_quantities'] = $data['sum_quantities'];
                 if($data['isDone']==1 && $dps_info['sum_quantities'] < $data['sum_quantities']){
                     $update_data['isDone'] = 0;
+                    //同时将该订单状态改为未完成状态
+                    Order::getUpdate(['orderId'=>$dps_info['orderId']],['dispatching_is_producing_done'=>0]);
                 }
-                $res = self::getUpdate(['id' => $data['dps_id']], $update_data);
+                $res = self::getUpdate(['id' => $dps_info['id']], $update_data);
             }
         } else {
             $data['finish_quantities'] = 0;

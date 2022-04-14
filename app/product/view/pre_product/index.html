@@ -181,9 +181,10 @@
 										</div>
 										<div class="flexbox2">
 											<img src="__STATIC__/product/img/disable.png" class="numicon" v-if="item.new_customer_buying_quantity==0"/>
-											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-',$event)" v-else/>
-											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;
-											<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+',$event)"/>
+											<img src="__STATIC__/product/img/reduce.png" class="numicon" @click="editQuantity(item,index,'-')" v-else/>
+<!--											<input class="inputW F20 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;-->
+											<div class="inputW F20 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1" @click="item.is_lock==1&&item.lock_type==1&&showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;
+											<img src="__STATIC__/product/img/add.png" class="numicon" @click="editQuantity(item,index,'+')"/>
 										</div>
 									</div>
 									<div class="flexbox1 pa18-0 F20" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
@@ -307,7 +308,7 @@
 		</div>
 		<img v-if="isLoading" src="__STATIC__/product/img/loading.gif" class="loading"/>
 		<!-- 公用弹出框 -->
-		<div class="mask J_pop_message zi2" v-show="isShowMessage">
+		<div class="mask J_pop_message zi3" v-show="isShowMessage">
 			<div class="popMessage">
 				{{popMessage}}
 			</div>
@@ -319,6 +320,7 @@
 				<div class="mb10">Processing quantity</div>
 				<div class="flexbox2">
 					<input class="inputW2 F20 J_add_quantity" type="text" v-model="quantity" @focus="focusEvent($event)" @keyup="handleInput2"/>
+<!--					<div class="inputW2 F20 J_add_quantity" @click>{{quantity}}</div>-->
 				</div>
 				<div class="maT10">
 					<button type="submit" class="btn-primary ml160" @click="saveQuantity(1)">Save</button>
@@ -365,6 +367,29 @@
 					<span class="sumBox">Filled in <span class="J_fillInSum colred">0</span></span>
 					<button class="btn-pos btn-primary-disable J_quantity_submit" disabled @click="saveOperatorQuantityLog">Submit</button>
 				</div>
+			</div>
+		</div>
+		<!-- 输入数字键盘-->
+		<div class="mask zi2" v-if="iskeyboardQuantityShow">
+			<div class="keyboardBox1 flexbox1">
+				<div class="keyboardBoxLeft pa10" style="padding-right: 6px;">
+					<div class="keyboard1">{{showQuantity}}</div>
+					<div class="flexbox1">
+						<div class="textCenter number1" v-for="(number,index) in numberList1" @click.stop="clickNumber(number)">{{number}}</div>
+					</div>
+				</div>
+				<div class="keyboardBoxRight">
+					<div class="pa10" style="padding-left: 0;">
+						<div class="textCenter number2" @click.stop="closeKeyBoardQuantity()"><img src="__STATIC__/product/img/cha1.png" class="delete"></div>
+						<div class="textCenter number2" @click.stop="deleteNumber()"><img src="__STATIC__/product/img/delete.png" class="delete"></div>
+						<div class="textCenter number2" @click.stop="clearNumber()"><img src="__STATIC__/product/img/C.png" class="delete"></div>
+						<div class="textCenter enterNumber" @click.stop="editQuantity(handleItem,handleIndex,'enter')"><div class="enterNumberH"><p>Enter</p><img src="__STATIC__/product/img/enter.png" class="delete"></div></div>
+					</div>
+				</div>
+				<!--				<div class="tips" v-show="isPsdCorrect">{{message}}</div>-->
+				<!--				<div v-if="isShowTypePincode1">-->
+				<!--					<div class="keyboard input J_pincode" :class="{'keyboardBorder':focusDatype==10}" tabindex="0" :placeholder="placeholderPincode" @focus="focusData($event,10,1)">{{psd2}}</div>-->
+				<!--				</div>-->
 			</div>
 		</div>
 	</div>
@@ -476,6 +501,11 @@
 				oqlActionType:1,//加工数量记录动作 1新增 2修改
 				total:0,//总加工数量
 				operateQuantityLogIndex:0,//获取当前显示加工日志的索引值
+				numberList1:[1,2,3,4,5,6,7,8,9,'.',0,'00'],
+				iskeyboardQuantityShow:false,//是否显示数字键盘
+				showQuantity:0,//显示数量
+				handleItem:[],//当前点击选中的订单明细
+				handleIndex:0,//当前点击选中的订单明细索引id
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -921,6 +951,7 @@
 						_this.isShowLog=false
 						_this.clearTime()
 						_this.isLoading=false
+						_this.closeKeyBoardQuantity()
 					});
 				},
 				// 停止定时器
@@ -1472,7 +1503,7 @@
 					return newData
 				},
 				//修改购买数量
-				editQuantity(item,index,addType,e){
+				editQuantity(item,index,addType){
 					if(item.is_lock!=1){
 						this.popBox('Please lock the product')
 						return
@@ -1486,7 +1517,7 @@
 						this.popBox('Inoperable completed')
 						return
 					}
-					e.currentTarget.parentElement.children.item(1).focus()
+					// e.currentTarget.parentElement.children.item(1).focus()
 					console.log(index,this.handleListSort[index])
 					var customer_buying_quantity = this.handleListSort[index].new_customer_buying_quantity
 					if(addType == '+'){
@@ -1494,7 +1525,11 @@
 					}else if(addType == '-'){
 						this.handleListSort[index].new_customer_buying_quantity=this.numSub(customer_buying_quantity,0.1)
 					}else if(addType == 'enter'){
-						this.handleListSort[index].new_customer_buying_quantity=e.target.value
+						this.handleListSort[index].new_customer_buying_quantity=parseFloat(this.showQuantity)
+					}
+					if(this.handleListSort[index].new_customer_buying_quantity===''){
+						this.popBox('Please enter quantity')
+						return
 					}
 					var data={
 						"id":item.id,
@@ -1514,6 +1549,9 @@
 									_this.handleList[i].new_customer_buying_quantity=_this.handleListSort[index].new_customer_buying_quantity
 									break;
 								}
+							}
+							if(addType == 'enter'){
+								_this.closeKeyBoardQuantity()
 							}
 						} else {
 							_this.popBox(res.message)
@@ -2298,6 +2336,40 @@
 						this.timeOutEvent=null
 					},2000);//这里设置定时器，定义长按2000毫秒触发长按事件
 					return
+				},
+				//关闭修改数量键盘
+				closeKeyBoardQuantity(){
+					this.iskeyboardQuantityShow = false
+					this.handleItem = []
+					this.handleIndex = 0
+				},
+				showKeyBoxQuantity(item,index){
+					this.iskeyboardQuantityShow = true
+					this.showQuantity = item.new_customer_buying_quantity
+					this.handleItem = item
+					this.handleIndex = index
+				},
+				//输入数量
+				clickNumber(number){
+					var quantity = this.showQuantity
+					quantity+=number
+					this.showQuantity=this.numberCheck(quantity)
+				},
+				//清除最后一位数据
+				deleteNumber(){
+					this.showQuantity=this.showQuantity.substr(0, this.showQuantity.length - 1);
+				},
+				//清空数量
+				clearNumber(){
+					this.showQuantity = ''
+				},
+				//校验是否是最多两位小数的数据
+				numberCheck(value){
+					value = value.replace(/[^\d.]/g, "");  //清除“数字”和“.”以外的字符
+					value = value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的
+					value = value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+					value = value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3');//只能输入两个小数
+					return value
 				},
 			},
 			created(){
