@@ -84,7 +84,7 @@ return [
         ],
         'lock_other_error' => [
             'code' => 117,
-            'msg' => 'This product has been locked by someone else'
+            'msg' => 'This product has been locked by other'
         ],
         'lock_own_error' => [
             'code' => 118,

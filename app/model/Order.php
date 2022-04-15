@@ -134,7 +134,8 @@ class Order extends Model
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
-            ['rm.proucing_item', '=', 1]
+            ['rm.proucing_item', '=', 1],
+            ['wcc.customer_buying_quantity', '>', 0]
         ];
         if($logistic_delivery_date){
             $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
@@ -181,7 +182,8 @@ class Order extends Model
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
-            ['rm.proucing_item', '=', 1]
+            ['rm.proucing_item', '=', 1],
+            ['wcc.customer_buying_quantity', '>', 0]
         ];
         if ($logistic_delivery_date) {
             $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
@@ -400,6 +402,7 @@ class Order extends Model
     {
         $where = [
             ['wcc.order_id', '=', $orderId],
+            ['wcc.customer_buying_quantity', '>', 0]
         ];
         switch ($wcc_sort){
             case 1://进行中排序

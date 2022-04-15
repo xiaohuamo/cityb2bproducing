@@ -39,7 +39,8 @@ class WjCustomerCoupon extends Model
     {
         $where = [
             ['wcc.is_producing_done', '=', 0],
-            ['rm.proucing_item', '=', 1]
+            ['rm.proucing_item', '=', 1],
+            ['wcc.customer_buying_quantity', '>', 0]
         ];
         if(!empty($order_id)){
             $where[] = ['wcc.order_id', '=', $order_id];
@@ -74,6 +75,7 @@ class WjCustomerCoupon extends Model
         $where = [
             ['wcc.order_id', '=', $order_id],
             ['wcc.dispatching_is_producing_done', '=', 0],
+            ['wcc.customer_buying_quantity', '>', 0]
         ];
         $count = Db::name('wj_customer_coupon')
             ->alias('wcc')
