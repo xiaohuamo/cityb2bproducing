@@ -213,7 +213,8 @@
 									<div class="flexbox1 pa18-0 F18" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
 											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event)"><span class="numiconSub"></span></div>
-											<input class="inputW4 F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>
+<!--											<input class="inputW4 F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>-->
+											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @click="showKeyBoxQuantity(item,index,2)">{{item.num1}}</div>
 											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event)">+</div>
 										</div>
 										<div class="printBg echo echoMl" @click="print(item,index,$event)"></div>
@@ -352,7 +353,7 @@
 						<div class="textCenter number3" @click.stop="closeKeyBoardQuantity()"><img src="__STATIC__/product/img/cha1.png" class="delete"></div>
 						<div class="textCenter number2" @click.stop="deleteNumber()"><img src="__STATIC__/product/img/delete.png" class="delete"></div>
 						<div class="textCenter number2" @click.stop="clearNumber()"><img src="__STATIC__/product/img/C.png" class="delete"></div>
-						<div class="textCenter enterNumber" @click.stop="editQuantity(handleItem,handleIndex,'enter')"><div class="enterNumberH"><p>Enter</p><img src="__STATIC__/product/img/enter.png" class="delete"></div></div>
+						<div class="textCenter enterNumber" @click.stop="editKeyBoardQuantity(handleItem,handleIndex,'enter')"><div class="enterNumberH"><p>Enter</p><img src="__STATIC__/product/img/enter.png" class="delete"></div></div>
 					</div>
 				</div>
 				<!--				<div class="tips" v-show="isPsdCorrect">{{message}}</div>-->
@@ -466,7 +467,8 @@
 				iskeyboardQuantityShow:false,//是否显示数字键盘
 				showQuantity:0,//显示数量
 				handleItem:[],//当前点击选中的订单明细
-				handleIndex:0,//当前点击选中的订单明细索引id
+				handleIndex:0,//当前点击选中的订单明细索引id,
+				quantityType:1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -718,7 +720,7 @@
 								// if(isFocus){
 									for(var j in res.order){
 										if(res.order[j]['id'] == _this.handleListSort[i]['id']){
-											res.order[j]['num1'] = $('.J_main_box .J_edit_lable').eq(i).val()
+											res.order[j]['num1'] = $('.J_main_box .J_edit_lable').eq(i).text()
 										}
 									}
 								// }
@@ -1417,13 +1419,17 @@
 					// 	this.popBox('Inoperable completed')
 					// 	return
 					// }
-					e.currentTarget.parentElement.children.item(1).focus()
+					// e.currentTarget.parentElement.children.item(1).focus()
 					if(addType == '+'){
 						this.handleListSort[index].num1++
 					}else if(addType == '-'){
 						this.handleListSort[index].num1--
 					}else if(addType == 'enter'){
 						this.handleListSort[index].num1=e.target.value
+					}
+					if(this.handleListSort[index].num1 > 50){
+						this.popBox('Quantity exceeds limit')
+						return
 					}
 				},
 				//打印
@@ -1444,6 +1450,9 @@
 					setTimeout(function(){
 						obj.removeClass("printBg2").addClass("printBg");
 					},5000);
+					if(item.num1 <= 0){
+						return
+					}
 					//如果该订单已加工完成，则没有权限操作
 					// if(item.is_producing_done==1){
 					// 	this.popBox('Inoperable completed')
@@ -2071,47 +2080,87 @@
 					this.iskeyboardQuantityShow = false
 					this.handleItem = []
 					this.handleIndex = 0
+					this.quantityType = 1
 				},
-				showKeyBoxQuantity(item,index){
-					//如果该产品是加工产品，则拣货员没有修改数量的权限
-					if(item.proucing_item==1){
-						this.popBox('You do not have permission to operate')
-						return
-					}
-					if(item.is_lock!=1){
-						this.popBox('Please lock the order')
-						return
-					}
-					if(item.lock_type!=1){
-						this.popBox('This order has been locked by other')
-						return
-					}
-					//如果该订单已加工完成，则没有权限操作
-					if(item.dispatching_is_producing_done==1){
-						this.popBox('Inoperable completed')
-						return
+				showKeyBoxQuantity(item,index,type=1){
+					if(type == 1){
+						//如果该产品是加工产品，则拣货员没有修改数量的权限
+						if(item.proucing_item==1){
+							this.popBox('You do not have permission to operate')
+							return
+						}
+						if(item.is_lock!=1){
+							this.popBox('Please lock the order')
+							return
+						}
+						if(item.lock_type!=1){
+							this.popBox('This order has been locked by other')
+							return
+						}
+						//如果该订单已加工完成，则没有权限操作
+						if(item.dispatching_is_producing_done==1){
+							this.popBox('Inoperable completed')
+							return
+						}
+						this.showQuantity = item.new_customer_buying_quantity
+					}else{
+						if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
+							this.popBox('Please lock the order')
+							return
+						}
+						if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
+							this.popBox('This Order has been locked by other')
+							return
+						}
+						this.showQuantity = item.num1
 					}
 					this.iskeyboardQuantityShow = true
-					this.showQuantity = item.new_customer_buying_quantity
+					this.quantityType = type
 					this.handleItem = item
 					this.handleIndex = index
 				},
 				//输入数量
 				clickNumber(number){
-					var quantity = this.showQuantity
+					var quantity = this.showQuantity.toString()
 					quantity+=number
-					if(quantity.substr(0, 1) == '.'){
-						quantity='0.1'
+					var firstNum = quantity.substr(0, 1)
+					if(firstNum == 0 && number != '.'){
+						quantity=number.toString()
 					}
-					this.showQuantity=this.numberCheck(quantity)
+					if (this.quantityType == 1) {
+						if(firstNum == '.'){
+							quantity='0.1'
+						}
+						console.log(quantity);
+						this.showQuantity=this.numberCheck(quantity)
+					} else {
+						if(quantity == '00'){
+							quantity = '0'
+						}
+						this.showQuantity=this.intNumberCheck(quantity)
+					}
 				},
 				//清除最后一位数据
 				deleteNumber(){
+					this.showQuantity = this.showQuantity.toString()
 					this.showQuantity=this.showQuantity.substr(0, this.showQuantity.length - 1);
 				},
 				//清空数量
 				clearNumber(){
 					this.showQuantity = ''
+				},
+				//回车键修改数量
+				editKeyBoardQuantity(handleItem,handleIndex,type='enter'){
+					if (this.quantityType == 1) {
+						this.editQuantity(handleItem,handleIndex,type)
+					} else {
+						if(this.showQuantity > 50){
+							this.popBox('Quantity exceeds limit')
+							return
+						}
+						this.handleList[handleIndex].num1=this.showQuantity
+						this.iskeyboardQuantityShow=false
+					}
 				},
 				//校验是否是最多两位小数的数据
 				numberCheck(value){
@@ -2121,6 +2170,11 @@
 					value = value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3');//只能输入两个小数
 					return value
 				},
+				//整数校验
+				intNumberCheck(value){
+					value = value.replace(/[^\d]/g,'');
+					return value
+				}
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
