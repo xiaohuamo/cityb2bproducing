@@ -338,7 +338,8 @@ class Order extends Model
      */
     public function addDispatchingToProgress($businessId,$logistic_delivery_date,$type)
     {
-        $map = '(o.status=1 or o.accountPay=1) and o.logistic_truck_No != 0 and o.logistic_truck_No is not null';
+//        $map = '(o.status=1 or o.accountPay=1) and o.logistic_truck_No != 0 and o.logistic_truck_No is not null';
+        $map = 'o.status=1 or o.accountPay=1';
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
@@ -348,7 +349,7 @@ class Order extends Model
         //查找订单中的所有商品的汇总
         $orders = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('o.business_userId business_id,o.logistic_delivery_date delivery_date,o.orderId,o.logistic_truck_No truck_no,count(wcc.order_id) AS sum_quantities,dps.id dps_id,dps.sum_quantities dps_sum_quantities,dps.isDone')
+            ->field('o.business_userId business_id,o.logistic_delivery_date delivery_date,o.orderId,o.logistic_truck_No truck_no,count(wcc.order_id) AS sum_quantities,dps.id dps_id,dps.sum_quantities dps_sum_quantities,dps.isDone,dps.truck_no dps_truck_no')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('dispatching_progress_summery dps',"dps.delivery_date = o.logistic_delivery_date and dps.business_id=$businessId and dps.orderId=o.orderId and dps.isdeleted=0")
             ->where($where)
@@ -364,7 +365,8 @@ class Order extends Model
         $dps_has_list = [];//比对汇总表中仍然存在的信息
         foreach($dps_list as $v){
             foreach($orders as $vv) {
-                if($v['orderId'] == $vv['orderId'] && $v['truck_no'] == $vv['truck_no']){
+//                if($v['orderId'] == $vv['orderId'] && $v['truck_no'] == $vv['truck_no']){
+                if($v['orderId'] == $vv['orderId']){
                     $dps_has_list[] = $v;
                     break;
                 }
@@ -379,7 +381,7 @@ class Order extends Model
         //将调度信息加入队列依次插入数据库
 //            $DispatchingProgressSummery = new DispatchingProgressSummery();
         foreach($orders as $k=>$v){
-            if(empty($v['dps_id']) || $v['dps_sum_quantities'] != $v['sum_quantities']) {
+            if(empty($v['dps_id']) || $v['dps_sum_quantities'] != $v['sum_quantities'] || $v['dps_truck_no'] != $v['truck_no']) {
                 $isPushed = Queue::push('app\job\JobDispatching', $v, 'dispatchingProgressSummery');
                 // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
                 if ($type == 1) {

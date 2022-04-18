@@ -74,10 +74,10 @@
 					</div>
 				</div>
 				<div v-show="currentPage==3" class="leftMenu2">
-					<div :class="[{'bgFFF7F3 col5e5656':item.status==0,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="goto(item,index,'.J_right_cate_'+item.logistic_truck_No,5);">
+					<div :class="[{'bgFFF7F3 col5e5656':item.status==0,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2" @click="goto(item,index,'.J_right_cate_'+item.logistic_truck_No,5);">
 						<div :class="item.status==1||item.status==2?'blink':''">
-							<div>{{item.truck_name}}-{{item.plate_number}}</div>
-							<div>{{item.name}}</div>
+							<div v-if="item.logistic_truck_No!=0">{{item.truck_name}}-{{item.plate_number}}</div>
+							<div :style="item.logistic_truck_No==0?'line-height:47.5px;':''">{{item.name}}</div>
 							<!--						<div>Dep:{{item.schedule_time}}</div>-->
 							<!--						<div>{{item.remain_time}}</div>-->
 							<img v-if="item.status==1&&item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -89,8 +89,8 @@
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
 					<div :class="['J_page1_left_cate_'+item.logistic_truck_No,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.logistic_truck_No">
 						<div :class="item.status==1||item.status==2?'blink':''">
-							<div>{{item.truck_name}}-{{item.plate_number}}</div>
-							<div>{{item.name}}</div>
+							<div v-if="item.logistic_truck_No!=0">{{item.truck_name}}-{{item.plate_number}}</div>
+							<div :style="item.logistic_truck_No==0?'line-height:47.5px;':''">{{item.name}}</div>
 	<!--						<div>Dep:{{item.schedule_time}}</div>-->
 	<!--						<div>{{item.remain_time}}</div>-->
 							<img v-if="item.status==1&&item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -257,7 +257,8 @@
 				</div>
 				<div v-if="currentPage==3" class="rightCateMenu J_right_menu_3">
 					<div v-for="(item,index) in allDriverOrder" :class="index>0?'maT30':''">
-						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time}}</div>
+						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)" v-if="item.logistic_truck_No!=0">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time}}</div>
+						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)" v-else>{{item.name}}</div>
 						<div class="flexbox2">
 							<div v-for="(item1,index1) in item.order" :class="{'arrow_box':currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1,'bgFFF7F3 col5e5656':item1.status==0,'bgOrange':item1.status==1,'bgGreen':item1.status==3,'bgGrey':item1.status==2}" class="colfff rbtn6 relative mb10">
 								<div :class="item1.status==1||item1.status==2?'blink':''" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1,item1)">
@@ -616,7 +617,7 @@
 							"type":type
 						}
 					}
-					// console.log('获取二级类目参数----',_this.twSort,_this.twSortType,data);
+					console.log('获取二级类目参数----',data);
 					getData("{:url('/product/changeTruck')}", data, function (res) {
 						res = res.result
 						//改变司机对应的订单数

@@ -82,7 +82,7 @@ class Picking extends AuthBase
     public function changeTruck()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','tw_sort','tw_sort_type','type']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','choose_logistic_truck_No','tw_sort','tw_sort_type','type']);
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['choose_logistic_truck_No'] = $param['choose_logistic_truck_No']??'';
         $param['tw_sort'] = $param['tw_sort']??0;//排序字段
