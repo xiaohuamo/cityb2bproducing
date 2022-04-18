@@ -76,7 +76,7 @@ class DispatchingProgressSummery extends Model
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
             ['wcc.customer_buying_quantity', '>', 0],
-            ['o.logistic_delivery_date','>',time()-3600*24*20],
+            ['o.logistic_delivery_date','>',time()-3600*24*7],
         ];
         //获取需要加工的订单总数
         $date_arr = Db::name('wj_customer_coupon')
