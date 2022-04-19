@@ -22,7 +22,7 @@ class Order extends Model
     {
         $date_arr = Db::name('producing_progress_summery')->where([
             ['business_userId', '=', $businessId],
-            ['delivery_date','>',time()-3600*24*7],
+            ['delivery_date','>',time()-3600*24*20],
             ['isdeleted','=',0]
         ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
@@ -339,7 +339,7 @@ class Order extends Model
     public function addDispatchingToProgress($businessId,$logistic_delivery_date,$type)
     {
 //        $map = '(o.status=1 or o.accountPay=1) and o.logistic_truck_No != 0 and o.logistic_truck_No is not null';
-        $map = 'o.status=1 or o.accountPay=1';
+        $map = "o.status=1 or o.accountPay=1";
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
@@ -359,14 +359,15 @@ class Order extends Model
             ->select()->toArray();
 //        dump($orders);
         //查询当天已加入汇总表的调度信息
-        $dps_where = "business_id=$businessId and delivery_date=$logistic_delivery_date and truck_no != 0 and truck_no is not null and isdeleted=0";
+//        $dps_where = "business_id=$businessId and delivery_date=$logistic_delivery_date and truck_no != 0 and truck_no is not null and isdeleted=0";
+        $dps_where = "business_id=$businessId and delivery_date=$logistic_delivery_date and isdeleted=0";
         $dps_list = DispatchingProgressSummery::getAll($dps_where);
         //判断是否汇总信息是否有变动
         $dps_has_list = [];//比对汇总表中仍然存在的信息
         foreach($dps_list as $v){
             foreach($orders as $vv) {
 //                if($v['orderId'] == $vv['orderId'] && $v['truck_no'] == $vv['truck_no']){
-                if($v['orderId'] == $vv['orderId']){
+                if($v['delivery_date'] == $vv['delivery_date'] && $v['orderId'] == $vv['orderId']){
                     $dps_has_list[] = $v;
                     break;
                 }
