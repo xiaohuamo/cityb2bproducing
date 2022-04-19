@@ -91,13 +91,15 @@ class WjCustomerCoupon extends Model
      */
     public function getWccList($businessId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='')
     {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
-            ['o.business_userId','=',$businessId]
+            ['o.business_userId','=',$businessId],
+            ['wcc.customer_buying_quantity','>',0]
         ];
         if(!empty($logistic_delivery_date)){
             $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
         }
-        if(!empty($logistic_truck_No)){
+        if($logistic_truck_No !== ''){
             $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
         }
         if(!empty($category_id)){
@@ -110,7 +112,8 @@ class WjCustomerCoupon extends Model
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
             ->where($where)
-            ->group('wcc.restaurant_menu_id,wcc.guige1_id')
+            ->where($map)
+//            ->group('wcc.restaurant_menu_id,wcc.guige1_id')
             ->order('rc.category_sort_id asc')
             ->select()->toArray();
         $list = [];
