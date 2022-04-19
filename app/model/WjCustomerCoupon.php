@@ -114,7 +114,7 @@ class WjCustomerCoupon extends Model
             ->where($where)
             ->where($map)
 //            ->group('wcc.restaurant_menu_id,wcc.guige1_id')
-            ->order('rc.category_sort_id asc')
+            ->order('rc.category_sort_id asc,rm.menu_id asc')
             ->select()->toArray();
         $list = [];
         foreach($data as &$v){
