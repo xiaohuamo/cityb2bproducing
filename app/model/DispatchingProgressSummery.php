@@ -317,7 +317,7 @@ class DispatchingProgressSummery extends Model
             ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
             ->leftJoin('user u','u.id=t.current_driver')
             ->where($where)
-            ->order('dps.isDone asc,dps.truck_No asc')
+            ->order($order_by)
             ->select()->toArray();
         foreach($order_list as &$v){
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
