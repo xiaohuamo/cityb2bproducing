@@ -78,6 +78,7 @@ class ProducingProgressSummery extends Model
                 ['o.business_userId', '=', $businessId],
                 ['o.logistic_delivery_date','=',$logistic_delivery_date],
                 ['o.logistic_truck_no','=',$logistic_truck_No],
+                ['wcc.customer_buying_quantity','>',0],
             ];
             $goods_one_cate = Db::name('wj_customer_coupon')
                 ->alias('wcc')
@@ -161,6 +162,79 @@ class ProducingProgressSummery extends Model
                     $vv['user_name'] = $vv['nickname'] ?: $vv['name'];
                 }
             }
+        }
+        return $goods_one_cate;
+    }
+
+    /**
+     * 获取产品的二级类目完成情况
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function productTwoCateDoneInfo($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id_arr)
+    {
+        //获取是否有二级分类
+        if ($logistic_truck_No !== '') {
+            $where = [
+                ['o.business_userId', '=', $businessId],
+                ['o.logistic_delivery_date','=',$logistic_delivery_date],
+                ['o.logistic_truck_no','=',$logistic_truck_No],
+                ['rm.proucing_item', '=', 1],
+                ['wcc.customer_buying_quantity','>',0],
+                ['wcc.restaurant_menu_id', 'in', $product_id_arr],
+            ];
+            $goods_one_cate = Db::name('wj_customer_coupon')
+                ->alias('wcc')
+                ->field('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id')
+                ->leftJoin('wj_customer_coupon wcc_done','wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
+                ->leftJoin('order o','wcc.order_id = o.orderId')
+                ->leftJoin('producing_progress_summery pps',"pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
+                ->where($where)
+                ->group('wcc.restaurant_menu_id,pps.product_id')
+//                ->select()->toArray();
+                ->column('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id','wcc.restaurant_menu_id');
+        } else {
+            $where = [
+                ['business_userId', '=', $businessId],
+                ['delivery_date','=',$logistic_delivery_date],
+                ['product_id', 'in', $product_id_arr],
+            ];
+            $goods_one_cate = Db::name('producing_progress_summery')
+                ->alias('pps')
+//                ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id')
+                ->where($where)
+                ->group('product_id')
+//                ->select()->toArray();
+                ->column('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id','pps.product_id');
+        }
+        foreach ($goods_one_cate as &$v){
+            if ($logistic_truck_No !== '') {
+                $map = [
+                    ['wcc.restaurant_menu_id', '=', $v['product_id']],
+                    ['wcc.guige1_id', '>', 0],
+                ];
+                $two_cate_done_info = Db::name('wj_customer_coupon')
+                    ->alias('wcc')
+                    ->field('IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id')
+                    ->leftJoin('wj_customer_coupon wcc_done', 'wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
+                    ->leftJoin('order o', 'wcc.order_id = o.orderId')
+                    ->leftJoin('producing_progress_summery pps', "pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
+                    ->where($where)
+                    ->where($map)
+                    ->group('wcc.restaurant_menu_id,pps.product_id,wcc.guige1_id')
+                    ->select()->toArray();
+            } else {
+                $map = [
+                    ['pps.product_id', '=', $v['product_id']],
+                    ['pps.guige1_id', '>', 0],
+                ];
+                $two_cate_done_info = Db::name('producing_progress_summery')->alias('pps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
+            }
+            $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
+            //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
+            $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);
         }
         return $goods_one_cate;
     }

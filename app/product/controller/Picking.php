@@ -527,7 +527,7 @@ class Picking extends AuthBase
         $user_id = $this->getMemberUserId();
 
         $WjCustomerCoupon = new WjCustomerCoupon();
-        $data = $WjCustomerCoupon->getWccList($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['category_id']);
+        $data = $WjCustomerCoupon->getWccList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['category_id']);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 

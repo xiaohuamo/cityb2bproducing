@@ -89,7 +89,7 @@ class WjCustomerCoupon extends Model
      * @param $id
      * @param $businessId
      */
-    public function getWccList($businessId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='')
+    public function getWccList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='')
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -106,7 +106,7 @@ class WjCustomerCoupon extends Model
             $where[] = ['rc.id','=',$category_id];
         }
         $data = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.menu_en_name,rm.unit_en,rm.menu_id,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.menu_en_name,rm.unit_en,rm.menu_id,rm.proucing_item,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
@@ -116,8 +116,25 @@ class WjCustomerCoupon extends Model
 //            ->group('wcc.restaurant_menu_id,wcc.guige1_id')
             ->order('rc.category_sort_id asc,rm.menu_id asc')
             ->select()->toArray();
+        $ProducingProgressSummery = new ProducingProgressSummery();
+        $product_status_arr = [];//存储产品的状态
+        $product_id_arr = [];//存储加工产品
+        $product_no_id_arr = [];//存储非加工产品
+        foreach ($data as &$v){
+            if($v['proucing_item'] == 1){
+                $product_id_arr[] = $v['product_id'];
+            }else{
+                $product_no_id_arr[] = $v['product_id'];
+            }
+        }
+        //如果存在加工产品，则获取该产品的加工状态
+        if($product_id_arr){
+            $product_status_arr = $ProducingProgressSummery->productTwoCateDoneInfo($businessId,$userId,$logistic_delivery_date,$logistic_truck_No,$product_id_arr);
+        }
         $list = [];
         foreach($data as &$v){
+            //查询该产品的加工状态
+            $v['status'] = isset($product_status_arr[$v['product_id']]) ? $product_status_arr[$v['product_id']]['status'] : 0;
             if(!isset($list[$v['cate_id']])){
                 $list[$v['cate_id']] = [
                     'cate_id' => $v['cate_id'],
@@ -131,6 +148,7 @@ class WjCustomerCoupon extends Model
                     'menu_en_name' => $v['menu_en_name'],
                     'unit_en' => $v['unit_en'],
                     'sum_quantities' => $v['customer_buying_quantity'],
+                    'status' => $v['status'],
                 ];
             } else {
                 $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] += $v['customer_buying_quantity'];

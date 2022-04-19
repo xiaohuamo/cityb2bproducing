@@ -243,7 +243,7 @@
 					<div class="F18" v-for="(item,index) in goods" :class="['J_pick_cate_'+item.cate_id,{'maT30':index>0}]">
 						<div class="F18 hand cater mb10 bgFD6921 colfff">{{item['category_en_name']}}</div>
 						<div class="flexbox2">
-							<div v-for="(item1,index1) in item['product']" class="lbtn4 relative bgFFF7F3 col5e5656">
+							<div v-for="(item1,index1) in item['product']" class="lbtn4 relative"  :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}">
 								<div :class="{'blink':item1.status==1||item1.status==2}">
 									<div>{{item1.menu_en_name}}</div>
 									<div class="maT5">{{item1.menu_id}}&nbsp;&nbsp;total:{{item1.sum_quantities}}{{item1.unit_en}}</div>
@@ -439,6 +439,7 @@
 				userName:'',//登录用户信息
 				businessName:'',//商家名
 				intervalId:null,//定时器id，刷新数据使用
+				intervalId23:null,//定时器id23，刷新数据使用
 				lastTime: null, //最后一次点击的时间
 				currentTime: null, //当前点击的时间
 				timeOut: 10 * 60 * 1000,//设置超时时间： 10分钟
@@ -931,28 +932,46 @@
 				},
 				// 定时刷新数据函数
 				dataRefreh() {
-					// 计时器正在进行中，退出函数
-					if (this.intervalId != null) {
-						return;
+					if(this.currentPage == 1){
+						// 计时器正在进行中，退出函数
+						if (this.intervalId != null) {
+							return;
+						}
+						// 计时器为空，操作
+						this.intervalId = setInterval(() => {
+							console.log("刷新",new Date());
+							this.currentTime = new Date().getTime();
+							//更新数据
+							if(this.logistic_delivery_date && this.currentPage == 1) {
+								this.inidata('refresh')
+							}
+							//判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
+							if(this.currentTime - this.lastTime > this.timeOut) {
+								//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
+								this.loginOutPincode()
+							}
+						}, 5000);
 					}
-					// 计时器为空，操作
-					this.intervalId = setInterval(() => {
-						console.log("刷新",new Date());
-						this.currentTime = new Date().getTime();
-						//更新数据
-						if(this.logistic_delivery_date && this.currentPage == 1) {
-							this.inidata('refresh')
+				},
+				// 定时刷新数据函数(currentPage==2||currentPage==3时)
+				dataRefrehPage23() {
+					if(this.currentPage == 2 || this.currentPage == 3){
+						// 计时器正在进行中，退出函数
+						if (this.intervalId23 != null) {
+							return;
 						}
-						//driver&order页面更新数据
-						if(this.logistic_delivery_date && this.currentPage == 3) {
-							this.twoCate('allDriverOrder')
-						}
-						//判断上次最后一次点击的时间和这次点击的时间间隔是否大于10分钟
-						if(this.currentTime - this.lastTime > this.timeOut) {
-							//超过操作时间，调用退出pincode接口，并弹出pincode登录框+上锁
-							this.loginOutPincode()
-						}
-					}, 5000);
+						// 计时器为空，操作
+						this.intervalId23 = setInterval(() => {
+							//picking&sum页面更新数据
+							if(this.logistic_delivery_date && this.currentPage == 2) {
+								this.returnPage(2)
+							}
+							//driver&order页面更新数据
+							if(this.logistic_delivery_date && this.currentPage == 3) {
+								this.returnPage(3)
+							}
+						}, 30000);
+					}
 				},
 				loginOutPincode(){
 					var _this = this
@@ -972,6 +991,8 @@
 				clear() {
 					clearInterval(this.intervalId); //清除定时刷新数据计时器
 					this.intervalId = null //设置为null
+					clearInterval(this.intervalId23); //清除定时刷新数据计时器
+					this.intervalId23 = null //设置为null
 					clearInterval(this.timer);//清除锁屏倒计时计时器
 					this.timer = null
 					clearTimeout(this.timeOutLock);//清除锁定计时器
@@ -1616,9 +1637,11 @@
 							//获取默认的展示产品
 							_this.cetegoryProduct(_this.menudata[0]['id']);
 						});
+						this.dataRefrehPage23();
 					}
 					if(_this.currentPage == 3) {
 						_this.twoCate('allDriverOrder')
+						this.dataRefrehPage23();
 					}
 				},
 				//获取对应类别的产品
