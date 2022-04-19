@@ -137,11 +137,15 @@ class WjCustomerCoupon extends Model
             }
             if($v['guige1_id'] > 0){
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 1;
-                $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][] = [
-                    'guige1_id' => $v['guige1_id'],
-                    'guige_name' => $v['guige_name'],
-                    'customer_buying_quantity' => $v['customer_buying_quantity']
-                ];
+                if(!isset($list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']])) {
+                    $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']] = [
+                        'guige1_id' => $v['guige1_id'],
+                        'guige_name' => $v['guige_name'],
+                        'customer_buying_quantity' => $v['customer_buying_quantity']
+                    ];
+                } else {
+                    $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'] += $v['customer_buying_quantity'];
+                }
             } else {
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 2;
                 $list[$v['cate_id']]['product'][$v['product_id']]['customer_buying_quantity'] = $v['customer_buying_quantity'];
@@ -150,6 +154,11 @@ class WjCustomerCoupon extends Model
         $list = array_values($list);
         foreach($list as $k=>$v){
             $list[$k]['product'] = array_values($list[$k]['product']);
+            foreach($list[$k]['product'] as $pk=>$pv){
+                if($pv['is_has_two_cate'] == 1){
+                    $list[$k]['product'][$pk]['two_cate'] = array_values($list[$k]['product'][$pk]['two_cate']);
+                }
+            }
         }
         return $list;
     }
