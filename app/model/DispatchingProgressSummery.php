@@ -288,26 +288,27 @@ class DispatchingProgressSummery extends Model
             $where[] = ['dps.truck_No','=',$choose_logistic_truck_No];
         }
         switch ($tw_sort){
-            case 1://SEQ No排序
+            case 0://SEQ No排序
                 if($tw_sort_type == 1){
                     $order_by = 'o.logistic_sequence_No asc,o.id asc';
                 } else {
                     $order_by = 'o.logistic_sequence_No desc,o.id asc';
                 }
                 break;
-            case 2://Stop No排序
+            case 1://Stop No排序
                 if($tw_sort_type == 1) {
                     $order_by = 'o.logistic_stop_No desc,o.id asc';
                 } else {
                     $order_by = 'o.logistic_stop_No asc,o.id asc';
                 }
                 break;
-            default://Cust Code排序
+            case 2://Cust Code排序
                 if($tw_sort_type == 1) {
                     $order_by = 'o.userId asc,o.id asc';
                 } else {
                     $order_by = 'o.userId desc,o.id asc';
                 }
+                break;
         }
         $order_list = Db::name('dispatching_progress_summery')
             ->alias('dps')
