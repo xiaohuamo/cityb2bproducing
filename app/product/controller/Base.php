@@ -62,7 +62,11 @@ abstract class Base
                     if ($user['role'] == 20) {//判断员工具体的职位是否有权限登录
                         $StaffRoles = new StaffRoles();
                         $isPermission = $StaffRoles->getProductPermission($user['id']);
-                        $roles = array_filter(explode(",", $isPermission['roles']));
+                        if (!$isPermission) {
+                            $roles = array_filter(explode(",", $isPermission['roles']));
+                        }else{
+                            $roles = [];
+                        }
                     } else {
                         $roles = [];
                     }

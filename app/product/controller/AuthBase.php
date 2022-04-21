@@ -56,7 +56,11 @@ class AuthBase extends Base
             }
             $StaffRoles = new StaffRoles();
             $isPermission = $StaffRoles->getProductPermission($user['id']);
-            $roles = array_filter(explode(",", $isPermission['roles']));
+            if (!$isPermission) {
+                $roles = array_filter(explode(",", $isPermission['roles']));
+            }else{
+                $roles = [];
+            }
         }
         //判断当前用户页面是否有权限
         $controller = preg_replace_callback('/\.[A-Z]/', function ($d) {
