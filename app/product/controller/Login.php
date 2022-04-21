@@ -77,7 +77,7 @@ class Login extends Base
         if (in_array($user['role'],[3,20])) {
             if ($user['role'] == 20) {//判断员工具体的职位是否有权限登录
                 $isPermission = $StaffRoles->getProductPermission($user['id']);
-                if (!$isPermission) {
+                if (!empty($isPermission)) {
                     return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
                 }
                 $roles = array_filter(explode(",",$isPermission['roles']));

@@ -56,7 +56,7 @@ class AuthBase extends Base
             }
             $StaffRoles = new StaffRoles();
             $isPermission = $StaffRoles->getProductPermission($user['id']);
-            if (!$isPermission) {
+            if (!empty($isPermission)) {
                 $roles = array_filter(explode(",", $isPermission['roles']));
             }else{
                 $roles = [];
