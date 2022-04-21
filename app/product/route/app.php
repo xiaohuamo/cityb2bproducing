@@ -134,6 +134,16 @@ Route::post('pickEditBuyingQuantity', 'Picking/editBuyingQuantity');
 Route::post('pickCategory', 'Picking/category');
 //获取对应类目的订单产品
 Route::post('pickCategoryProduct', 'Picking/categoryProduct');
+//配货端锁定非加工产品
+Route::post('lockNoneProcessedProduct', 'Picking/lockNoneProcessedProduct');
+//配货端锁定非加工产品-获取锁定结果
+Route::post('lockNoneProcessedProductResult', 'Picking/lockNoneProcessedProductResult');
+//配货端解锁非加工产品
+Route::post('unlockNoneProcessedProduct', 'Picking/unlockNoneProcessedProduct');
+//配货端非加工产品总配货状态
+Route::post('changeNoneProcessedProductStatus', 'Picking/changeNoneProcessedProductStatus');
+//配货端非加工产品日志
+Route::post('noneProcessedLogData', 'Picking/noneProcessedLogData');
 //拣货员项目路由--------end
 
 //司机端项目路由--------start

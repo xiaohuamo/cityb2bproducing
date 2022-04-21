@@ -3,11 +3,12 @@ declare (strict_types = 1);
 
 namespace app\product\controller;
 
+use think\Model;
 use think\Request;
 use think\facade\Db;
 use think\facade\Queue;
 use app\product\validate\IndexValidate;
-use app\model\{
+use app\model\{ProducingProgressSummery,
     User,
     Order,
     StaffRoles,
@@ -17,8 +18,8 @@ use app\model\{
     RestaurantCategory,
     ProducingBehaviorLog,
     DispatchingBehaviorLog,
-    DispatchingProgressSummery
-};
+    DispatchingProgressSummery,
+    NoneprocessedProducingBehaviorLog};
 
 class Picking extends AuthBase
 {
@@ -543,6 +544,191 @@ class Picking extends AuthBase
 
         $DispatchingBehaviorLog = new DispatchingBehaviorLog();
         $res = $DispatchingBehaviorLog->getLogData($businessId,$user_id,$param);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
+    }
+
+    //picking&sum页面锁定非生产产品
+    public function lockNoneProcessedProduct()
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id']);
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+
+        $validate = new IndexValidate();
+        if (!$validate->scene('lockNoneProcessedProduct')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();//当前操作用户
+
+        //1.获取非加工产品信息
+        $WjCustomerCoupon = new WjCustomerCoupon();
+        $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']]);
+//        halt($product_data);
+        if (!$product_data) {
+            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+        }
+
+        //添加队列
+        $uniqid = uniqid(time().mt_rand(1,1000000), true);
+        $jobData = [
+            "uniqid" => $uniqid,
+            "user_id" => $user_id,
+            "businessId" => $businessId,
+            "data" => $param
+        ];
+        $isPushed = Queue::push('app\job\JobLockNoneProcessedProduct', $jobData, 'lockNoneProcessedProduct');
+        // database 驱动时，返回值为 1|false  ;   redis 驱动时，返回值为 随机字符串|false
+        if ($isPushed !== false) {
+            $data = [
+                "uniqid" => $uniqid,
+            ];
+            return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
+        } else {
+            return show(config('status.code')['lock_error']['code'],config('status.code')['lock_error']['msg']);
+        }
+    }
+
+    //获取锁定结果
+    public function lockNoneProcessedProductResult()
+    {
+        //接收参数
+        $param = $this->request->only(['uniqid']);
+        $uniqid = $param['uniqid'];
+        if ($uniqid) {
+            $redis = redis_connect();
+            $res = $redis->get($uniqid);
+            if ($res) {
+                $temp = json_decode($res, true);
+                $redis->del($uniqid);
+                return show($temp['status'],$temp['message'],$temp['result']);
+            } else {
+                return show(config('status.code')['lock_result_error']['code'],config('status.code')['lock_result_error']['msg']);
+            }
+        }
+    }
+
+    //解锁
+    public function unlockNoneProcessedProduct()
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id']);
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+
+        $validate = new IndexValidate();
+        if (!$validate->scene('lockNoneProcessedProduct')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();//当前操作用户
+        try{
+            Db::startTrans();
+            //1.获取非加工产品信息
+            $WjCustomerCoupon = new WjCustomerCoupon();
+            $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']]);
+//        halt($product_data);
+            if (!$product_data) {
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
+            //如果该产品已加工完，不可重复点击锁定解锁
+            if ($product_data[$param['product_id']]['isDone'] == 1) {
+                return show(config('status.code')['lock_processed_error']['code'], config('status.code')['lock_processed_error']['msg']);
+            }
+            //判断该产品是否是当前上锁人解锁的
+            if ($product_data[$param['product_id']]['operator_user_id'] != $user_id) {
+                return show(config('status.code')['unlock_user_error']['code'], config('status.code')['unlock_user_error']['msg']);
+            }
+            //解锁
+            $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,2);
+            Db::commit();
+            //添加用户行为日志
+            $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();
+            $NoneprocessedProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,2,$param['logistic_delivery_date'],$param);
+            return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return show(config('status.code')['system_error']['code'], $e->getMessage());
+        }
+    }
+
+    //修改非加工产品总备货状态
+    public function changeNoneProcessedProductStatus()
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','is_producing_done']);
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+
+        $validate = new IndexValidate();
+        if (!$validate->scene('changeNoneProcessedProductOrderStatus')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+
+        try{
+            Db::startTrans();
+
+            $businessId = $this->getBusinessId();
+            $user_id = $this->getMemberUserId();//当前操作用户
+
+            //1.获取非加工产品信息
+            $WjCustomerCoupon = new WjCustomerCoupon();
+            $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']]);
+//        halt($product_data);
+            if (!$product_data) {
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
+            //该产品已处理完成，不可重复处理
+            if($product_data[$param['product_id']]['isDone'] == $param['is_producing_done']){
+                return show(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
+            }
+            //一.已处理和正在处理流程
+            if($param['is_producing_done'] == 1){
+                //1-1.判断该产品是否有人加工，无人加工不可点击已处理
+                if(!($product_data[$param['product_id']]['operator_user_id'] > 0)){
+                    return show(config('status.code')['summary_process_error']['code'], config('status.code')['summary_process_error']['msg']);
+                }
+                //如果当前操作员工处理员工是否是同一个人
+                if($product_data[$param['product_id']]['operator_user_id'] != $user_id){
+                    return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
+                }
+                //2.更新该产品的备货状态
+                $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,3);
+                Db::commit();
+                //添加用户行为日志
+                $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();
+                $NoneprocessedProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,3,$param['logistic_delivery_date'],$param);
+                return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+            }
+            //二.返回继续处理流程
+            if($param['is_producing_done'] == 0){
+                //2.更新该产品状态和操作员
+                $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,4);
+                Db::commit();
+                //添加用户行为日志
+                $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();
+                $NoneprocessedProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,4,$param['logistic_delivery_date'],$param);
+                return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+            }
+            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return show(config('status.code')['system_error']['code'], $e->getMessage());
+        }
+    }
+
+    //获取非加工产品日志数据
+    public function noneProcessedLogData()
+    {
+        $param = $this->request->only(['logistic_delivery_date','product_id']);
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();
+        $res = $NoneprocessedProducingBehaviorLog->getLogData($businessId,$user_id,$param);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 }

@@ -29,6 +29,8 @@ class IndexValidate extends Validate
         'addOrderProductPlaning' => ['logistic_delivery_date','product_id','guige1_id','quantity','action_type'],//添加预加工订单
         'lockOrder' => ['logistic_delivery_date','orderId'],//锁定订单
         'confirmOrderFinish' => ['orderId','receipt_picture'],//确定完成送货校验
+        'lockNoneProcessedProduct' => ['logistic_delivery_date','logistic_truck_No','product_id'],//锁定非加工产品
+        'changeNoneProcessedProductOrderStatus' => ['logistic_delivery_date','logistic_truck_No','product_id','is_producing_done'],//更改非加工产品的状态
     ];
 
     /**

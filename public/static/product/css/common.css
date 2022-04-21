@@ -398,7 +398,8 @@ a{
 	box-sizing: border-box;
 	padding: 15px;
 	min-width: 220px;
-	height: 108px;
+	/*height: 108px;*/
+	height: 140px;
 }
 
 .rbtn{
@@ -886,7 +887,10 @@ a{
 	text-align: left;
 	padding: 0 5px;
 }
-.userBox>span, .twoCateBox>span{
+.userBox1 {
+	text-align: left;
+}
+.userBox>span, .userBox1>span, .twoCateBox>span{
 	margin-right: 10px;
 }
 .cater {
@@ -1073,6 +1077,23 @@ tbody tr td{
 	background: #FA8752 url('../img/remark.png') no-repeat 10px center;
 	background-size: 20px;
 	word-wrap: break-word;
+}
+
+.productImg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 20px;
+}
+
+.pslog{
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 35px;
+}
+.pslogbottom{
+	width: 16px;
 }
 
 

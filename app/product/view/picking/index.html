@@ -243,15 +243,30 @@
 					<div class="F18" v-for="(item,index) in goods" :class="['J_pick_cate_'+item.cate_id,{'maT30':index>0}]">
 						<div class="F18 hand cater mb10 bgFD6921 colfff">{{item['category_en_name']}}</div>
 						<div class="flexbox2">
-							<div v-for="(item1,index1) in item['product']" class="lbtn4 relative"  :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}">
-								<div :class="{'blink':item1.status==1||item1.status==2}">
-									<div>{{item1.menu_en_name}}</div>
-									<div class="maT5">{{item1.menu_id}}&nbsp;&nbsp;total:{{item1.sum_quantities}}{{item1.unit_en}}</div>
-									<div class="twoCateBox" v-if="item1.is_has_two_cate==1">
-										<span class="F14" v-for="item2 in item1.two_cate">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</span>
+							<div v-for="(item1,index1) in item['product']">
+								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status==3&&item1.proucing_item!=1&&showReprocess(item,index,item1,index1)">
+									<img v-if="item1.proucing_item==1" class="productImg" src="__STATIC__/product/img/product.png">
+									<div :class="{'blink':item1.status==1||item1.status==2}">
+										<div>{{item1.menu_en_name}}</div>
+										<div class="maT5">{{item1.menu_id}}&nbsp;&nbsp;total:{{item1.sum_quantities}}{{item1.unit_en}}</div>
+										<div class="twoCateBox" v-if="item1.is_has_two_cate==1">
+											<span class="F14" v-for="item2 in item1.two_cate">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</span>
+										</div>
+										<div class="userBox1">
+											<span class="F14" v-for="(item2,index2) in item1.operator_user">{{item2.user_name}}</span>
+										</div>
+										<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
+										<img v-if="item1.proucing_item!=1" src="__STATIC__/product/img/log.png" class="pslog" @click.stop="log(item1,index1,2)"/>
+										<div class="choseCustomerBox" style="width:160px;left:50%;margin-left:-80px;padding:10px 0;" v-show="currentPage2OneCateIndex==index&&currentPage2TwoCateIndex==index1">
+											<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0"  @click.stop="changeStatusPs(item1,index1)">ReProcess</div>
+											<div class="actionHeight col000" @click.stop="Popreturn(index1,2)">Return</div>
+										</div>
 									</div>
-									<img v-if="item1.is_has_two_cate==2&&item1.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
 								</div>
+<!--								<div class="F22 col000 flexbox4 bgfff zdBox" style="margin-left: 6px;">-->
+<!--									<img src="__STATIC__/product/img/log.png" class="pslogbottom"/>-->
+<!--									log-->
+<!--								</div>-->
 							</div>
 						</div>
 					</div>
@@ -470,6 +485,8 @@
 				handleItem:[],//当前点击选中的订单明细
 				handleIndex:0,//当前点击选中的订单明细索引id,
 				quantityType:1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改
+				currentPage2OneCateIndex:-1,//Picking&Sum页面右侧导航的分类数据的索引值
+				currentPage2TwoCateIndex:-1,//Picking&Sum页面右侧选中的产品数据的索引值
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -1178,9 +1195,15 @@
 				handle(index){  // 点击已处理
 					this.currentHandlePop=index
 				},
-				Popreturn(index){
+				//1.主页面的返回操作 2.picking&sum页面的返回操作
+				Popreturn(index,type=1){
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
-					this.currentHandlePop=-1
+					if(type == 1){
+						this.currentHandlePop=-1
+					}else{
+						this.currentPage2OneCateIndex = -1
+						this.currentPage2TwoCateIndex = -1
+					}
 				},
 				//切换一级类目
 				clickOneCate(item,index,item1=''){
@@ -1583,8 +1606,7 @@
 					this.isLoading=true
 					this.inidata()
 					if(this.currentPage==2){
-						var cate_id = this.menudata[this.currentMenu].id
-						this.cetegoryProduct(cate_id)
+						this.returnPage(2)
 					}
 					if(this.currentPage==3){
 						this.twoCate('allDriverOrder')
@@ -1787,17 +1809,26 @@
 				closeLog(){
 					this.isShowLog=false
 				},
-				//弹出日志信息
-				log(item,index){
+				//弹出日志信息 type=1 主面板 type=2 picking&sum页面日志
+				log(item,index,type=1){
 					this.isShowLog=true
-					var data = {
-						"logistic_delivery_date":this.logistic_delivery_date,
-						"orderId":item.orderId,
-						"wcc_id":item.id
+					if(type == 1){
+						var data = {
+							"logistic_delivery_date":this.logistic_delivery_date,
+							"orderId":item.orderId,
+							"wcc_id":item.id
+						}
+						var url = "{:url('/product/pickLogData')}"
+					}else{
+						var data = {
+							"logistic_delivery_date":this.logistic_delivery_date,
+							"product_id":item.product_id,
+						}
+						var url = "{:url('/product/noneProcessedLogData')}"
 					}
 					console.log('获取日志参数---',data)
 					var _this=this
-					getData("{:url('/product/pickLogData')}", data, function (res) {
+					getData(url, data, function (res) {
 						console.log('获取日志结果---',res)
 						if(res.status == 200){
 							_this.logData = res.result
@@ -2197,6 +2228,143 @@
 				intNumberCheck(value){
 					value = value.replace(/[^\d]/g,'');
 					return value
+				},
+				//picking&sum页面点击产品锁定
+				gtouchstartPs(item,index){
+					clearTimeout(this.clickTimer);  //首先清除计时器
+					//将其他返回操作按钮取消
+					this.currentPage2OneCateIndex = -1
+					this.currentPage2TwoCateIndex = -1
+					//如果时生产产品，没有权限锁定
+					if(item.proucing_item == 1){
+						this.popBox('No permission to produce products')
+						return
+					}
+					if(item.status == 2){
+						this.popBox('This product has been locked by other')
+						return
+					}
+					if(item.status == 3){
+						this.popBox('This product has been processed')
+						return
+					}
+					var data = {
+						"logistic_delivery_date":this.logistic_delivery_date,
+						"logistic_truck_No":this.choose_logistic_truck_No,
+						"product_id":item.product_id,
+					}
+					console.log('获取ps页面锁定参数-----',data);
+					var _this = this
+					//产品的锁定状态,status -1-需要根据二级类目加工 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
+					_this.isLoading=true
+					if(item.status == 0){
+						getData("{:url('/product/lockNoneProcessedProduct')}", data, function (res) {
+							console.log('获取ps页面锁定结果-----',res)
+							if(res.status == 200){
+								//记录过期时间
+								_this.currentInterTime = new Date().getTime();
+								_this.lockResPs(res.result,item,index)
+							} else {
+								_this.isLoading=false
+								_this.popBox(res.message)
+								return
+							}
+						});
+					}
+					if(item.status == 1){
+						getData("{:url('/product/unlockNoneProcessedProduct')}", data, function (res) {
+							console.log('获取ps页面解锁结果-----',res)
+							_this.isLoading=false
+							if(res.status == 200){
+								//解锁成功，将该产品状态变为0
+								item.status = 0
+							} else {
+								_this.popBox(res.message)
+								return
+							}
+						});
+					}
+					// },2000);//这里设置定时器，定义长按2000毫秒触发长按事件
+					return false;
+				},
+				//获取锁定结果
+				lockResPs(result,item,index){
+					//获取锁定结果
+					var data = {
+						"uniqid":result.uniqid
+					}
+					var _this=this
+					getData("{:url('/product/lockNoneProcessedProductResult')}", data, function (res) {
+						console.log('获取队列结果----',res);
+						if (res.status == 119) {
+							_this.isLoading=true
+							//判断上次最后一次点击的时间和这次点击的时间间隔是否大于1.5分钟
+							if(new Date().getTime() - _this.currentInterTime > _this.interTimeOut) {
+								clearTimeout(_this.timeOutLock);
+								_this.isLoading=false
+								_this.popBox('The server is busy, please try again later')
+							} else {
+								_this.timeOutLock = setTimeout(() => {
+									// console.log('定时获取结果------');
+									_this.lockResPs(result, item, index)
+								}, 100);
+							}
+						} else {
+							clearTimeout(_this.timeOutLock);
+							_this.isLoading=false
+							if(res.status == 200){
+								//解锁成功，将该产品状态变为1
+								item.status = 1
+							}else{
+								_this.popBox(res.message)
+								return
+							}
+						}
+					})
+				},
+				//修改处理状态 is_producing_done 0-未完成 1-已完成
+				changeStatusPs(item,index){
+					clearTimeout(this.clickTimer);  //首先清除计时器
+					this.clickTimer = setTimeout(() => {
+						var data = {
+							"logistic_delivery_date":this.logistic_delivery_date,
+							"logistic_truck_No":this.choose_logistic_truck_No,
+							"product_id":item.product_id,
+						}
+						if(item.status == 1){
+							data.is_producing_done = 1;
+						} else {
+							data.is_producing_done = 0;
+						}
+						console.log('处理状态参数----',data)
+						var _this = this
+						_this.isLoading=true
+						getData("{:url('/product/changeNoneProcessedProductStatus')}", data, function (res) {
+							console.log('处理状态结果----',res)
+							_this.isLoading=false
+							if (res.status == 200) {
+								if (data.is_producing_done == 1) {
+									item.status = 3
+								} else {
+									item.status = 1
+									_this.currentPage2OneCateIndex = -1
+									_this.currentPage2TwoCateIndex = -1
+								}
+							} else {
+								_this.popBox(res.message)
+								return
+							}
+						});
+					}, 300);   //大概时间300ms
+				},
+				//显示返回操作按钮
+				showReprocess(item,index,item1,index1){
+					clearTimeout(this.clickTimer);  //首先清除计时器
+					this.clickTimer = setTimeout(() => {
+						this.currentPage2OneCateIndex = index
+						this.currentPage2TwoCateIndex = index1
+						this.isShowPsReprocess = true
+					}, 300);   //大概时间300ms
 				}
 			},
 			created(){

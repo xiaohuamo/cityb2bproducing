@@ -181,20 +181,19 @@ class ProducingProgressSummery extends Model
                 ['o.business_userId', '=', $businessId],
                 ['o.logistic_delivery_date','=',$logistic_delivery_date],
                 ['o.logistic_truck_no','=',$logistic_truck_No],
-                ['rm.proucing_item', '=', 1],
                 ['wcc.customer_buying_quantity','>',0],
                 ['wcc.restaurant_menu_id', 'in', $product_id_arr],
             ];
             $goods_one_cate = Db::name('wj_customer_coupon')
                 ->alias('wcc')
-                ->field('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id')
+//                ->field('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id')
                 ->leftJoin('wj_customer_coupon wcc_done','wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
                 ->leftJoin('order o','wcc.order_id = o.orderId')
                 ->leftJoin('producing_progress_summery pps',"pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
                 ->where($where)
                 ->group('wcc.restaurant_menu_id,pps.product_id')
 //                ->select()->toArray();
-                ->column('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id','wcc.restaurant_menu_id');
+                ->column("wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF((sum(wcc.customer_buying_quantity)-sum(wcc_done.customer_buying_quantity)=0),(select 1),(select 0)) isDone,pps.operator_user_id","wcc.restaurant_menu_id");
         } else {
             $where = [
                 ['business_userId', '=', $businessId],
