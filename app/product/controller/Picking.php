@@ -509,6 +509,7 @@ class Picking extends AuthBase
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
 
         $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
         $RestaurantCategory = new RestaurantCategory();
 
         $cate = $RestaurantCategory->getOrderCategory($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);

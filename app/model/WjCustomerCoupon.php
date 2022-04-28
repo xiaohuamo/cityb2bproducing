@@ -22,8 +22,9 @@ class WjCustomerCoupon extends Model
     public function getWccInfo($id,$businessId)
     {
         $wcc_info = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,o.boxesNumber,o.boxesNumberSortId,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,wcc.dispatching_item_operator_user_id,rm.restaurant_category_id cate_id')
             ->leftJoin('order o','o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->where([
                 ['wcc.id','=',$id],
                 ['o.business_userId','=',$businessId]
@@ -32,16 +33,61 @@ class WjCustomerCoupon extends Model
     }
 
     /**
-     * 判断某个订单的加工产品是否全部加工完毕
-     * @param $order_id
+     * 获取产品或产品规格数据
+     * @param $businessId
+     * @param $userId
+     * @param string $logistic_delivery_date
+     * @param string $logistic_truck_No
+     * @param int $product_id
+     * @param int $guige1_id
      */
-    public function getWccOrderDone($order_id='',$business_userId='',$logistic_delivery_date='',$logistic_truck_No='',$product_id='')
+    public function getWccProductList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$product_id=0,$guige1_id=0)
     {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
-            ['wcc.is_producing_done', '=', 0],
-            ['rm.proucing_item', '=', 1],
+            ['o.business_userId', '=', $businessId],
             ['wcc.customer_buying_quantity', '>', 0]
         ];
+        if (!empty($logistic_delivery_date)) {
+            $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
+        }
+        if ($logistic_truck_No !== '') {
+            $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
+        }
+        if ($product_id>0) {
+            $where[] = ['wcc.restaurant_menu_id', '=', $product_id];
+        }
+        if ($guige1_id>0) {
+            $where[] = ['wcc.guige1_id', '=', $guige1_id];
+        }
+        $data = WjCustomerCoupon::alias('wcc')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,o.logistic_truck_No,rm.restaurant_category_id cate_id')
+            ->leftJoin('order o', 'o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+            ->where($where)
+            ->where($map)
+            ->select()->toArray();
+        return $data;
+    }
+
+    /**
+     * 判断某个订单的加工产品是否全部加工完毕
+     * @param $type 1-加工端获取订单产品全部加工完成 2-配货端判断产品对应的订单是否全部拣货完成
+     */
+    public function getWccOrderDone($order_id='',$business_userId='',$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$cate_id=0,$type=1)
+    {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['wcc.is_producing_done', '=', 0],
+            ['wcc.customer_buying_quantity', '>', 0]
+        ];
+        if($type == 1){
+            $where[] = ['wcc.is_producing_done', '=', 0];
+            $where[] = ['rm.proucing_item', '=', 1];
+        }
+        if($type == 2){
+            $where[] = ['wcc.dispatching_is_producing_done', '=', 0];
+        }
         if(!empty($order_id)){
             $where[] = ['wcc.order_id', '=', $order_id];
         }
@@ -57,11 +103,15 @@ class WjCustomerCoupon extends Model
         if(!empty($product_id)){
             $where[] = ['wcc.restaurant_menu_id', '=', $product_id];
         }
+        if($cate_id>0){
+            $where[] = ['rm.restaurant_category_id', '=', $cate_id];
+        }
         $count = Db::name('wj_customer_coupon')
             ->alias('wcc')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->where($where)
+            ->where($map)
             ->count();
         return $count;
     }
@@ -318,6 +368,305 @@ class WjCustomerCoupon extends Model
                 $update_data = [
                     'wcc.operator_user_id'=>$operator_user_id,
                     'wcc.is_producing_done'=>0
+                ];
+                break;
+        }
+        $res = WjCustomerCoupon::alias('wcc')
+            ->leftJoin('order o', 'o.orderId = wcc.order_id')
+            ->where($where)
+            ->update($update_data);
+        return $res;
+    }
+
+    /**
+     * @param $businessId
+     * @param $user_id
+     * @param string $logistic_delivery_date
+     * @param string $logistic_truck_No
+     */
+    public function getPickingItemCategory($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$cate_sort=0)
+    {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['o.business_userId', '=', $businessId],
+            ['wcc.customer_buying_quantity','>',0],
+        ];
+        if (!empty($logistic_delivery_date)) {
+            $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
+        }
+        if (!empty($logistic_truck_No)) {
+            $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
+        }
+        switch ($cate_sort) {
+            case 0:
+                $order_by = 'wcc.dispatching_is_producing_done asc,rc.category_sort_id asc';
+                break;
+            case 1:
+                $order_by = 'wcc.dispatching_is_producing_done desc,rc.category_sort_id asc';
+                break;
+            case 2:
+                $order_by = 'rc.category_sort_id asc';
+                break;
+            default:
+                $order_by = 'rc.category_sort_id asc';
+        }
+        $data = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field('rc.id,rc.category_en_name,wcc.dispatching_operator_user_id,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done')
+            ->leftJoin('order o', 'o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm', 'wcc.restaurant_menu_id = rm.id')
+            ->leftJoin('restaurant_category rc', 'rm.restaurant_category_id = rc.id')
+            ->where($map)
+            ->where($where)
+            ->order($order_by)
+            ->select()->toArray();
+        $cate_id_arr = array_unique(array_column($data,'id'));
+        if($cate_id_arr){
+            $cate_id_str = implode(',',$cate_id_arr);
+            $cate_where = "restaurant_id=$businessId and parent_category_id in ($cate_id_str) and length(category_en_name)>0 and isdeleted=0 and isHide=0";
+            $two_cate_data = Db::name('restaurant_category')->field('id,parent_category_id,category_en_name')->where($cate_where)->select()->toArray();
+            $two_cate = [];
+            foreach ($two_cate_data as $k=>$v){
+                $two_cate[$v['parent_category_id']][] = $v;
+            }
+        }
+        $category = [];
+        $ProducingProgressSummery = new ProducingProgressSummery();
+        foreach ($data as $k=>$v){
+            if(!isset($category[$v['id']])){
+                $category[$v['id']] = [
+                    'id' => $v['id'],
+                    'category_en_name' => $v['category_en_name'],
+                    'two_cate' => $two_cate[$v['id']] ?? [],
+                    'is_has_two_cate' => 1,
+                ];
+            }
+            $category[$v['id']]['two_cate_done_info'][] = [
+                'operator_user_id' => $v['dispatching_item_operator_user_id'],
+                'isDone' => $v['dispatching_is_producing_done']
+            ];
+        }
+        foreach ($category as &$v){
+            //获取状态
+            $v['status'] = $ProducingProgressSummery->getProcessStatus($v,$user_id,3,$v['two_cate_done_info']);
+            unset($v['two_cate_done_info']);
+        }
+        return array_values($category);
+    }
+
+    public function getOneCateProductList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$one_cate_id=0,$two_cate_id=0)
+    {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['o.business_userId', '=', $businessId],
+            ['wcc.customer_buying_quantity','>',0],
+        ];
+        if (!empty($logistic_delivery_date)) {
+            $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
+        }
+        if (!empty($logistic_truck_No)) {
+            $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
+        }
+        if ($one_cate_id>0) {
+            $where[] = ['rm.restaurant_category_id', '=', $one_cate_id];
+        }
+        if ($two_cate_id>0) {
+            $where[] = ['rm.sub_category_id', '=', $two_cate_id];
+        }
+        $data = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field('wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,o.boxesNumber,rm.menu_en_name,rm.unit_en,rm.menu_id,rmo.menu_en_name guige_name,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,rm.restaurant_category_id,rm.sub_category_id,rm.unitQtyPerBox')
+            ->leftJoin('order o', 'o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm', 'wcc.restaurant_menu_id = rm.id')
+            ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
+            ->where($map)
+            ->where($where)
+            ->order('rm.menu_id asc,rmo.menu_id asc,wcc.id asc')
+            ->select()->toArray();
+        $product = [];
+        $ProducingProgressSummery = new ProducingProgressSummery();
+        foreach ($data as $k=>$v){
+            $boxs = ceil($v['customer_buying_quantity']/$v['unitQtyPerBox']);
+            if(!isset($product[$v['product_id']])){
+                $product[$v['product_id']] = [
+                    'product_id' => $v['product_id'],
+                    'cate_id' => $v['restaurant_category_id'],
+                    'sub_cate_id' => $v['sub_category_id'],
+                    'menu_id' => $v['menu_id'],
+                    'menu_en_name' => $v['menu_en_name'],
+                    'unit_en' => $v['unit_en'],
+                    'box_number' => $boxs,
+//                    'finish_box_number' => 0,
+                    'sum_quantities' => floatval($v['customer_buying_quantity']),
+                    'finish_quantities' => $v['dispatching_is_producing_done']==1?floatval($v['customer_buying_quantity']):0,
+                ];
+            }else{
+                $product[$v['product_id']]['box_number'] += $boxs;
+                $product[$v['product_id']]['sum_quantities'] += $v['customer_buying_quantity'];
+                if($v['dispatching_is_producing_done'] == 1){
+                    $product[$v['product_id']]['finish_quantities'] += floatval($v['customer_buying_quantity']);
+                }
+            }
+            $product[$v['product_id']]['done_info'][] = [
+                'operator_user_id' => $v['dispatching_item_operator_user_id'],
+                'isDone' => $v['dispatching_is_producing_done']
+            ];
+            if($v['guige1_id'] > 0){
+                $product[$v['product_id']]['is_has_two_cate'] = 1;
+                if(!isset($product[$v['product_id']]['two_cate'][$v['guige1_id']])){
+                    $product[$v['product_id']]['two_cate'][$v['guige1_id']] = [
+                        'product_id' => $v['product_id'],
+                        'guige1_id' => $v['guige1_id'],
+                        'unit_en' => $v['unit_en'],
+                        'guige_name' => $v['guige_name'],
+                        'box_number' => $boxs,
+                        'sum_quantities' => floatval($v['customer_buying_quantity']),
+                        'finish_quantities' =>  $v['dispatching_is_producing_done']==1?floatval($v['customer_buying_quantity']):0,
+                    ];
+                }else{
+                    $product[$v['product_id']]['two_cate'][$v['guige1_id']]['box_number'] += $boxs;
+                    $product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities'] += floatval($v['customer_buying_quantity']);
+                    if($v['dispatching_is_producing_done'] == 1){
+                        $product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'] += floatval($v['customer_buying_quantity']);
+                    }
+                }
+                $product[$v['product_id']]['two_cate'][$v['guige1_id']]['done_info'][] = [
+                    'operator_user_id' => $v['dispatching_item_operator_user_id'],
+                    'isDone' => $v['dispatching_is_producing_done']
+                ];
+            }else{
+                $product[$v['product_id']]['two_cate'] = [];
+            }
+        }
+        foreach ($product as &$v){
+            //获取状态
+            $v['status'] = $ProducingProgressSummery->getProcessStatus($v,$user_id,3,$v['done_info']);
+            unset($v['done_info']);
+            if(isset($v['two_cate'])){
+                foreach($v['two_cate'] as $twk=>$twv){
+                    $v['two_cate'][$twk]['status'] = $ProducingProgressSummery->getProcessStatus($v,$user_id,3,$v['two_cate'][$twk]['done_info']);
+                    unset($v['two_cate'][$twk]['done_info']);
+                }
+                $v['two_cate'] = array_values($v['two_cate']);
+            }
+        }
+        return array_values($product);
+    }
+
+    /**
+     * 获取产品明细信息
+     */
+    public function getPickProductData($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$guige1_id=0)
+    {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['o.business_userId','=',$businessId],
+            ['o.logistic_delivery_date','=',$logistic_delivery_date],
+            ['wcc.restaurant_menu_id','=',$product_id],
+            ['wcc.customer_buying_quantity','>',0],
+        ];
+        if($logistic_truck_No !== ''){
+            $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
+        }
+        if($guige1_id > 0){
+            $where[] = ['wcc.guige1_id','=',$guige1_id];
+        }
+        $data = WjCustomerCoupon::alias('wcc')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done')
+            ->leftJoin('order o','o.orderId = wcc.order_id')
+            ->where($where)
+            ->where($map)
+            ->select()->toArray();
+        $done = $this->getProductGuigeStatus($data,$userId);
+        return $done;
+    }
+
+    /**
+     * 获取产品/产品规格的状态
+     * @param $data
+     * @param $userId
+     * @return array
+     */
+    public function getProductGuigeStatus($data,$userId)
+    {
+        //通过产品的信息获取该产品当前的状态
+        $done = [];
+        //获取该产品的状态
+        $is_producing_done_arr = array_column($data,'dispatching_is_producing_done');
+        $operator_user_id = 0;//操作人员id
+        if(in_array(0,$is_producing_done_arr)){
+            foreach ($data as $v){
+                if($v['dispatching_is_producing_done'] == 0){
+                    $operator_user_id = $v['dispatching_item_operator_user_id'];
+                    break;
+                }
+            }
+            $done = [
+                'operator_user_id' => $operator_user_id,
+                'isDone' => 0,
+            ];
+        }else{
+            $done = [
+                'operator_user_id' => $data[0]['dispatching_item_operator_user_id'],
+                'isDone' => 1
+            ];
+        }
+        if($done['isDone'] == 0){
+            if($done['operator_user_id'] == 0){
+                $status = 0;
+            }else{
+                $status = $done['operator_user_id']==$userId ? 1 : 2;
+            }
+        }else{
+            $status = 3;
+        }
+        $done['status'] = $status;
+        return $done;
+    }
+
+    /**
+     * 更新配货端数据-根据产品拣货状态
+     * @param $businessId
+     * @param $logistic_delivery_date
+     * @param $product_id
+     * @param $update_data
+     * @param $type 1-锁定时更新操作员 2-解锁 3-拣货完成 4-返回重新操作
+     * @return mixed
+     */
+    public function updatePickProductItemProcessedData($businessId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$guige1_id=0,$operator_user_id,$type)
+    {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['o.business_userId', '=', $businessId],
+            ['o.logistic_delivery_date', '=', $logistic_delivery_date],
+            ['wcc.restaurant_menu_id', '=', $product_id],
+            ['wcc.customer_buying_quantity', '>', 0],
+        ];
+        if($guige1_id > 0){
+            $where[] = ['wcc.guige1_id','=',$guige1_id];
+        }
+        switch($type){
+            case 1://锁定时，需要将所有该商品未锁定的，锁定为当前操作员，和司机没有关系，为了防止切换司机时，部分完成，剩余未锁定的也需要改为当前操作员
+                $where[] = ['wcc.dispatching_is_producing_done', '=', 0];
+                $update_data = ['wcc.dispatching_item_operator_user_id'=>$operator_user_id];
+                break;
+            case 2:
+                $where[] = ['wcc.dispatching_is_producing_done', '=', 0];
+                $update_data = ['wcc.dispatching_item_operator_user_id'=>0];
+                break;
+            case 3:
+                if ($logistic_truck_No !== '') {
+                    $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
+                }
+                $update_data = ['wcc.dispatching_is_producing_done'=>1];
+                break;
+            case 4:
+                if ($logistic_truck_No != '') {
+                    $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
+                }
+                $update_data = [
+                    'wcc.dispatching_item_operator_user_id'=>$operator_user_id,
+                    'wcc.dispatching_is_producing_done'=>0
                 ];
                 break;
         }

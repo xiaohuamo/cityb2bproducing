@@ -348,7 +348,7 @@ class ProducingProgressSummery extends Model
      * 获取当前加工状态
      * @param $data 产品数据
      * @param $userId 当前用户id
-     * @param int $type 1-一级类目 2-二级类目
+     * @param int $type 1-一级类目 2-二级类目 3-需要根据子类的完成情况判断状态
      * @param array $two_cate_done_info 二级类目完成情况
      * @return int
      */
@@ -367,13 +367,13 @@ class ProducingProgressSummery extends Model
             }
         } else {
             //如果一级分类中，有二级分类，需要根据二级分类中的所有来判断一级的状态
-            if($type==1 && $data['is_has_two_cate'] == 1){
+            if($type==1 && $data['is_has_two_cate'] == 1 || $type==3){
                 //查询该产品所有的二级状态
                 $two_cate_done_unique = array_unique(array_column($two_cate_done_info,'isDone'));
                 $operator_user_id_arr = array_column($two_cate_done_info,'operator_user_id');
 //                dump($two_cate_done_unique);
                 if(count($two_cate_done_unique) == 1){
-                    if($two_cate_done_unique[0] == 0){
+                    if($two_cate_done_unique[0] == 0||$two_cate_done_unique[0] == 2){
                         $status = $this->productStatusAccordGuige($userId,$operator_user_id_arr);
                     }else{
                         $status = 3;
@@ -382,7 +382,7 @@ class ProducingProgressSummery extends Model
                     //判断未完成的规格中加工状态
                     $operator_user_id_arr = [];
                     foreach($two_cate_done_info as $v){
-                        if($v['isDone'] == 0){
+                        if($v['isDone'] == 0||$v['isDone'] == 2){
                             $operator_user_id_arr[] = $v['operator_user_id'];
                         }
                     }

@@ -22,7 +22,7 @@ class Order extends Model
     {
         $date_arr = Db::name('producing_progress_summery')->where([
             ['business_userId', '=', $businessId],
-            ['delivery_date','>',time()-3600*24*20],
+            ['delivery_date','>',time()-3600*24*7],
             ['isdeleted','=',0]
         ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
@@ -126,15 +126,15 @@ class Order extends Model
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
      * @param string $logistic_truck_No 配送司机id
+     * @param int $type 1-获取生产相关的订单数量 2-获取配货端-根据产品筛选的订单数量
      * @return array
      */
-    public function getOrderCount($businessId,$logistic_delivery_date='',$logistic_truck_No='')
+    public function getOrderCount($businessId,$logistic_delivery_date='',$logistic_truck_No='',$type=1)
     {
-        $map = 'o.status=1 or o.accountPay=1';
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.business_userId', '=', $businessId],
-            ['o.coupon_status', '=', 'c01'],
-            ['rm.proucing_item', '=', 1],
+//            ['o.coupon_status', '=', 'c01'],
             ['wcc.customer_buying_quantity', '>', 0]
         ];
         if($logistic_delivery_date){
@@ -142,6 +142,9 @@ class Order extends Model
         }
         if($logistic_truck_No){
             $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
+        }
+        if($type == 1){
+            $where[] = ['rm.proucing_item', '=', 1];
         }
         //获取需要加工的订单总数
         $order_count = Db::name('wj_customer_coupon')
@@ -153,7 +156,11 @@ class Order extends Model
             ->group('wcc.order_id')
             ->count();
         //获取已加工的订单总数
-        $where[] = ['o.is_producing_done','=',1];
+        if($type == 1){
+            $where[] = ['o.is_producing_done','=',1];
+        }else{
+            $where[] = ['o.dispatching_is_producing_done','=',1];
+        }
         $order_done_count = Db::name('wj_customer_coupon')
             ->alias('wcc')
             ->leftJoin('order o','wcc.order_id = o.orderId')
@@ -178,10 +185,10 @@ class Order extends Model
      */
     public function getProductOrderList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$guige1_id='',$wcc_sort=0,$wcc_sort_type=1)
     {
-        $map = 'o.status=1 or o.accountPay=1';
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.business_userId', '=', $businessId],
-            ['o.coupon_status', '=', 'c01'],
+//            ['o.coupon_status', '=', 'c01'],
             ['rm.proucing_item', '=', 1],
             ['wcc.customer_buying_quantity', '>', 0]
         ];
@@ -663,5 +670,145 @@ class Order extends Model
             $v['business_shortcode'] = $v['displayName'] ?: $v['first_name'].' '.$v['last_name'];
         }
         return $order;
+    }
+
+    /**
+     * 配货端-获取产品订单明细
+     * @param $businessId  供应商id
+     * @param string $logistic_delivery_date 配送日期
+     * @param string $logistic_truck_No 配送司机id
+     * @return array
+     */
+    public function getProductItemOrderList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$guige1_id='',$wcc_sort=0,$wcc_sort_type=1)
+    {
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['o.business_userId', '=', $businessId],
+//            ['o.coupon_status', '=', 'c01']
+            ['wcc.customer_buying_quantity', '>', 0]
+        ];
+        if ($logistic_delivery_date) {
+            $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
+        }
+        if ($logistic_truck_No) {
+            $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
+        }
+        if ($product_id > 0) {
+            $where[] = ['wcc.restaurant_menu_id','=',$product_id];
+        }
+        if ($guige1_id > 0) {
+            $where[] = ['wcc.guige1_id','=',$guige1_id];
+        }
+        switch ($wcc_sort){
+            case 1:
+                if($wcc_sort_type == 1){
+                    $order_by = 'wcc.dispatching_is_producing_done asc,id asc';
+                }else{
+                    $order_by = 'wcc.dispatching_is_producing_done desc,id asc';
+                }
+                break;
+            case 2:
+                if($wcc_sort_type == 1) {
+                    $order_by = 'wcc.dispatching_is_producing_done desc,id asc';
+                }else{
+                    $order_by = 'wcc.dispatching_is_producing_done asc,id asc';
+                }
+                break;
+            default:
+                if($wcc_sort_type == 1) {
+                    $order_by = 'id asc,wcc.dispatching_is_producing_done asc';
+                }else{
+                    $order_by = 'id desc,wcc.dispatching_is_producing_done asc';
+                }
+        }
+        //获取加工明细单数据
+        $order = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,ceil(wcc.customer_buying_quantity/rm.unitQtyPerBox) AS boxes')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+            ->leftJoin('order o','wcc.order_id = o.orderId')
+            ->leftJoin('user_factory uf','uf.user_id = o.userId')
+            ->where($where)
+            ->where($map)
+            ->order($order_by)
+            ->select()->toArray();
+        //获取所有的司机信息
+        $logistic_truck_No_arr = array_filter(array_unique(array_column($order,'logistic_truck_No')));
+        $truck_data_arr = [];//存储司机的信息
+        if($logistic_truck_No_arr){
+            $truck_data_arr = Truck::alias('t')
+                ->leftjoin('user u','u.id=t.current_driver')
+                ->where([
+                    ['t.business_id','=',$businessId],
+                    ['t.truck_no','in',$logistic_truck_No_arr],
+                ])
+                ->column('t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname','t.truck_no');
+            foreach ($truck_data_arr as &$v){
+                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];
+            }
+        }
+        foreach($order as &$v){
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
+            //判断当前加工明细是否被锁定
+            $v['is_lock'] = 0;
+            $v['lock_type'] = 0;
+            if($v['dispatching_item_operator_user_id'] > 0){
+                if($v['dispatching_is_producing_done'] == 0||$v['dispatching_is_producing_done'] == 2){
+                    $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                    $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
+                }
+            }
+            if($v['customer_delivery_option']=='1'){
+                $customer_delivery_option='Delivery';
+            }elseif($v['customer_delivery_option']=='2'){
+                $customer_delivery_option='Pick up';
+            }else{
+                $customer_delivery_option='No Delivery';
+            }
+            $name = $this->getCustomerName($v);
+            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
+        }
+        return $order;
+    }
+
+    //根据订单信息获得客户名称
+    public function getCustomerName($order){
+        //第一优先级 客户简码;
+        // 如果有客户填写的客户名，同时附上
+        if (trim($order['nickname'])) {
+            if(trim($order['displayName'])){
+                return trim($order['nickname']).'('. trim(trim($order['displayName'])).')';
+            }else{
+                return trim($order['nickname']);
+            }
+        }
+        //如果没有客户简码，则客户提交订单时的 客户名 为第二优先级 ，如果客户同时填写了姓名，附上姓名；
+        if(trim($order['displayName'])){
+            if(trim($order['first_name']) || trim($order['last_name']) ) {
+                return trim($order['displayName']).'('. trim($order['first_name']).' '.trim($order['last_name']).')';
+            }else{
+                return trim($order['displayName']);
+            }
+        }
+        //  如果客户无简码，并且提交订单时未填写客户户名，则，客户填写的 姓 ，名 做为第三优先级 ；
+        if(trim($order['first_name']) || trim($order['last_name']) ) {
+            return  trim($order['first_name']).' '.trim($order['last_name']);
+        }
+        //如果以上均为捕获到客户信息，则获取用户注册时的用户信息做为标记；
+        $user = User::getOne($order['userId']);
+        if($user){
+            if(trim($user['displayName'])){
+                return trim($user['displayName']);
+            }
+            if(trim($user['businessName'])){
+                return trim($user['businessName']);
+
+            }
+            if(trim($user['person_first_name']) || trim($user['person_last_name'])){
+                return trim($user['person_first_name']).' '.trim($user['person_last_name']);
+            }
+            return trim($user['name']);
+        }
     }
 }

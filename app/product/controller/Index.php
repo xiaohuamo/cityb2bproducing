@@ -244,11 +244,25 @@ class Index extends AuthBase
         $StaffRoles = new StaffRoles();
         $isPermission = $StaffRoles->getProductPlaningPermission($user['id']);
         $user_info = $User->getUsers($businessId,$user['id']);
+        $roles_arr = [];
+        $is_product_permission = $isPermission==1?1:2;
+        $is_pick_permission = $isPermission==1?1:2;
+        if(!empty($user_info['roles'])){
+            $roles_arr = array_filter(explode(",",$isPermission['roles']));
+            if($is_product_permission==2&&in_array(11,$roles_arr)){
+                $is_product_permission = 1;
+            }
+            if($is_pick_permission==2&&in_array(12,$roles_arr)){
+                $is_pick_permission = 1;
+            }
+        }
         $data = [
             "user_name" => $user_name,
             "business_name" => $business_name,
             "is_has_pincode" => $user['pincode'] ? 1 : 2,//是否设置pincode，1设置 2未设置
             "is_manager" => $isPermission,//判断用户是否是管理员
+            "is_product_permission" => $is_product_permission,//判断用户是否有生产权限 1有 2没有
+            "is_pick_permission" => $is_pick_permission,//判断用户是否有拣货权限 1有 2没有
             "user_info" => $user_info,//获取当前用户信息
         ];
 //        //将用户登录信息存入redis

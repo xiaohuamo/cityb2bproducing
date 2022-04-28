@@ -31,8 +31,10 @@ class RestaurantCategory extends Model
      * @param string $logistic_truck_No
      */
     public function getOrderCategory($businessId,$logistic_delivery_date='',$logistic_truck_No=''){
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
-            ['o.business_userId','=',$businessId]
+            ['o.business_userId', '=', $businessId],
+            ['wcc.customer_buying_quantity','>',0],
         ];
         if(!empty($logistic_delivery_date)){
             $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
@@ -46,6 +48,7 @@ class RestaurantCategory extends Model
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
             ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+            ->where($map)
             ->where($where)
             ->group('rm.restaurant_category_id')
             ->order('rc.category_sort_id asc')

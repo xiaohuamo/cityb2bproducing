@@ -18,6 +18,7 @@ class IndexValidate extends Validate
         'quantity' => 'require|float',//预加工数量
         'orderId' => 'require',//订单id
         'receipt_picture' => 'require',//图片
+        'num' => 'require'
     ];
 
     protected $scene = [
@@ -31,6 +32,9 @@ class IndexValidate extends Validate
         'confirmOrderFinish' => ['orderId','receipt_picture'],//确定完成送货校验
         'lockNoneProcessedProduct' => ['logistic_delivery_date','logistic_truck_No','product_id'],//锁定非加工产品
         'changeNoneProcessedProductOrderStatus' => ['logistic_delivery_date','logistic_truck_No','product_id','is_producing_done'],//更改非加工产品的状态
+        'lockProductItem' => ['logistic_delivery_date','logistic_truck_No','product_id','guige1_id'],//拣货端锁定产品
+        'changePickAllProductOrderStatus' => ['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','is_producing_done'],//修改加工状态
+        'editBoxNumber' => ['id','num'],//修改box数量
     ];
 
     /**

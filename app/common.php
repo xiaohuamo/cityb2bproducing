@@ -138,7 +138,7 @@ if (!function_exists('behaviorType')) {
      */
     function behaviorType($type)
     {
-        //行为类型 1-上锁 2-解锁 3-处理加工明细单 4-返回继续处理加工明细单 5-修改加工数量 6-添加预加工产品明细订单 7-修改预加工订单数量
+        //行为类型 1-上锁 2-解锁 3-处理加工明细单 4-返回继续处理加工明细单 5-修改加工数量 6-添加预加工产品明细订单 7-修改预加工订单数量 8-批量修改加工明细单
         switch ($type){
             case 1: $desc = 'Locked';break;
             case 2: $desc = 'Unlock';break;
@@ -147,6 +147,9 @@ if (!function_exists('behaviorType')) {
             case 5: $desc = 'Modify the processing quantity';break;
             case 6: $desc = 'Add planing quantity';break;
             case 7:  $desc = 'Modify planing quantity';break;
+            case 8: $desc = 'Processed';break;
+            case 9: $desc = 'Edit boxesNumber';break;
+            case 10: $desc = 'Edit boxesNumberSortId';break;
             default:$desc = '';
         }
         return $desc;

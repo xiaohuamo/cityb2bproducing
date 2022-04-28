@@ -10,8 +10,10 @@ Route::get('index', 'Index/index');
 Route::get('labelprint', 'Index/labelprint');
 //预生产页面
 Route::get('preProduct', 'PreProduct/index');
-//拣货员页面
-Route::get('picking', 'Picking/index');
+//拣货员页面-按照订单拣货
+Route::get('pickingOrder', 'Picking/index');
+//拣货员页面-按照产品拣货
+Route::get('picking', 'PickingItem/index');
 //司机页面-我的
 Route::get('me', 'Driver/me');
 //司机页面-收货页面
@@ -109,7 +111,7 @@ Route::post('addProcessQuantityLog', 'PreProduct/addProcessQuantityLog');
 Route::post('processQuantityLog', 'PreProduct/processQuantityLog');
 //预加工项目路由--------end
 
-//拣货员项目路由--------start
+//拣货员项目路由(按照订单分)--------start
 //获取日期
 Route::post('pickDeliveryDate', 'Picking/deliveryDate');
 //获取初始化数据
@@ -144,7 +146,33 @@ Route::post('unlockNoneProcessedProduct', 'Picking/unlockNoneProcessedProduct');
 Route::post('changeNoneProcessedProductStatus', 'Picking/changeNoneProcessedProductStatus');
 //配货端非加工产品日志
 Route::post('noneProcessedLogData', 'Picking/noneProcessedLogData');
-//拣货员项目路由--------end
+//拣货员项目路由(按照订单分)--------end
+
+//拣货员项目路由(按照产品分)--------start
+//获取初始化数据
+Route::post('pickItemInidata', 'PickingItem/inidata');
+//切换司机时获取司机信息
+Route::post('changeCate', 'PickingItem/changeCate');
+//获取订单明细信息
+Route::post('productItemOrderDetailList', 'PickingItem/productItemOrderDetailList');
+//锁定订单
+Route::post('lockProductItem', 'PickingItem/lockProductItem');
+//解锁订单
+Route::post('unlockProductItem', 'PickingItem/unlockProductItem');
+//获取锁定结果
+Route::post('lockProductItemResult', 'PickingItem/lockProductItemResult');
+//修改加工明细单状态
+Route::post('pickChangeProductItemStatus', 'PickingItem/pickChangeProductItemStatus');
+//批量修改加工明细单状态
+Route::post('pickAllChangeProductItemStatus', 'PickingItem/pickAllChangeProductItemStatus');
+//修改数量
+Route::post('pickEditProductItemBuyingQuantity', 'PickingItem/editBuyingQuantity');
+//获取锁定结果
+Route::post('pickProductItemLogData', 'PickingItem/pickProductItemLogData');
+//修改箱数
+Route::post('pickItemEditBoxNumber', 'PickingItem/editBoxNumber');
+//拣货员项目路由(按照产品分)--------end
+
 
 //司机端项目路由--------start
 //登录信息
