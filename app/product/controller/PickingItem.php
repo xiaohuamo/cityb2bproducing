@@ -617,6 +617,9 @@ class PickingItem extends AuthBase
             if (!$wcc_info) {
                 return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
             }
+            if($param['type'] == 1 && $param['num'] > $wcc_info['boxesNumber']){
+                $data['boxesNumber'] = $param['num'];
+            }
             Db::startTrans();
             if($wcc_info[$field]!=$param['num']){
                 //更改箱子数量
@@ -631,6 +634,83 @@ class PickingItem extends AuthBase
             }
             Db::commit();
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return show(config('status.code')['system_error']['code'], $e->getMessage());
+        }
+    }
+
+    /**
+     *打印时获取最新的箱数以及打印后箱数序号更新
+     */
+    public function orderBoxsNumber()
+    {
+        $param = $this->request->only(['id_arr','print_type']);
+
+        $validate = new IndexValidate();
+        if (!$validate->scene('orderBoxsNumber')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        try {
+            //1.获取订单最新的箱数信息
+            $box_list = WjCustomerCoupon::alias('wcc')
+                ->field('wcc.id,o.orderid,ceil(wcc.customer_buying_quantity/rm.unitQtyPerBox) AS boxes,o.boxesNumber,o.boxesNumberSortId')
+                ->leftJoin('order o','o.orderId = wcc.order_id')
+                ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+                ->where(['wcc.id'=>$param['id_arr']])
+                ->select()->toArray();
+            if (!$box_list) {
+                return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
+            }
+            Db::startTrans();
+            //根据打印类型更新数据
+            switch ($param['print_type']){
+                case 1://fit print all 全部打印，需要修改该产品所有的订单明细所需要的箱数排序的全部序号
+                case 2://fit print 按照单个订单明细打印所有的箱数
+                    foreach($box_list as &$v){
+                        $where['orderId'] = $v['orderid'];
+                        if($v['boxesNumberSortId'] <= $v['boxesNumber']){
+                            $update['boxesNumberSortId'] = $v['boxesNumberSortId'] + $v['boxes'];
+                            Order::getUpdate($where,$update);
+                            $v['newboxesNumberSortId'] = $update['boxesNumberSortId']>$v['boxesNumber']?$v['boxesNumber']:$update['boxesNumberSortId'];
+                        }else{
+                            $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
+                        }
+                    }
+                    break;
+                case 3://print order 打印该订单的全部标签
+                    foreach($box_list as &$v){
+                        $where['orderId'] = $v['orderid'];
+                        if($v['boxesNumberSortId'] <= $v['boxesNumber']) {
+                            $update['boxesNumberSortId'] = $v['boxesNumber'] + 1;
+                            Order::getUpdate($where, $update);
+                            $v['newboxesNumberSortId'] = $update['boxesNumberSortId']>$v['boxesNumber']?$v['boxesNumber']:$update['boxesNumberSortId'];
+                        }else{
+                            $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
+                        }
+                    }
+                    break;
+                case 0://表示未选择，默认打印一张有序号的标签
+                case 4://blank label 每次输出一张空白标签
+                    foreach($box_list as &$v){
+                        $where['orderId'] = $v['orderid'];
+                        if($v['boxesNumberSortId'] <= $v['boxesNumber']) {
+                            $update['boxesNumberSortId'] = $v['boxesNumberSortId'] + 1;
+                            Order::getUpdate($where, $update);
+                            $v['newboxesNumberSortId'] = $update['boxesNumberSortId']>$v['boxesNumber']?$v['boxesNumber']:$update['boxesNumberSortId'];
+                        }else{
+                            $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
+                        }
+                    }
+                    break;
+            }
+            Db::commit();
+            return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$box_list);
         } catch (\Exception $e) {
             // 回滚事务
             Db::rollback();

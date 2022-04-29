@@ -18,7 +18,9 @@ class IndexValidate extends Validate
         'quantity' => 'require|float',//预加工数量
         'orderId' => 'require',//订单id
         'receipt_picture' => 'require',//图片
-        'num' => 'require'
+        'num' => 'require',
+        'id_arr' => 'require|array',
+        'print_type' => 'require|in:0,1,2,3,4',//打印类型 1-Fit print all 2-fit print 3-print order 4-blank label
     ];
 
     protected $scene = [
@@ -35,6 +37,7 @@ class IndexValidate extends Validate
         'lockProductItem' => ['logistic_delivery_date','logistic_truck_No','product_id','guige1_id'],//拣货端锁定产品
         'changePickAllProductOrderStatus' => ['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','is_producing_done'],//修改加工状态
         'editBoxNumber' => ['id','num'],//修改box数量
+        'orderBoxsNumber' => ['id_arr','print_type'],//获取并修改订单box数量
     ];
 
     /**

@@ -171,6 +171,8 @@ Route::post('pickEditProductItemBuyingQuantity', 'PickingItem/editBuyingQuantity
 Route::post('pickProductItemLogData', 'PickingItem/pickProductItemLogData');
 //修改箱数
 Route::post('pickItemEditBoxNumber', 'PickingItem/editBoxNumber');
+//修改箱数
+Route::post('orderBoxsNumber', 'PickingItem/orderBoxsNumber');
 //拣货员项目路由(按照产品分)--------end
 
 

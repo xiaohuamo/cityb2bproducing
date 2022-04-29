@@ -1130,6 +1130,9 @@ tbody tr td{
 	.rbtn7 {
 		width: 16%;
 	}
+	.rightBox{
+		margin-top: 10px;
+	}
 }
 @media screen and (max-width:1024px) {
 	.menuWidth {

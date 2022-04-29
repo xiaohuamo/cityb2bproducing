@@ -1,14 +1,14 @@
-//type=1 默认打印产品信息 type=2 打印物流信息
-function preview(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessName,type=1,copysort=1,is_print_all=false,is_blank_lable=false) {
+//print_type=-1 打印类型 -1打印生产类型 1-Fit print all 2-fit print 3-print order 4-blank label
+function preview(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessName,print_type=-1) {
     // if(parsedOrders.first_name || parsedOrders.last_name){
     //     parsedOrders.nickname_print = parsedOrders.nickname+'('+parsedOrders.last_name+' '+parsedOrders.first_name+')'
     // }
-    init(parsedOrders,totalCopy,goods,goodsTwoCate,userName,businessName,type,copysort,is_print_all,is_blank_lable);
+    init(parsedOrders,totalCopy,goods,goodsTwoCate,userName,businessName,print_type);
     LODOP.PREVIEW();
 }
 //type=1 默认打印产品信息 type=2 打印物流信息
-function print(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessName,type=1,copysort=1,is_print_all=false,is_blank_lable=false) {
-    init(parsedOrders,totalCopy,goods,goodsTwoCate,userName,businessName,type,copysort,is_print_all,is_blank_lable);
+function print(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessName,print_type=-1) {
+    init(parsedOrders,totalCopy,goods,goodsTwoCate,userName,businessName,print_type);
     LODOP.PRINT();
 }
 
@@ -17,55 +17,64 @@ var PRINT_MODE_SINGLE_LABEL_PER_PAGE = 'SINGLE_LABEL_PER_PAGE';
 var PRINT_MODE_THREE_LABEL_PER_PAGE = 'THREE_LABEL_PER_PAGE';
 var DEFAULT_PRINT_MODE = PRINT_MODE_SINGLE_LABEL_PER_PAGE;
 
-function init(order,totalCopy,goods,goodsTwoCate,businessName,userName,type,copysort,is_print_all,is_blank_lable) {
+function init(order,totalCopy,goods,goodsTwoCate,businessName,userName,print_type) {
     LODOP = getLodop();
     LODOP.PRINT_INIT("CityB2B-打印机预览");
     // LODOP.SET_PRINT_PAGESIZE(1, '3.6 in', '7 in', "");
-    if(type == 1){
+    if(print_type == -1){
         LODOP.SET_PRINT_PAGESIZE(1, '70mm', '50mm', "");
     }else{
         LODOP.SET_PRINT_PAGESIZE(1, '100mm', '100mm', "");
     }
     if (DEFAULT_PRINT_MODE === PRINT_MODE_SINGLE_LABEL_PER_PAGE) {
-        generateOrderPrint(order, totalCopy,goods,goodsTwoCate,businessName,userName,type,copysort,is_print_all,is_blank_lable);
+        generateOrderPrint(order, totalCopy,goods,goodsTwoCate,businessName,userName,print_type);
     } else if (DEFAULT_PRINT_MODE === PRINT_MODE_THREE_LABEL_PER_PAGE) {
-        generateOrderPrint2(order, totalCopy,goods,goodsTwoCate,businessName,userName,type,copysort,is_print_all,is_blank_lable);
+        generateOrderPrint2(order, totalCopy,goods,goodsTwoCate,businessName,userName,print_type);
     }
 }
 
 //single label per page
-function generateOrderPrint(order, copy,goods,goodsTwoCate,businessName,userName,type,copysort,is_print_all,is_blank_lable) {
-    if(is_blank_lable){
-        if(is_print_all){
-            for (var i = 0; i < copy; i++) {
-                order.boxLabel = '__' + " of " + '__';
-                //order.boxLabel = i + 88 + " of " + 88;
-                addOnePage(order,goods,goodsTwoCate,businessName,userName,type,copysort,is_print_all,is_blank_lable);
+function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,print_type) {
+    switch (print_type){
+        //默认打印一张带标签的
+        case 0:
+            var newcopysortid = parseInt(order.boxesNumberSortId);
+            order.boxLabel = newcopysortid + " of " + copy;
+            addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+            return;
+            break;
+        //print fit all 打印该产品的订单明细
+        case 1:
+            break;
+        //print fit 打印该订单明细的当前所有标签
+        case 2:
+            for (var i = 0; i < order.boxes; i++) {
+                var newcopysortid = parseInt(order.boxesNumberSortId)+i
+                if(newcopysortid<=parseInt(copy)){
+                    order.boxLabel = newcopysortid + " of " + copy;
+                    addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+                }
             }
             return;
-        }else{
-            order.boxLabel = '__' + " of " + '__';
-            //order.boxLabel = i + 88 + " of " + 88;
-            addOnePage(order,goods,goodsTwoCate,businessName,userName,type);
-            return;
-        }
-    }else{
-        if(is_print_all){
+            break;
+        //print order 打印该订单的所有标签
+        case 3:
             for (var i = 0; i < copy; i++) {
                 order.boxLabel = i + 1 + " of " + copy;
-                //order.boxLabel = i + 88 + " of " + 88;
-                addOnePage(order,goods,goodsTwoCate,businessName,userName,type);
+                addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
             }
             return;
-        }else{
-            order.boxLabel = copysort + " of " + copy;
-            //order.boxLabel = i + 88 + " of " + 88;
-            addOnePage(order,goods,goodsTwoCate,businessName,userName,type);
+            break;
+        //blank label 打印一张空白标签
+        case 4:
+            order.boxLabel = '__' + " of " + '__';
+            addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
             return;
-        }
+            break;
+
     }
 }
-function addOnePage(order,goods,goodsTwoCate,businessName,userName,type) {
+function addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type) {
     LODOP.NewPage();
     //QR CODE
     var qrvalue = 'https://www.cityb2b.com/company/customer_order_redeem_qrscan?qrscanredeemcode=' + order.redeem_code;
@@ -73,11 +82,11 @@ function addOnePage(order,goods,goodsTwoCate,businessName,userName,type) {
     // LODOP.ADD_PRINT_BARCODE(0,280,60,60,"QRCode",qrvalue);
     // LODOP.ADD_PRINT_IMAGE(0,250,60,60,"<img border='0' src='http://www.lodop.net/demolist/PrintSample8.jpg' />");
     LODOP.SET_PRINT_STYLEA(0,"Stretch",2);
-    LODOP.ADD_PRINT_HTM(0, 0, "100%","100%","<body style='font-size:12px' leftmargin=0 topmargin=0>"+labelTemplate(order,goods,goodsTwoCate,businessName,userName,type)+"</body>");
+    LODOP.ADD_PRINT_HTM(0, 0, "100%","100%","<body style='font-size:12px' leftmargin=0 topmargin=0>"+labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type)+"</body>");
 }
 
 //max 3 label per page
-function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userName,type) {
+function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userName,print_type) {
     LODOP.SET_PRINT_STYLEA(0,"Stretch",2);
 
     LODOP.NewPage();
@@ -88,10 +97,10 @@ function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userNam
     // LODOP.ADD_PRINT_IMAGE(0,250,60,60,"<img border='0' src='http://www.lodop.net/demolist/PrintSample8.jpg' />");
 
     var template = '';
-    template += labelTemplate_ThreeLabelPerPage_Main(order, "1 of " + copy,goods,goodsTwoCate,businessName,userName,type);
+    template += labelTemplate_ThreeLabelPerPage_Main(order, "1 of " + copy,goods,goodsTwoCate,businessName,userName,print_type);
     if (copy >1) {
         template += "<div style='height:70px'></div>";
-        template += labelTemplate_ThreeLabelPerPage_Sub(order, "2 of " + copy,goods,goodsTwoCate,businessName,userName,type);
+        template += labelTemplate_ThreeLabelPerPage_Sub(order, "2 of " + copy,goods,goodsTwoCate,businessName,userName,print_type);
     }
 
     /*	if (copy > 2) {
@@ -111,9 +120,9 @@ function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userNam
             // LODOP.ADD_PRINT_IMAGE(0,250,60,60,"<img border='0' src='http://www.lodop.net/demolist/PrintSample8.jpg' />");
 
             var template = '';
-            template += labelTemplate_ThreeLabelPerPage_Main(order,  i*2+1 + " of " + copy,goods,goodsTwoCate,businessName,userName,type);
+            template += labelTemplate_ThreeLabelPerPage_Main(order,  i*2+1 + " of " + copy,goods,goodsTwoCate,businessName,userName,print_type);
             template += "<div style='height:70px'></div>";
-            template += labelTemplate_ThreeLabelPerPage_Sub(order, i*2+2+" of " + copy,goods,goodsTwoCate,businessName,userName,type);
+            template += labelTemplate_ThreeLabelPerPage_Sub(order, i*2+2+" of " + copy,goods,goodsTwoCate,businessName,userName,print_type);
 
             LODOP.ADD_PRINT_HTM(0, 0, "100%","100%","<body  style='font-size:12px' leftmargin=0 topmargin=0>"+template+"</body>");
         }
@@ -124,7 +133,7 @@ function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userNam
             LODOP.ADD_PRINT_BARCODE(0,280,60,60,"QRCode",qrvalue);
 
             template = ''
-            template += labelTemplate_ThreeLabelPerPage_Main(order, copy +" of " + copy,goods,goodsTwoCate,businessName,userName,type);
+            template += labelTemplate_ThreeLabelPerPage_Main(order, copy +" of " + copy,goods,goodsTwoCate,businessName,userName,print_type);
             LODOP.ADD_PRINT_HTM(0, 0, "100%","100%","<body  style='font-size:12px' leftmargin=0 topmargin=0>"+template+"</body>");
         }
     }
@@ -137,10 +146,10 @@ function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userNam
                 // LODOP.ADD_PRINT_IMAGE(0,250,60,60,"<img border='0' src='http://www.lodop.net/demolist/PrintSample8.jpg' />");
 
                 var template = '';
-                template += labelTemplate_ThreeLabelPerPage_Main(order,i+2 + " of " + copy,goods,goodsTwoCate,businessName,userName,type);
+                template += labelTemplate_ThreeLabelPerPage_Main(order,i+2 + " of " + copy,goods,goodsTwoCate,businessName,userName,print_type);
             } else {
                 template += "<div style='height:360px'></div>";
-                template += labelTemplate_ThreeLabelPerPage_Sub(order, i+2 +" of " + copy,goods,goodsTwoCate,businessName,userName,type);
+                template += labelTemplate_ThreeLabelPerPage_Sub(order, i+2 +" of " + copy,goods,goodsTwoCate,businessName,userName,print_type);
             }
             /*template += "<div style='height:70px'></div>";
             template += labelTemplate_ThreeLabelPerPage_Sub(order, i*3+3 +" of " + copy); */
@@ -148,7 +157,7 @@ function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userNam
         }
     }
 }
-function labelTemplate(order,goods,goodsTwoCate,businessName,userName,type) {
+function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type) {
     var html = '';
     //司机信息
     var name = ''
@@ -159,7 +168,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,type) {
         truck_name = order.truck_info.truck_name
         plate_number = order.truck_info.plate_number
     }
-    if(type == 1){
+    if(print_type == -1){
         if(order.nickname.length>20 || goods.menu_en_name.length>20 || (goods.is_has_two_cate == 1 && goodsTwoCate.guige_name.length > 20)){
             if(order.nickname.length>25){
                 order.nickname = order.nickname.substr(0,25)
@@ -301,10 +310,10 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,type) {
     return html;
 }
 
-function labelTemplate_ThreeLabelPerPage_Main(order, boxLabel,goods,goodsTwoCate,businessName,userName,type) {
+function labelTemplate_ThreeLabelPerPage_Main(order, boxLabel,goods,goodsTwoCate,businessName,userName,print_type) {
 
 }
 
-function labelTemplate_ThreeLabelPerPage_Sub(order, boxLabel,goods,goodsTwoCate,businessName,userName,type) {
+function labelTemplate_ThreeLabelPerPage_Sub(order, boxLabel,goods,goodsTwoCate,businessName,userName,print_type) {
 
 }

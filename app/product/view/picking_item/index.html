@@ -4,11 +4,13 @@
 		<meta charset="UTF-8">
 		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
 		<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/sweetalert2.css"/>
 		<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="__STATIC__/product/js/vue.min.js"></script>
 		<script src="__STATIC__/product/js/common.js"></script>
 		<script src="__STATIC__/product/lodop/LodopFuncs.js"></script>
 		<script src="__STATIC__/product/js/print.js"></script>
+		<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	</head>
 	<body onselectstart="return false">
 	<div id="main" v-cloak @click="closePop();isDo()">
@@ -154,16 +156,20 @@
 										Processed<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
 									</div>
 								</div>
-								<div class="flexbox2 relative hand">
-									<div class="flexbox1 xxBox" @click.stop="changeAllStatus()">
+								<div class="flexbox2 relative hand rightBox">
+									<div class="flexbox1 xxBox bgFD6921 colfff" @click.stop="changeAllStatus()">
 										all picked
 									</div>
+									<div class="flexbox1 xxBox" @click.stop="printFitCheck($event)">
+										<input class="inputBox J_fit_print" type="checkbox" v-model="is_fit_print">
+										fit print
+									</div>
 									<div class="flexbox1 xxBox" @click.stop="printAllCheck($event)">
-										<input class="inputBox J_print_all" type="checkbox">
-										print all
+										<input class="inputBox J_print_order" type="checkbox" v-model="is_print_order">
+										print order
 									</div>
 									<div class="flexbox1 xxBox" @click.stop="blankLableCheck($event)">
-										<input class="inputBox J_blank_lable" type="checkbox">
+										<input class="inputBox J_blank_lable" type="checkbox" v-model="is_blank_lable">
 										blank lable
 									</div>
 									<span @click="popKeyboard">
@@ -198,15 +204,15 @@
 									</div>
 									<div class="flexbox1 pa5 F18 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
-											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event,1)"><span class="numiconSub"></span></div>
+<!--											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event,1)"><span class="numiconSub"></span></div>-->
 <!--											<input class="inputW4 F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>-->
 											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @click="showKeyBoxQuantity(item,index,2)">{{item.boxesNumberSortId}}</div>
-											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event,1)">+</div>
+<!--											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event,1)">+</div>-->
 											<span class="pa5-10">of</span>
-											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event,2)"><span class="numiconSub"></span></div>
+<!--											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event,2)"><span class="numiconSub"></span></div>-->
 											<!--											<input class="inputW4 F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>-->
 											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @click="showKeyBoxQuantity(item,index,3)">{{item.boxesNumber}}</div>
-											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event,2)">+</div>
+<!--											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event,2)">+</div>-->
 										</div>
 										<div class="printBg echo echoMl" @click="print(item,index,$event)"></div>
 									</div>
@@ -373,112 +379,114 @@
 	<script>
 		new Vue({
 			el:"#main",
-			data:{
+			data: {
 				onLine: false,//navigator.onLine,
 				//内容区域高度 = 当前屏幕高度 - 头部高度 - 底部高度
 				fullHeight: document.documentElement.clientHeight,//获取屏幕高度
-				isLoading:false,
-				isShowMessage:false,
-				popMessage:'',//弹层提示信息
-				currentHandlePop:-1,
-				currentDay:0,
-				current2:0,
-				current3:0,
-				choseDate1:'',
-				choseDate2:'',
-				choseDate3:'',
-				logistic_delivery_date:'',//筛选日期
-				logistic_truck_No:'',//当前选择司机
-				product_id:0,//当前选择的产品id
-				guige1_id:'',//当前选择的规格id
-				list:[],
-				list2:[{"id":"","name":"All customers"}],
-				list3:[{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
-				driverOrderDoneNum:0,//对应司机已完成订单数
-				driverOrderNum:0,//对应司机全部订单数
-				orderDoneNum:0,//订单已完成数
-				orderNum:0,//订单总数
-				num:20,
-				whichPopShow:-1,
-				currentPage:localStorage.getItem('currentPage') != null ? localStorage.getItem('currentPage') : 1,  // 1表示1级页面 2是2级页面
-				menudata:[{"id":-1,"category_en_name":"Current Stock"}],
-				menudata2:[],//加工产品
-				currentContent:0,//未排序的数据，当前选中的产品索引id
-				menudata2Sort:[],//排序后的加工产品，为保证初始化的数据不变
-				menudata2SortIndex:0,//默认获取的产品键值
-				twoCateTitleIndex:-1,//二级类目索引值
-				menudataTwoCate:[],//二级产品类目
-				menudataTwoCateIndex:0,//默认获取的二级产品类目键值
-				menudataThreeIndex:0,//默认产品对应的规格数据的键值
-				handleList:[],
-				handleListSort:[],//加工明细数据，为保证初始化的数据不变
-				wccSort:0,//加工明细排序类型
-				wccSortType:1,//排序方向 1正向 2反向
-				currentMenu:0,
-				isHandle:0,
-				goods:[],
-				numberList:[1,2,3,4,5,6,7,8,9,'.',0],
-				isPsdCorrect:false,
-				iskeyboardShow:false,
-				psd:'',
-				psd2:'',
-				npsd:'',
-				npsd2:'',
-				nrpsd:'',
-				nrpsd2:'',
-				placeholderPincode:'',
-				placeholderNPincode:'New pincode',
-				placeholderNRPincode:'Re-enter pincode',
-				placeholderOPincode:'Old pincode',
-				focusDatype:'',//光标所在的位置，获取到光标所在位置，给哪个输入框输入内容
-				pincodeType:'',//pincode登录内容 1-pincode登录 2-创建pincode并登录 3-修改pincode并登录
+				isLoading: false,
+				isShowMessage: false,
+				popMessage: '',//弹层提示信息
+				currentHandlePop: -1,
+				currentDay: 0,
+				current2: 0,
+				current3: 0,
+				choseDate1: '',
+				choseDate2: '',
+				choseDate3: '',
+				logistic_delivery_date: '',//筛选日期
+				logistic_truck_No: '',//当前选择司机
+				product_id: 0,//当前选择的产品id
+				guige1_id: '',//当前选择的规格id
+				list: [],
+				list2: [{"id": "", "name": "All customers"}],
+				list3: [{"logistic_truck_No": "", "name": "All Drivers&Truck", "truck_name": "", "plate_number": ""}],
+				driverOrderDoneNum: 0,//对应司机已完成订单数
+				driverOrderNum: 0,//对应司机全部订单数
+				orderDoneNum: 0,//订单已完成数
+				orderNum: 0,//订单总数
+				num: 20,
+				whichPopShow: -1,
+				currentPage: localStorage.getItem('currentPage') != null ? localStorage.getItem('currentPage') : 1,  // 1表示1级页面 2是2级页面
+				menudata: [{"id": -1, "category_en_name": "Current Stock"}],
+				menudata2: [],//加工产品
+				currentContent: 0,//未排序的数据，当前选中的产品索引id
+				menudata2Sort: [],//排序后的加工产品，为保证初始化的数据不变
+				menudata2SortIndex: 0,//默认获取的产品键值
+				twoCateTitleIndex: -1,//二级类目索引值
+				menudataTwoCate: [],//二级产品类目
+				menudataTwoCateIndex: 0,//默认获取的二级产品类目键值
+				menudataThreeIndex: 0,//默认产品对应的规格数据的键值
+				handleList: [],
+				handleListSort: [],//加工明细数据，为保证初始化的数据不变
+				wccSort: 0,//加工明细排序类型
+				wccSortType: 1,//排序方向 1正向 2反向
+				currentMenu: 0,
+				isHandle: 0,
+				goods: [],
+				numberList: [1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0],
+				isPsdCorrect: false,
+				iskeyboardShow: false,
+				psd: '',
+				psd2: '',
+				npsd: '',
+				npsd2: '',
+				nrpsd: '',
+				nrpsd2: '',
+				placeholderPincode: '',
+				placeholderNPincode: 'New pincode',
+				placeholderNRPincode: 'Re-enter pincode',
+				placeholderOPincode: 'Old pincode',
+				focusDatype: '',//光标所在的位置，获取到光标所在位置，给哪个输入框输入内容
+				pincodeType: '',//pincode登录内容 1-pincode登录 2-创建pincode并登录 3-修改pincode并登录
 				message: '',//pincode登录错误信息
-				isDisable:false, //控制按钮多次点击禁用
-				isClock:false, //是否上锁，禁止点击
-				timeLock:0,//上锁时间
-				deliveryTime:null,//获取配送时间定时器
-				timer:null,//定时器
-				userName:'',//登录用户信息
-				businessName:'',//商家名
-				intervalId:null,//定时器id，刷新数据使用
-				intervalId23:null,//定时器id23，刷新数据使用
+				isDisable: false, //控制按钮多次点击禁用
+				isClock: false, //是否上锁，禁止点击
+				timeLock: 0,//上锁时间
+				deliveryTime: null,//获取配送时间定时器
+				timer: null,//定时器
+				userName: '',//登录用户信息
+				businessName: '',//商家名
+				intervalId: null,//定时器id，刷新数据使用
+				intervalId23: null,//定时器id23，刷新数据使用
 				lastTime: null, //最后一次点击的时间
 				currentTime: null, //当前点击的时间
 				timeOut: 10 * 60 * 1000,//设置超时时间： 10分钟
-				isShowLoginOut:false,//是否显示退出登录按钮
-				isShowTypePincode1:false,//显示pincode输入框样式-1.pincode登录是否显示
-				isShowTypePincode2:false,//显示pincode输入框样式-创建pincode是否显示
-				isShowTypePincode3:false,//显示pincode输入框样式-修改pincode是否显示
-				editText:'setting',//键盘文字显示
-				timeOutEvent:null,//长按定时器，锁定加工产品
-				timeOutLock:null,//获取锁定结果
-				lockData:[],//锁定参数
-				lockReturnData:null,//上锁参数
-				mainOrderHeight:'',
-				clickTimer:null,//定时器
-				isHasCateData:false,//分类页，Back to this category,判断当前加工产品是否有该类产品
-				currentInterTime:null,//获取锁定结果的开始时间
+				isShowLoginOut: false,//是否显示退出登录按钮
+				isShowTypePincode1: false,//显示pincode输入框样式-1.pincode登录是否显示
+				isShowTypePincode2: false,//显示pincode输入框样式-创建pincode是否显示
+				isShowTypePincode3: false,//显示pincode输入框样式-修改pincode是否显示
+				editText: 'setting',//键盘文字显示
+				timeOutEvent: null,//长按定时器，锁定加工产品
+				timeOutLock: null,//获取锁定结果
+				lockData: [],//锁定参数
+				lockReturnData: null,//上锁参数
+				mainOrderHeight: '',
+				clickTimer: null,//定时器
+				isHasCateData: false,//分类页，Back to this category,判断当前加工产品是否有该类产品
+				currentInterTime: null,//获取锁定结果的开始时间
 				interTimeOut: 1.5 * 60 * 1000,//设置锁定结果超时时间： 1.5分钟
-				isShowLog:false,//是否显示日志信息
-				logData:[],//日志数据
-				allDriverOrder:[],//获取所有司机的订单数据
-				currentPage3LeftIndex:0,//Driver&Order页面左侧选中的数据
-				currentPage3OneCateIndex:0,//Driver&Order页面右侧导航的数据的索引值
-				currentPage3TwoCateIndex:0,//Driver&Order页面右侧选中的数据的索引值
-				orderRemarkMessage:'',//订单备注信息
-				numberList1:[1,2,3,4,5,6,7,8,9,'.',0,'00'],
-				iskeyboardQuantityShow:false,//是否显示数字键盘
-				showQuantity:0,//显示数量
-				handleItem:[],//当前点击选中的订单明细
-				handleIndex:0,//当前点击选中的订单明细索引id,
-				quantityType:1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改
-				currentPage2OneCateIndex:-1,//Picking&Sum页面右侧导航的分类数据的索引值
-				currentPage2TwoCateIndex:-1,//Picking&Sum页面右侧选中的产品数据的索引值
-				one_cate_id:0,//当前选中的一级类目id,0-全部
-				two_cate_id:0,//当前选中的二级类目id,0-全部
-				is_product_permission:2,//判断是否有生产权限 1-有 2-没有
-				is_print_all:false,//是否选中全部打印
-				is_blank_lable:false,//是否选中空白标签
+				isShowLog: false,//是否显示日志信息
+				logData: [],//日志数据
+				allDriverOrder: [],//获取所有司机的订单数据
+				currentPage3LeftIndex: 0,//Driver&Order页面左侧选中的数据
+				currentPage3OneCateIndex: 0,//Driver&Order页面右侧导航的数据的索引值
+				currentPage3TwoCateIndex: 0,//Driver&Order页面右侧选中的数据的索引值
+				orderRemarkMessage: '',//订单备注信息
+				numberList1: [1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, '00'],
+				iskeyboardQuantityShow: false,//是否显示数字键盘
+				showQuantity: 0,//显示数量
+				handleItem: [],//当前点击选中的订单明细
+				handleIndex: 0,//当前点击选中的订单明细索引id,
+				quantityType: 1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改
+				currentPage2OneCateIndex: -1,//Picking&Sum页面右侧导航的分类数据的索引值
+				currentPage2TwoCateIndex: -1,//Picking&Sum页面右侧选中的产品数据的索引值
+				one_cate_id: 0,//当前选中的一级类目id,0-全部
+				two_cate_id: 0,//当前选中的二级类目id,0-全部
+				is_product_permission: 2,//判断是否有生产权限 1-有 2-没有
+				is_fit_print: true,//是否选中正常打印，默认选中
+				is_print_order: false,//是否选中全部打印
+				is_blank_lable: false,//是否选中空白标签
+				print_type: 2,//打印类型 1-Fit print all 2-fit print 3-print order 4-blank label
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -514,7 +522,6 @@
 			},
 			methods:{
 				updateOnlineStatus(e) {
-					alert(222);
 					const { type } = e;
 					this.onLine = type === 'online';
 					console.log('ssss---',this.onLine);
@@ -689,17 +696,6 @@
 									}
 								}
 							}
-							// var lq_length = $('.J_main_box .J_edit_lable').length
-							// for(var i=0;i<lq_length;i++){
-							// 	// var isFocus=$('.J_main_box .J_edit_lable').eq(i).is(":focus")
-							// 	// if(isFocus){
-							// 		for(var j in res.order){
-							// 			if(res.order[j]['id'] == _this.handleListSort[i]['id']){
-							// 				res.order[j]['num1'] = $('.J_main_box .J_edit_lable').eq(i).text()
-							// 			}
-							// 		}
-							// 	// }
-							// }
 							_this.handleList=_this.sortAccordingOtherData(res.order,_this.handleList,'id')
 							_this.handleListSort=_this.sortAccordingOtherData(res.order,_this.handleListSort,'id')
 						}else{
@@ -1524,7 +1520,7 @@
 					});
 				},
 				//修改打印标签
-				printLable(item,index,addType,e,type=1){
+				printLable(item,index,addType,type=1){
 					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
 						this.popBox('Please lock the order')
 						return
@@ -1538,7 +1534,6 @@
 					// 	this.popBox('Inoperable completed')
 					// 	return
 					// }
-					// e.currentTarget.parentElement.children.item(1).focus()
 					if(type == 1){
 						var field='boxesNumberSortId'
 					}else{
@@ -1550,7 +1545,11 @@
 					}else if(addType == '-'){
 						num--
 					}else if(addType == 'enter'){
-						num = e.target.value
+						num=this.showQuantity
+					}
+					if(num <= 0){
+						this.popBox('Quantity error')
+						return
 					}
 					if(num > 50){
 						this.popBox('Quantity exceeds limit')
@@ -1580,6 +1579,9 @@
 							_this.popBox(res.message)
 							return
 						}
+						if(addType == 'enter'){
+							_this.closeKeyBoardQuantity()
+						}
 					});
 				},
 				//打印
@@ -1592,6 +1594,33 @@
 						this.popBox('This Order has been locked by other')
 						return
 					}
+					if(this.print_type == 0 || this.print_type == 2){
+						if(item.boxesNumber < item.old_boxesNumberSortId){
+							this.popBox('cannot print')
+							return
+						}
+						if(item.boxesNumberSortId+item.boxes-1 > item.boxesNumber){
+							var can_print_num = item.boxesNumber+1-item.old_boxesNumberSortId
+							swal({
+								title: "fit print only can print "+can_print_num+"(figure) labels? do you want to continue?",
+								icon: "warning",
+								buttons: true,
+								dangerMode: true,
+							}).then((willContinue) => {
+								if (!willContinue) {
+									return
+								}else{
+									this.printFun(item,index,e)
+								}
+							});
+						}else{
+							this.printFun(item,index,e)
+						}
+					}else{
+						this.printFun(item,index,e)
+					}
+				},
+				printFun(item,index,e){
 					var obj = $(e.target)
 					if(obj.hasClass('printBg2')){
 						return
@@ -1600,29 +1629,65 @@
 					setTimeout(function(){
 						obj.removeClass("printBg2").addClass("printBg");
 					},5000);
-					if(item.num1 <= 0){
+					if(item.boxesNumberSortId < 0 || item.boxesNumber < 0){
 						return
 					}
-					//如果该订单已加工完成，则没有权限操作
-					// if(item.is_producing_done==1){
-					// 	this.popBox('Inoperable completed')
-					// 	return
-					// }
+					this.orderBoxNumber(item)
 					//跳转到打印标签页,item-订单信息 item.num1-打印数量
 					is_has_two_cate = item.guige1_id>0?1:2
 					var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
 					var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
-					//订单信息需要重新获取-明天添加
-					// if(){
-					//
-					// }
 					if(is_has_two_cate == 1){
-						// print(item,item.boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,2,item.boxesNumberSortId,this.is_print_all,this.is_blank_lable)
-						preview(item,item.boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,2,item.boxesNumberSortId,this.is_print_all,this.is_blank_lable)
+						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,2,item.boxesNumberSortId,this.is_fit_print,this.is_blank_lable)
+						preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
 					}else{
-						// print(item,item.boxesNumber,goods,[],this.businessName,this.userName,2,item.boxesNumberSortId,this.is_print_all,this.is_blank_lable)
-						preview(item,item.boxesNumber,goods,[],this.businessName,this.userName,2,item.boxesNumberSortId,this.is_print_all,this.is_blank_lable)
+						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,2,item.boxesNumberSortId,this.is_fit_print,this.is_blank_lable)
+						preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
 					}
+				},
+				//打印时获取最新的箱数以及打印后箱数序号更新
+				orderBoxNumber(item=''){
+					//订单信息需要重新获取-为防止更新不及时，并更改标签序号
+					var id_arr = []
+					if(this.print_type == 1){
+						for(var i in this.handleListSort){
+							id_arr.push(this.handleListSort[i]['id'])
+						}
+					}else{
+						id_arr.push(item.id)
+					}
+					var data = {
+						"id_arr":id_arr,
+						"print_type":this.print_type
+					}
+					var _this = this
+					getData("{:url('/product/orderBoxsNumber')}", data, function (res) {
+						console.log('打印修改箱数结果----',res)
+						_this.isLoading=false
+						//修改打印数量
+						if (res.status == 200) {
+							var data = res.result
+							for(var i in data){
+								for(var j in _this.handleListSort){
+									if(_this.handleListSort[j].id == data[i].id){
+										_this.handleListSort[j].boxesNumber = data[i].boxesNumber
+										_this.handleListSort[j].boxesNumberSortId = data[i].newboxesNumberSortId
+										break;
+									}
+								}
+								for(var k in _this.handleList){
+									if(_this.handleList[k].id == data[i].id){
+										_this.handleList[k].boxesNumber = data[i].boxesNumber
+										_this.handleList[k].boxesNumberSortId = data[i].newboxesNumberSortId
+										break;
+									}
+								}
+							}
+						} else {
+							_this.popBox(res.message)
+							return
+						}
+					});
 				},
 				numSub(arg1,arg2){
 				    var r1,r2,m;
@@ -2273,15 +2338,21 @@
 						}
 						this.showQuantity = item.new_customer_buying_quantity
 					}else{
-						if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
-							this.popBox('Please lock the order')
-							return
+						if($.inArray(type,[2,3])!==-1){
+							if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
+								this.popBox('Please lock the order')
+								return
+							}
+							if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
+								this.popBox('This Order has been locked by other')
+								return
+							}
+							if(type == 2){
+								this.showQuantity = item.boxesNumberSortId
+							}else{
+								this.showQuantity = item.boxesNumber
+							}
 						}
-						if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
-							this.popBox('This Order has been locked by other')
-							return
-						}
-						this.showQuantity = item.num1
 					}
 					this.iskeyboardQuantityShow = true
 					this.quantityType = type
@@ -2323,12 +2394,22 @@
 					if (this.quantityType == 1) {
 						this.editQuantity(handleItem,handleIndex,type)
 					} else {
+						if(this.showQuantity <= 0){
+							this.popBox('Quantity error')
+							return
+						}
 						if(this.showQuantity > 50){
 							this.popBox('Quantity exceeds limit')
 							return
 						}
-						this.handleList[handleIndex].num1=this.showQuantity
-						this.iskeyboardQuantityShow=false
+						this.printLable(handleItem,handleIndex,type,this.quantityType-1)
+						// if(this.showQuantity > 50){
+						// 	this.popBox('Quantity exceeds limit')
+						// 	return
+						// }
+						// this.editQuantity(handleItem,handleIndex,type)
+						// this.handleList[handleIndex].num1=this.showQuantity
+						// this.iskeyboardQuantityShow=false
 					}
 				},
 				//校验是否是最多两位小数的数据
@@ -2450,25 +2531,35 @@
 				gotoProductCentre(){
 					window.location.href = common.webUrl+'product/index'
 				},
-				//打印全部选中
-				printAllCheck(e){
-					var is_print_all = $(e.target).find('.J_print_all').is(':checked');
-					if(!is_print_all){
-						$(e.target).find('.J_print_all').prop("checked",true)
+				//打印常规标签
+				printFitCheck(e){
+					if(!this.is_fit_print){
+						this.is_fit_print = true
+						this.print_type = 2
+						this.is_print_order = this.is_blank_lable = false
 					}else{
-						$(e.target).find('.J_print_all').prop("checked",false)
+						this.print_type = 0
 					}
-					this.is_print_all = !is_print_all
+				},
+				//打印全部订单标签
+				printAllCheck(e){
+					if(!this.is_print_order){
+						this.is_print_order = true
+						this.print_type = 3
+						this.is_fit_print = this.is_blank_lable = false
+					}else{
+						this.print_type = 0
+					}
 				},
 				//空白标签打印
 				blankLableCheck(e){
-					var is_blank_lable = $(e.target).find('.J_blank_lable').is(':checked');
-					if(!is_blank_lable){
-						$(e.target).find('.J_blank_lable').prop("checked",true)
+					if(!this.is_blank_lable){
+						this.is_blank_lable = true
+						this.print_type = 4
+						this.is_fit_print = this.is_print_order = false
 					}else{
-						$(e.target).find('.J_blank_lable').prop("checked",false)
+						this.print_type = 0
 					}
-					this.is_blank_lable = !is_blank_lable
 				},
 			},
 			created(){

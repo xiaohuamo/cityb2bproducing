@@ -768,6 +768,8 @@ class Order extends Model
             }
             $name = $this->getCustomerName($v);
             $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
+            $v['old_boxesNumberSortId'] = $v['boxesNumberSortId'];
+            $v['boxesNumberSortId'] = $v['boxesNumberSortId'] >= $v['boxesNumber']?$v['boxesNumber']:$v['boxesNumberSortId'];
         }
         return $order;
     }
