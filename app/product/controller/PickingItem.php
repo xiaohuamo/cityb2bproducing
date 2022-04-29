@@ -677,6 +677,7 @@ class PickingItem extends AuthBase
                         if($v['boxesNumberSortId'] <= $v['boxesNumber']){
                             $update['boxesNumberSortId'] = $v['boxesNumberSortId'] + $v['boxes'];
                             Order::getUpdate($where,$update);
+                            $v['boxesNumberSortId'] = $update['boxesNumberSortId'];
                             $v['newboxesNumberSortId'] = $update['boxesNumberSortId']>$v['boxesNumber']?$v['boxesNumber']:$update['boxesNumberSortId'];
                         }else{
                             $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
@@ -689,6 +690,7 @@ class PickingItem extends AuthBase
                         if($v['boxesNumberSortId'] <= $v['boxesNumber']) {
                             $update['boxesNumberSortId'] = $v['boxesNumber'] + 1;
                             Order::getUpdate($where, $update);
+                            $v['boxesNumberSortId'] = $update['boxesNumberSortId'];
                             $v['newboxesNumberSortId'] = $update['boxesNumberSortId']>$v['boxesNumber']?$v['boxesNumber']:$update['boxesNumberSortId'];
                         }else{
                             $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
@@ -702,6 +704,7 @@ class PickingItem extends AuthBase
                         if($v['boxesNumberSortId'] <= $v['boxesNumber']) {
                             $update['boxesNumberSortId'] = $v['boxesNumberSortId'] + 1;
                             Order::getUpdate($where, $update);
+                            $v['boxesNumberSortId'] = $update['boxesNumberSortId'];
                             $v['newboxesNumberSortId'] = $update['boxesNumberSortId']>$v['boxesNumber']?$v['boxesNumber']:$update['boxesNumberSortId'];
                         }else{
                             $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
