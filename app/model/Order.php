@@ -439,7 +439,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,wcc.message,rm.unit_en')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,wcc.message,rm.unit_en,wcc.dispatching_item_operator_user_id')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('order o','wcc.order_id = o.orderId')

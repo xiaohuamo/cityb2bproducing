@@ -1594,6 +1594,10 @@
 						this.popBox('This Order has been locked by other')
 						return
 					}
+					if(item.boxesNumberSortId < 0 || item.boxesNumber < 0){
+						return
+					}
+					item = this.handleListSort[index]
 					if(this.print_type == 0 || this.print_type == 2){
 						if(item.boxesNumber < item.old_boxesNumberSortId){
 							this.popBox('cannot print')
@@ -1629,20 +1633,17 @@
 					setTimeout(function(){
 						obj.removeClass("printBg2").addClass("printBg");
 					},5000);
-					if(item.boxesNumberSortId < 0 || item.boxesNumber < 0){
-						return
-					}
 					this.orderBoxNumber(item)
 					//跳转到打印标签页,item-订单信息 item.num1-打印数量
 					is_has_two_cate = item.guige1_id>0?1:2
 					var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
 					var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
 					if(is_has_two_cate == 1){
-						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,2,item.boxesNumberSortId,this.is_fit_print,this.is_blank_lable)
-						preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
+						print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
+						// preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
 					}else{
-						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,2,item.boxesNumberSortId,this.is_fit_print,this.is_blank_lable)
-						preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
+						print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
+						// preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
