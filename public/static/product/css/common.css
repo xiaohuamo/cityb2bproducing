@@ -667,7 +667,7 @@ a{
 	top: 0;
 }
 .popMessage{
-	width: 25.69rem;
+	/*width: 25.69rem;*/
 	height: 4.125rem;
 	line-height: 4.125rem;
 	background: #FFFFFF;
@@ -678,10 +678,10 @@ a{
 	position: fixed;
 	left: 50%;
 	top: 50%;
-	margin-left:-12.845rem;
 	margin-top:-4.125rem;
+	transform: translate(-50%,-50%);
 	font-weight:500;
-	padding: 0 0.5rem;
+	padding: 0 1rem;
 }
 .popQuantity{
 	position: fixed;
@@ -1119,6 +1119,9 @@ tbody tr td{
 	.echoMl {
 		margin-left: 10px;
 	}
+	.rightBox{
+		margin-top: 10px;
+	}
 }
 @media screen and (max-width:1180px) {
 	.menuWidth {
@@ -1143,6 +1146,9 @@ tbody tr td{
 	}
 	.rbtn7 {
 		width: 19%;
+	}
+	.rightBox{
+		margin-top: 10px;
 	}
 }
 .remarkBox {

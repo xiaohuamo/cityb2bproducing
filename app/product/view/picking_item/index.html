@@ -10,6 +10,7 @@
 		<script src="__STATIC__/product/js/common.js"></script>
 		<script src="__STATIC__/product/lodop/LodopFuncs.js"></script>
 		<script src="__STATIC__/product/js/print.js"></script>
+		<script src="__STATIC__/product/js/printAll.js"></script>
 		<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	</head>
 	<body onselectstart="return false">
@@ -157,18 +158,21 @@
 									</div>
 								</div>
 								<div class="flexbox2 relative hand rightBox">
+									<div class="flexbox1 xxBox bgFD6921 colfff" @click.stop="fitPrintAll()">
+										fit print all
+									</div>
 									<div class="flexbox1 xxBox bgFD6921 colfff" @click.stop="changeAllStatus()">
 										all picked
 									</div>
-									<div class="flexbox1 xxBox" @click.stop="printFitCheck($event)">
+									<div class="flexbox1 xxBox" @click.stop="printFitCheck()">
 										<input class="inputBox J_fit_print" type="checkbox" v-model="is_fit_print">
 										fit print
 									</div>
-									<div class="flexbox1 xxBox" @click.stop="printAllCheck($event)">
+									<div class="flexbox1 xxBox" @click.stop="printAllCheck()">
 										<input class="inputBox J_print_order" type="checkbox" v-model="is_print_order">
 										print order
 									</div>
-									<div class="flexbox1 xxBox" @click.stop="blankLableCheck($event)">
+									<div class="flexbox1 xxBox" @click.stop="blankLableCheck()">
 										<input class="inputBox J_blank_lable" type="checkbox" v-model="is_blank_lable">
 										blank lable
 									</div>
@@ -1617,43 +1621,87 @@
 								if (!willContinue) {
 									return
 								}else{
-									this.printFun(item,index,e)
+									//重新获取订单箱数
+									this.orderBoxNumber(item,this.print_type)
+									this.printFun(item,index,e,this.print_type)
 								}
 							});
 						}else{
-							this.printFun(item,index,e)
+							//重新获取订单箱数
+							this.orderBoxNumber(item,this.print_type)
+							this.printFun(item,index,e,this.print_type)
 						}
 					}else{
-						this.printFun(item,index,e)
+						//重新获取订单箱数
+						this.orderBoxNumber(item,this.print_type)
+						this.printFun(item,index,e,this.print_type)
 					}
 				},
-				printFun(item,index,e){
-					var obj = $(e.target)
-					if(obj.hasClass('printBg2')){
+				//fit print all
+				fitPrintAll(){
+					//获取当前选中的产品是否已锁定
+					if(this.menudataTwoCate[this.menudataTwoCateIndex].status==0){
+						this.popBox('Please lock the product')
 						return
 					}
-					obj.removeClass("printBg").addClass("printBg2");
-					setTimeout(function(){
-						obj.removeClass("printBg2").addClass("printBg");
-					},5000);
-					this.orderBoxNumber(item)
+					if(this.menudataTwoCate[this.menudataTwoCateIndex].status==2){
+						this.popBox('This Product has been locked by other')
+						return
+					}
+					var orders = []
+					for(index in this.handleListSort){
+						item = this.handleListSort[index]
+						if(item.old_boxesNumberSortId > item.boxesNumber){
+							continue;
+						}else{
+							orders.push(item)
+						}
+					}
+					if(orders.length>0){
+						//重新获取订单箱数
+						this.orderBoxNumber('',1)
+						//跳转到打印标签页,item-订单信息 item.num1-打印数量
+						is_has_two_cate = item.guige1_id>0?1:2
+						var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
+						var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
+						if(is_has_two_cate == 1) {
+							previewAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
+						}else{
+							previewAll(orders, goods, [], this.businessName, this.userName, 1)
+						}
+					}else{
+						this.popBox('All printed')
+						return
+					}
+				},
+				printFun(item,index,e='',print_type){
+					if(e!=''){
+						var obj = $(e.target)
+						if(obj.hasClass('printBg2')){
+							return
+						}
+						obj.removeClass("printBg").addClass("printBg2");
+						setTimeout(function(){
+							obj.removeClass("printBg2").addClass("printBg");
+						},5000);
+					}
 					//跳转到打印标签页,item-订单信息 item.num1-打印数量
 					is_has_two_cate = item.guige1_id>0?1:2
 					var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
 					var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
 					if(is_has_two_cate == 1){
 						print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
-						// preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
+						// preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,print_type)
 					}else{
 						print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
-						// preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
+						// preview(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,print_type)
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
-				orderBoxNumber(item=''){
+				orderBoxNumber(item='',print_type){
 					//订单信息需要重新获取-为防止更新不及时，并更改标签序号
 					var id_arr = []
-					if(this.print_type == 1){
+					if(print_type==1){
 						for(var i in this.handleListSort){
 							id_arr.push(this.handleListSort[i]['id'])
 						}
@@ -1662,7 +1710,7 @@
 					}
 					var data = {
 						"id_arr":id_arr,
-						"print_type":this.print_type
+						"print_type":print_type
 					}
 					var _this = this
 					getData("{:url('/product/orderBoxsNumber')}", data, function (res) {
@@ -2538,7 +2586,7 @@
 					window.location.href = common.webUrl+'product/index'
 				},
 				//打印常规标签
-				printFitCheck(e){
+				printFitCheck(){
 					if(!this.is_fit_print){
 						this.is_fit_print = true
 						this.print_type = 2
@@ -2548,7 +2596,7 @@
 					}
 				},
 				//打印全部订单标签
-				printAllCheck(e){
+				printAllCheck(){
 					if(!this.is_print_order){
 						this.is_print_order = true
 						this.print_type = 3
@@ -2558,7 +2606,7 @@
 					}
 				},
 				//空白标签打印
-				blankLableCheck(e){
+				blankLableCheck(){
 					if(!this.is_blank_lable){
 						this.is_blank_lable = true
 						this.print_type = 4

@@ -210,11 +210,11 @@
 												<div class="col666 menuWidth">{{item.menu_en_name}} {{item.guige_name}}</div>
 											</div>
 											<div class="flexbox2">
-												<div class="outStock" :class="item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock')">out stock</div>
-												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.proucing_item==1" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
+												<div class="outStock" :class="item.proucing_item==1||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock')">out stock</div>
+												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.proucing_item==1||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
 <!--												<input class="inputW F18 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;-->
-												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
-												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.proucing_item==1" @click="editQuantity(item,index,'+')">+</div>
+												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1||item.dispatching_item_operator_user_id>0}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
+												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.proucing_item==1||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'+')">+</div>
 											</div>
 										</div>
 										<div class="remarkBox orderDetail pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
@@ -223,7 +223,7 @@
 										<div class="flexbox2">
 											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event)"><span class="numiconSub"></span></div>
 <!--											<input class="inputW4 F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>-->
-											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @click="showKeyBoxQuantity(item,index,2)">{{item.num1}}</div>
+											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.dispatching_item_operator_user_id>0}" @click="showKeyBoxQuantity(item,index,2)">{{item.num1}}</div>
 											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event)">+</div>
 										</div>
 										<div class="printBg echo echoMl" @click="print(item,index,$event)"></div>
@@ -235,10 +235,10 @@
 											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
 										</div>
 									</div>
-									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.dispatching_is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
+									<div class="rbtn3 F22 bgFFF7F3 col5e5656" :class="{'bgGrey':item.dispatching_item_operator_user_id>0}" v-else-if="item.dispatching_is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
 										waitting lock
 									</div>
-									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.dispatching_is_producing_done==0&&item.is_lock==1&&item.lock_type==1,'bgGrey':item.dispatching_is_producing_done==0&&item.is_lock==1&&item.lock_type==2,'bgFD6921 blink':item.dispatching_is_producing_done==2&&item.is_lock==1&&item.lock_type==1,'bgGrey blink':item.dispatching_is_producing_done==2&&item.is_lock==1&&item.lock_type==2}" @click="changeStatus(item,index)">
+									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.dispatching_is_producing_done==0&&item.is_lock==1&&item.lock_type==1&&item.dispatching_item_operator_user_id==0,'bgGrey':(item.dispatching_is_producing_done==0&&item.is_lock==1&&item.lock_type==2&&item.dispatching_item_operator_user_id==0)||item.dispatching_item_operator_user_id>0,'blink':item.dispatching_is_producing_done==2}" @click="changeStatus(item,index)">
 										<span v-if="item.dispatching_is_producing_done==0">waitting process</span>
 										<span v-else>processing</span>
 									</div>
@@ -1066,6 +1066,11 @@
 						"id": item.id,
 						"logistic_truck_No": this.logistic_truck_No
 					}
+					//判断改产品是否被产品拣货端锁定，按照产品拣货优先级高
+					if(item.dispatching_item_operator_user_id > 0){
+						this.popBox('You do not have permission to operate products')
+						return
+					}
 					if(item.dispatching_is_producing_done == 0){
 						if(item.is_lock!=1){
 							//如果未锁定，点击自动锁定
@@ -1398,6 +1403,11 @@
 				},
 				//修改购买数量
 				editQuantity(item,index,addType){
+					//如果该订单已加工完成，则没有权限操作
+					if(item.dispatching_is_producing_done==1){
+						this.popBox('Inoperable completed')
+						return
+					}
 					//如果该产品是加工产品，则拣货员没有修改数量的权限
 					if(item.proucing_item==1){
 						this.popBox('You do not have permission to operate')
@@ -1411,9 +1421,9 @@
 						this.popBox('This order has been locked by other')
 						return
 					}
-					//如果该订单已加工完成，则没有权限操作
-					if(item.dispatching_is_producing_done==1){
-						this.popBox('Inoperable completed')
+					//判断改产品是否被产品拣货端锁定，按照产品拣货优先级高
+					if(item.dispatching_item_operator_user_id > 0){
+						this.popBox('You do not have permission to operate products')
 						return
 					}
 					// e.currentTarget.parentElement.children.item(1).focus()
@@ -2172,6 +2182,11 @@
 				},
 				showKeyBoxQuantity(item,index,type=1){
 					if(type == 1){
+						//如果该订单已加工完成，则没有权限操作
+						if(item.dispatching_is_producing_done==1){
+							this.popBox('Inoperable completed')
+							return
+						}
 						//如果该产品是加工产品，则拣货员没有修改数量的权限
 						if(item.proucing_item==1){
 							this.popBox('You do not have permission to operate')
@@ -2185,9 +2200,9 @@
 							this.popBox('This order has been locked by other')
 							return
 						}
-						//如果该订单已加工完成，则没有权限操作
-						if(item.dispatching_is_producing_done==1){
-							this.popBox('Inoperable completed')
+						//判断改产品是否被产品拣货端锁定，按照产品拣货优先级高
+						if(item.dispatching_item_operator_user_id > 0){
+							this.popBox('You do not have permission to operate products')
 							return
 						}
 						this.showQuantity = item.new_customer_buying_quantity
@@ -2399,7 +2414,11 @@
 						this.currentPage2TwoCateIndex = index1
 						this.isShowPsReprocess = true
 					}, 300);   //大概时间300ms
-				}
+				},
+				//跳转到生产中心页面
+				gotoProductCentre(){
+					window.location.href = common.webUrl+'product/index'
+				},
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
