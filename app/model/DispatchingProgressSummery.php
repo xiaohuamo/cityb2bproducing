@@ -29,12 +29,31 @@ class DispatchingProgressSummery extends Model
         ]);
         if (!empty($dps_info)) {
             //1.判断数据是否有变动
-            if($dps_info['sum_quantities'] != $data['sum_quantities']){
+            if($dps_info['sum_quantities'] != $data['sum_quantities'] || $dps_info['truck_no'] != $data['truck_no']){
                 $update_data['sum_quantities'] = $data['sum_quantities'];
-                if($data['isDone']==1 && $dps_info['sum_quantities'] < $data['sum_quantities']){
-                    $update_data['isDone'] = 0;
+                $update_data['truck_no'] = $data['truck_no'];
+                if($data['sum_quantities']<$dps_info['finish_quantities']){
+                    $update_data['finish_quantities'] = $data['sum_quantities'];
                 }
-                $res = self::getUpdate(['id' => $data['dps_id']], $update_data);
+                if($data['isDone']==1){
+                    if($dps_info['sum_quantities'] < $data['sum_quantities']){
+                        //查询该订单数量不一致时，是否还有待完成的订单
+                        $is_wait_done = WjCustomerCoupon::getAll([
+                            ['order_id','=',$dps_info['orderId']],
+                            ['customer_buying_quantity','>',0],
+                            ['dispatching_is_producing_done','=',0]
+                        ]);
+                        if($is_wait_done){
+                            $update_data['isDone'] = 0;
+                            //同时将该订单状态改为未完成状态
+                            Order::getUpdate(['orderId'=>$dps_info['orderId']],['dispatching_is_producing_done'=>0]);
+                        }else{
+                            $update_data['finish_quantities'] = $data['sum_quantities'];
+                        }
+
+                    }
+                }
+                $res = self::getUpdate(['id' => $dps_info['id']], $update_data);
             }
         } else {
             $data['finish_quantities'] = 0;
@@ -52,11 +71,28 @@ class DispatchingProgressSummery extends Model
      */
     public function getDeliveryDate($businessId,$logistic_delivery_date='')
     {
-        $date_arr = Db::name('dispatching_progress_summery')->where([
-            ['business_id', '=', $businessId],
-            ['delivery_date','>',time()-3600*24*7],
-            ['isdeleted','=',0]
-        ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
+        $map = 'o.status=1 or o.accountPay=1';
+        $where = [
+            ['o.business_userId', '=', $businessId],
+            ['o.coupon_status', '=', 'c01'],
+            ['wcc.customer_buying_quantity', '>', 0],
+            ['o.logistic_delivery_date','>',time()-3600*24*7],
+        ];
+        //获取需要加工的订单总数
+        $date_arr = Db::name('wj_customer_coupon')
+            ->alias('wcc')
+            ->field("o.logistic_delivery_date,FROM_UNIXTIME(o.logistic_delivery_date,'%Y-%m-%d') date,2 as is_default")
+            ->leftJoin('order o','wcc.order_id = o.orderId')
+            ->where($where)
+            ->where($map)
+            ->group('o.logistic_delivery_date')
+            ->order('o.logistic_delivery_date asc')
+            ->select()->toArray();
+//        $date_arr = Db::name('dispatching_progress_summery')->where([
+//            ['business_id', '=', $businessId],
+//            ['delivery_date','>',time()-3600*24*30],
+//            ['isdeleted','=',0]
+//        ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
         $default = [];//默认显示日期数据
@@ -121,31 +157,28 @@ class DispatchingProgressSummery extends Model
      * 获取订单数（已加工订单数/总订单数）
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
-     * @param string $logistic_truck_No 配送司机id
+     * @param string $logistic_truck_No 配送司机id 0表示未分配司机
      * @return array
      */
     public function getDispatchingOrderCount($businessId,$logistic_delivery_date='',$logistic_truck_No='')
     {
         $where = [
             ['business_id', '=', $businessId],
+            ['isdeleted', '=', 0],
         ];
         if($logistic_delivery_date){
             $where[] = ['delivery_date','=',$logistic_delivery_date];
         }
-        if($logistic_truck_No){
+        if($logistic_truck_No!==''){
             $where[] = ['truck_No','=',$logistic_truck_No];
         }
         //获取需要加工的订单总数
-        $order_count = Db::name('dispatching_progress_summery')
-            ->alias('dps')
-            ->where($where)
-            ->count();
+        $sql_model = Db::name('dispatching_progress_summery')
+            ->alias('dps');
+        $order_count = $sql_model->where($where)->count();
         //获取已加工的订单总数
         $where[] = ['isDone','=',1];
-        $order_done_count = Db::name('dispatching_progress_summery')
-            ->alias('dps')
-            ->where($where)
-            ->count();
+        $order_done_count = $sql_model->where($where)->count();
         return [
 //            'order' => $order,
             'order_done_count' => $order_done_count,
@@ -182,18 +215,32 @@ class DispatchingProgressSummery extends Model
         }
         $data = Db::name('dispatching_progress_summery')
             ->alias('dps')
-            ->field('dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,o.logisitic_schedule_time')
+//            ->field('dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,o.logisitic_schedule_time')
             ->leftJoin('order o','o.orderId = dps.orderId')
             ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
             ->leftjoin('user u','u.id=t.current_driver')
             ->where($where)
             ->group('dps.truck_No')
-            ->select()->toArray();
+            ->order($order_by)
+//            ->select()->toArray();
+            ->column('dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,o.logisitic_schedule_time','dps.truck_no');
+        if(isset($data[0])){
+            $data_0 = $data[0];
+            unset($data[0]);
+            $data = array_values($data);
+            array_unshift($data,$data_0);
+        } else {
+            $data = array_values($data);
+        }
         $time = time();
         foreach ($data as &$v){
-            $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];//司机姓名
             $v['schedule_time'] = $v['logisitic_schedule_time'] > 0 ? date('h:ia',$v['logisitic_schedule_time']) : '';//发车时间
             $v['remain_time'] = '';//$v['logisitic_schedule_time'] > 0 ? 0 : 0;//距离发车剩余时间
+            if($v['logistic_truck_No'] == 0){
+                $v['name'] = 'waiting assigned';//无-待分配司机
+            }else{
+                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];//司机姓名
+            }
             //获取司机对应的所有订单
             $map = ['dps.truck_no'=>$v['logistic_truck_No']];
             $two_cate_done_info = Db::name('dispatching_progress_summery')->alias('dps')->field('operator_user_id,isDone')->where($where)->where($map)->select()->toArray();
@@ -234,33 +281,34 @@ class DispatchingProgressSummery extends Model
             ['dps.delivery_date','=',$logistic_delivery_date],
             ['dps.isdeleted','=',0]
         ];
-        if($type!='allDriverOrder'&&!empty($logistic_truck_No)){
+        if($type!='allDriverOrder'&&$logistic_truck_No!==''){
             $where[] = ['dps.truck_No','=',$logistic_truck_No];
         }
-        if($type=='allDriverOrder'&&!empty($choose_logistic_truck_No)){
+        if($type=='allDriverOrder'&&$choose_logistic_truck_No!==''){
             $where[] = ['dps.truck_No','=',$choose_logistic_truck_No];
         }
         switch ($tw_sort){
-            case 1://SEQ No排序
+            case 0://SEQ No排序
                 if($tw_sort_type == 1){
                     $order_by = 'o.logistic_sequence_No asc,o.id asc';
                 } else {
                     $order_by = 'o.logistic_sequence_No desc,o.id asc';
                 }
                 break;
-            case 2://Stop No排序
+            case 1://Stop No排序
                 if($tw_sort_type == 1) {
                     $order_by = 'o.logistic_stop_No desc,o.id asc';
                 } else {
                     $order_by = 'o.logistic_stop_No asc,o.id asc';
                 }
                 break;
-            default://Cust Code排序
+            case 2://Cust Code排序
                 if($tw_sort_type == 1) {
                     $order_by = 'o.userId asc,o.id asc';
                 } else {
                     $order_by = 'o.userId desc,o.id asc';
                 }
+                break;
         }
         $order_list = Db::name('dispatching_progress_summery')
             ->alias('dps')
@@ -270,17 +318,25 @@ class DispatchingProgressSummery extends Model
             ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
             ->leftJoin('user u','u.id=t.current_driver')
             ->where($where)
+            ->order($order_by)
             ->select()->toArray();
         foreach($order_list as &$v){
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['status'] = $this->getProcessStatus($v,$userId,2);
             $v['name_length'] = $v['nickname'] ? strlen($v['nickname']) : 0;
-            $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];//司机姓名
+            if($v['logistic_truck_No'] == 0){
+                $v['name'] = 'waiting assigned';//无-待分配司机
+            }else {
+                $v['name'] = $v['contactPersonFirstname'] . ' ' . $v['contactPersonLastname'];//司机姓名
+            }
             $v['schedule_time'] = $v['logisitic_schedule_time'] > 0 ? date('h:ia',$v['logisitic_schedule_time']) : '';//发车时间
             $v['remain_time'] = '';//$v['logisitic_schedule_time'] > 0 ? 0 : 0;//距离发车剩余时间
         }
         if ($type == 'allDriverOrder') {
             $list = [];
+            $logistic_sequence_No_arr = array_column($order_list,'logistic_sequence_No');
+            $truck_no_arr = array_column($order_list,'logistic_truck_No');
+            array_multisort($logistic_sequence_No_arr,$truck_no_arr,$order_list);
             foreach($order_list as &$v){
                 if(!isset($list[$v['logistic_truck_No']])) {
                     $list[$v['logistic_truck_No']] = [
@@ -293,6 +349,12 @@ class DispatchingProgressSummery extends Model
                     ];
                 }
                 $list[$v['logistic_truck_No']]['order'][] = $v;
+            }
+            if(isset($list[0])){
+                $data_0 = $list[0];
+                unset($list[0]);
+                $list = array_values($list);
+                array_unshift($list,$data_0);
             }
             $order_list = array_values($list);
         }
