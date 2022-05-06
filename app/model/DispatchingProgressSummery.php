@@ -334,9 +334,9 @@ class DispatchingProgressSummery extends Model
         }
         if ($type == 'allDriverOrder') {
             $list = [];
-            $is_done_arr = array_column($order_list,'isDone');
+            $logistic_sequence_No_arr = array_column($order_list,'logistic_sequence_No');
             $truck_no_arr = array_column($order_list,'logistic_truck_No');
-            array_multisort($is_done_arr,$truck_no_arr,$order_list);
+            array_multisort($logistic_sequence_No_arr,$truck_no_arr,$order_list);
             foreach($order_list as &$v){
                 if(!isset($list[$v['logistic_truck_No']])) {
                     $list[$v['logistic_truck_No']] = [
