@@ -17,6 +17,9 @@
 				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
 				<span>City b2b</span>
 			</div>
+			<div class="flexbox2" v-if="is_pick_permission==1">
+				<img src="__STATIC__/product/img/dispatching.png" class="systemIcon1" @click="gotoDispatchingCentre()"/>
+			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(0)">
 				<span>{{productType[currentProductTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
@@ -444,6 +447,7 @@
 				handleItem:[],//当前点击选中的订单明细
 				handleIndex:0,//当前点击选中的订单明细索引id
 				quantityType:1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改
+				is_pick_permission:2,//判断是否有生产权限 1-有 2-没有
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -469,6 +473,7 @@
 						_this.isShowTypePincode2 = true
 						_this.pincodeType = 2 //默认显示创建pincode
 					}
+					_this.is_pick_permission = res.result.is_pick_permission
 				});
 				//获取加工日期
 				_this.deliveryDateFun();
@@ -1838,6 +1843,7 @@
 							_this.isShowTypePincode2 = _this.isShowTypePincode3 = false
 							_this.pincodeType = 1 //默认显示pincode登录
 							_this.focusDatype = 10 //默认可直接输入密码
+							_this.is_pick_permission = res.result.is_pick_permission
 							//清除定时任务
 							_this.clearTime()
 							_this.isLoading = false
@@ -2035,7 +2041,11 @@
 				intNumberCheck(value){
 					value = value.replace(/[^\d]/g,'');
 					return value
-				}
+				},
+				//跳转到生产中心页面
+				gotoDispatchingCentre(){
+					window.location.href = common.dWebUrl+'product/picking'
+				},
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间

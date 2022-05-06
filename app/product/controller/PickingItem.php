@@ -100,8 +100,13 @@ class PickingItem extends AuthBase
 
         //获取对应日期的加工订单
         $order = $Order->getProductItemOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['wcc_sort'],$param['wcc_sort_type']);
+        $redis = redis_connect();
+        $param['guige1_id'] = empty($param['guige1_id'])?0:$param['guige1_id'];
+        $key = 'fit_print_all_'.$param['logistic_delivery_date'].'_'.$param['product_id'].'_'.$param['guige1_id'];
+        $is_print_all = $redis->get($key);
         $data = [
             'order' => $order,
+            'is_print_all' => !empty($is_print_all)?1:2,//是否全部打印 1是 2否
         ];
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
@@ -704,7 +709,7 @@ class PickingItem extends AuthBase
         try {
             //1.获取订单最新的箱数信息
             $box_list = WjCustomerCoupon::alias('wcc')
-                ->field('wcc.id,o.orderid,ceil(wcc.customer_buying_quantity/rm.unitQtyPerBox) AS boxes,o.boxesNumber,o.boxesNumberSortId')
+                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,o.orderid,o.logistic_delivery_date,ceil(wcc.customer_buying_quantity/rm.unitQtyPerBox) AS boxes,o.boxesNumber,o.boxesNumberSortId')
                 ->leftJoin('order o','o.orderId = wcc.order_id')
                 ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
                 ->where(['wcc.id'=>$param['id_arr']])
@@ -758,6 +763,16 @@ class PickingItem extends AuthBase
                     break;
             }
             Db::commit();
+            //如果是全部打印，只可以打印一次。之后不可已再选择全部打印
+            if($param['print_type'] == 1){
+                $redis = redis_connect();
+                $logistic_delivery_date = $box_list[0]['logistic_delivery_date'];
+                $product_id = $box_list[0]['product_id'];
+                $guige_id = $box_list[0]['guige1_id'];
+                $key = 'fit_print_all_'.$logistic_delivery_date.'_'.$product_id.'_'.$guige_id;
+                $expire_time = 7*86400;
+                $redis->setex($key,$expire_time,1);
+            }
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$box_list);
         } catch (\Exception $e) {
             // 回滚事务

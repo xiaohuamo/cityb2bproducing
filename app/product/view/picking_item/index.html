@@ -158,7 +158,7 @@
 									</div>
 								</div>
 								<div class="flexbox2 relative hand rightBox">
-									<div class="flexbox1 xxBox bgFD6921 colfff" @click.stop="fitPrintAll()">
+									<div class="flexbox1 xxBox colfff" :class="is_print_all==1?'bgGrey':'bgFD6921'" @click.stop="is_print_all==2&&fitPrintAll()">
 										fit print all
 									</div>
 									<div class="flexbox1 xxBox bgFD6921 colfff" @click.stop="changeAllStatus()">
@@ -491,6 +491,7 @@
 				is_print_order: false,//是否选中全部打印
 				is_blank_lable: false,//是否选中空白标签
 				print_type: 2,//打印类型 1-Fit print all 2-fit print 3-print order 4-blank label
+				is_print_all:2,//是否全部打印 1-是 2-否
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -686,6 +687,7 @@
 					getData("{:url('/product/productItemOrderDetailList')}", data, function (res) {
 						_this.isLoading=false
 						res = res.result
+						_this.is_print_all = res.is_print_all
 						if(type == 'refresh'){
 							//更新数据时，保持原数据位置不变
 							//1.更新数据时判断修改加工数量和打印标签是否获取焦点，获取焦点时加工数量不更新
@@ -708,7 +710,7 @@
 							_this.handleList = res.order
 							_this.handleListSort = res.order
 						}
-						console.log('获取产品加工明细单2222-----',_this.handleList)
+						console.log('获取产品加工明细单2222-----',res)
 					});
 				},
 				//cate 类目 1一级类目  2二级类目 3-三级分类
@@ -1710,6 +1712,7 @@
 						"id_arr":id_arr,
 						"print_type":print_type
 					}
+					console.log('打印修改箱数参数----',data)
 					var _this = this
 					getData("{:url('/product/orderBoxsNumber')}", data, function (res) {
 						console.log('打印修改箱数结果----',res)
