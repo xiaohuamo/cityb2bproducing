@@ -1683,8 +1683,8 @@
 					this.currentMenu=0
 					//获取大类
 					var _this=this
+					localStorage.currentPage=index
 					if(_this.currentPage == 2){
-						localStorage.currentPage=2
 						var data = {
 							"logistic_delivery_date":this.logistic_delivery_date,
 							"logistic_truck_No":this.choose_logistic_truck_No,
@@ -1700,7 +1700,6 @@
 						_this.dataRefrehPage23();
 					}
 					if(_this.currentPage == 3) {
-						localStorage.currentPage=3
 						_this.twoCate('allDriverOrder')
 						_this.dataRefrehPage23();
 					}

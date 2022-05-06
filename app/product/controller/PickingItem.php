@@ -306,7 +306,7 @@ class PickingItem extends AuthBase
                     }
                 }
                 //2-2同时更新按订单拣货的汇总表,该订单是否全部拣货完成
-                $dps_info = DispatchingProgressSummery::getOne(['orderId'=>$wcc_info['order_id'],'isdeleted'=>0]);
+                $dps_info = DispatchingProgressSummery::getOne(['orderId'=>$wcc_info['order_id'],'isDone'=>0,'isdeleted'=>0]);
                 if(!empty($dps_info)){
                     $finish_quantities = $dps_info['finish_quantities']+1;
                     $dps_data['finish_quantities'] = $finish_quantities;
@@ -443,7 +443,17 @@ class PickingItem extends AuthBase
                 return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
             }
             //获取该产品的状态
-            $done = $WjCustomerCoupon->getProductGuigeStatus($product_data,$user_id);
+            $product_guige_data = [];
+            if($param['guige1_id'] > 0){
+                foreach ($product_data as $v){
+                    if($v['guige1_id'] == $param['guige1_id']){
+                        $product_guige_data[] = $v;
+                    }
+                }
+            }else{
+                $product_guige_data = $product_data;
+            }
+            $done = $WjCustomerCoupon->getProductGuigeStatus($product_guige_data,$user_id);
             if($done['status'] != 1){
                 return show(config('status.code')['product_plan_approved_error']['code'], config('status.code')['product_plan_approved_error']['msg']);
             }
@@ -516,7 +526,7 @@ class PickingItem extends AuthBase
                 //如果该产品对应规则的产品全部加工完毕，则更改订单加工状态
                 foreach ($product_data as $v){
                     //3-1同时更新按订单拣货的汇总表,该订单是否全部拣货完成
-                    $dps_info = DispatchingProgressSummery::getOne(['orderId'=>$v['order_id'],'isdeleted'=>0]);
+                    $dps_info = DispatchingProgressSummery::getOne(['orderId'=>$v['order_id'],'isDone'=>0,'isdeleted'=>0]);
                     if(!empty($dps_info)){
                         $finish_quantities = $dps_info['finish_quantities']+1;
                         $dps_data['finish_quantities'] = $finish_quantities;
@@ -527,6 +537,9 @@ class PickingItem extends AuthBase
                     }
                     $count = $WjCustomerCoupon->getWccOrderDone($v['order_id'],'','','','','',2);
                     if($count == 0){
+                        Order::getUpdate(['orderId' => $v['order_id']],[
+                            'dispatching_is_producing_done'=>1
+                        ]);
                         $order_inc_num += 1;
                         //判断对应司机的订单数，如果司机信息一致，则司机订单+1
                         if($param['logistic_truck_No']>0){

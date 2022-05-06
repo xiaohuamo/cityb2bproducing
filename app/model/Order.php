@@ -778,7 +778,7 @@ class Order extends Model
     public function getCustomerName($order){
         //第一优先级 客户简码;
         // 如果有客户填写的客户名，同时附上
-        if (trim($order['nickname'])) {
+        if (!empty($order['nickname'])&&trim($order['nickname'])) {
             if(trim($order['displayName'])){
                 return trim($order['nickname']).'('. trim(trim($order['displayName'])).')';
             }else{
@@ -786,7 +786,7 @@ class Order extends Model
             }
         }
         //如果没有客户简码，则客户提交订单时的 客户名 为第二优先级 ，如果客户同时填写了姓名，附上姓名；
-        if(trim($order['displayName'])){
+        if(!empty($order['displayName'])&&trim($order['displayName'])){
             if(trim($order['first_name']) || trim($order['last_name']) ) {
                 return trim($order['displayName']).'('. trim($order['first_name']).' '.trim($order['last_name']).')';
             }else{
@@ -794,20 +794,20 @@ class Order extends Model
             }
         }
         //  如果客户无简码，并且提交订单时未填写客户户名，则，客户填写的 姓 ，名 做为第三优先级 ；
-        if(trim($order['first_name']) || trim($order['last_name']) ) {
+        if((!empty($order['first_name'])&&trim($order['first_name'])) || (!empty($order['last_name'])&&trim($order['last_name'])) ) {
             return  trim($order['first_name']).' '.trim($order['last_name']);
         }
         //如果以上均为捕获到客户信息，则获取用户注册时的用户信息做为标记；
         $user = User::getOne($order['userId']);
         if($user){
-            if(trim($user['displayName'])){
+            if(!empty($order['displayName'])&&trim($user['displayName'])){
                 return trim($user['displayName']);
             }
-            if(trim($user['businessName'])){
+            if(!empty($order['businessName'])&&trim($user['businessName'])){
                 return trim($user['businessName']);
 
             }
-            if(trim($user['person_first_name']) || trim($user['person_last_name'])){
+            if((!empty($order['person_first_name'])&&trim($user['person_first_name'])) || (!empty($order['person_last_name'])&&trim($user['person_last_name']))){
                 return trim($user['person_first_name']).' '.trim($user['person_last_name']);
             }
             return trim($user['name']);

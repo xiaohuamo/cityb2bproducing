@@ -1046,10 +1046,10 @@
 							_this.handleListSort[index].dispatching_is_producing_done = data.is_producing_done
 							//如果返回继续拣货，如果该订单或者该司机之前状态是已完成，需要修改锁定状态为当前用户锁定
 							if(data.is_producing_done == 0) {
-								if((is_has_three_cate==1&&three_cate_data['status']==3)||_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3||_this.menudata2Sort[_this.menudata2SortIndex]['status']==3) {
+								// if((is_has_three_cate==1&&three_cate_data['status']==3)||_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3||_this.menudata2Sort[_this.menudata2SortIndex]['status']==3) {
 									_this.handleListSort[index]['is_lock'] = 1
 									_this.handleListSort[index]['lock_type'] = 1
-								}
+								// }
 							}
 							//修改原数组的值
 							for(var i in _this.handleList) {
@@ -1110,8 +1110,6 @@
 								//如果当前产品的所有规格的加工明细都加工完，则需要将该产品状态变为绿色
 								if (res.result.is_cate_all_done == 1) {
 									_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 3
-								}else{
-									_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 0
 								}
 								//修改原数组的值
 								for (var i in _this.menudata2) {
@@ -1872,8 +1870,8 @@
 					this.currentMenu=0
 					//获取大类
 					var _this=this
+					localStorage.currentPage=index
 					if(_this.currentPage == 2){
-						localStorage.currentPage=2
 						var data = {
 							"logistic_delivery_date":this.logistic_delivery_date,
 							"logistic_truck_No":this.logistic_truck_No,
@@ -1890,7 +1888,6 @@
 					}
 					if(_this.currentPage == 3) {
 						//跳转到按订单拣货页面
-						localStorage.currentPage=3
 						window.location.href = "{:url('/product/pickingOrder')}"
 					}
 					if(_this.currentPage == 4) {
