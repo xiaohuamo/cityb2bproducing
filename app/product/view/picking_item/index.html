@@ -1194,6 +1194,7 @@
 								//修改总订单数
 								_this.orderDoneNum = _this.numAdd(_this.orderDoneNum, res.result.order_inc_num)
 								//增加加工数量
+								var three_cate_data = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][_this.menudataThreeIndex]
 								if (data.is_producing_done == 1) {
 									_this.menudataTwoCate[_this.menudataTwoCateIndex]['finish_quantities'] = _this.numAdd(_this.menudataTwoCate[_this.menudataTwoCateIndex]['finish_quantities'], res.result.add_quantity)
 									if(is_has_three_cate==1){
