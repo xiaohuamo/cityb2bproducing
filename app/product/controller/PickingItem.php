@@ -533,15 +533,17 @@ class PickingItem extends AuthBase
                 //如果该产品对应规则的产品全部加工完毕，则更改订单加工状态
                 foreach ($product_data as $v){
                     //3-1同时更新按订单拣货的汇总表,该订单是否全部拣货完成
-                    $dps_info = DispatchingProgressSummery::getOne(['orderId'=>$v['order_id'],'isDone'=>0,'isdeleted'=>0]);
-                    if(!empty($dps_info)){
-                        $dps_data = [];
-                        $finish_quantities = $dps_info['finish_quantities']+1;
-                        $dps_data['finish_quantities'] = $finish_quantities;
-                        if($finish_quantities == $dps_info['sum_quantities']){
-                            $dps_data['isDone'] = 1;
+                    if($v['dispatching_is_producing_done'] == 0 || $v['dispatching_is_producing_done'] == 2) {
+                        $dps_info = DispatchingProgressSummery::getOne(['orderId' => $v['order_id'], 'isDone' => 0, 'isdeleted' => 0]);
+                        if (!empty($dps_info)) {
+                            $dps_data = [];
+                            $finish_quantities = $dps_info['finish_quantities'] + 1;
+                            $dps_data['finish_quantities'] = $finish_quantities;
+                            if ($finish_quantities == $dps_info['sum_quantities']) {
+                                $dps_data['isDone'] = 1;
+                            }
+                            DispatchingProgressSummery::getUpdate(['id' => $dps_info['id']], $dps_data);
                         }
-                        DispatchingProgressSummery::getUpdate(['id' => $dps_info['id']],$dps_data);
                     }
                     $count = $WjCustomerCoupon->getWccOrderDone($v['order_id'],'','','','','',2);
                     if($count == 0){
