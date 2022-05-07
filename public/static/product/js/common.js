@@ -12,9 +12,12 @@ function isButtonLoading(isLoading, button) {
 }
 
 const common = {
-    webUrl: 'https://m.cityb2b.com/',//web访问地址
-    dWebUrl: 'https://d.cityb2b.com/',//web访问地址
-    driverWebUrl: 'https://driver.cityb2b.com/',//web访问地址
+    // webUrl: 'https://m.cityb2b.com/',//web访问地址
+    // dWebUrl: 'https://d.cityb2b.com/',//web访问地址
+    // driverWebUrl: 'https://driver.cityb2b.com/',//web访问地址
+    webUrl: 'http://192.168.50.105/',//web访问地址
+    dWebUrl: 'http://127.0.0.2/',//web访问地址
+    driverWebUrl: 'http://127.0.0.3/',//web访问地址
 }
 
 function getData(url,data,callback){

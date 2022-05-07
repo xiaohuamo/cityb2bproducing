@@ -360,6 +360,8 @@ class PickingItem extends AuthBase
             if($param['is_producing_done'] == 0){
                 //2.更新该产品加工数量和状态
                 WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['dispatching_item_operator_user_id'=>$user_id,'dispatching_is_producing_done'=>0]);
+                //同时将其他该产品对应的其他订单锁定为当前人员
+                $WjCustomerCoupon->updatePickProductItemProcessedData($businessId,$wcc_info['logistic_delivery_date'],$param['logistic_truck_No'],$wcc_info['product_id'],$wcc_info['guige1_id'],$user_id,1);
                 $finish_quantities -= $wcc_info['customer_buying_quantity'];
                 $is_cate_all_done = 0;
                 $is_product_guige1_all_done = 0;

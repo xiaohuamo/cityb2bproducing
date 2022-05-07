@@ -1049,8 +1049,10 @@
 							//如果返回继续拣货，如果该订单或者该司机之前状态是已完成，需要修改锁定状态为当前用户锁定
 							if(data.is_producing_done == 0) {
 								// if((is_has_three_cate==1&&three_cate_data['status']==3)||_this.menudataTwoCate[_this.menudataTwoCateIndex]['status']==3||_this.menudata2Sort[_this.menudata2SortIndex]['status']==3) {
-									_this.handleListSort[index]['is_lock'] = 1
-									_this.handleListSort[index]['lock_type'] = 1
+								for(var i in _this.handleListSort) {
+									_this.handleListSort[i]['is_lock'] = 1
+									_this.handleListSort[i]['lock_type'] = 1
+								}
 								// }
 							}
 							//修改原数组的值
@@ -1059,7 +1061,6 @@
 									_this.handleList[i].dispatching_is_producing_done = data.is_producing_done
 									_this.handleList[i].is_lock = _this.handleListSort[index]['is_lock']
 									_this.handleList[i].lock_type = _this.handleListSort[index]['lock_type']
-									break;
 								}
 							}
 							_this.currentHandlePop=-1
@@ -1122,10 +1123,10 @@
 								}
 								//如果产品规格状态为已处理完成，还原时将原状态还原
 								if (data.is_producing_done == 0) {
-									if(is_has_three_cate==1&&three_cate_data['status']==3) {
+									if(is_has_three_cate==1&&three_cate_data['status'] != 1) {
 										_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][_this.menudataThreeIndex]['status'] = 1
 									}
-									if (_this.menudataTwoCate[_this.menudataTwoCateIndex]['status'] == 3) {
+									if (_this.menudataTwoCate[_this.menudataTwoCateIndex]['status'] != 1) {
 										_this.menudataTwoCate[_this.menudataTwoCateIndex]['status'] = 1
 									}
 									//如果一级规格没被锁定时，同时锁定一级规格
@@ -1874,6 +1875,9 @@
 					//获取大类
 					var _this=this
 					localStorage.currentPage=index
+					if(_this.currentPage == 1){
+						_this.dataRefreh();
+					}
 					if(_this.currentPage == 2){
 						var data = {
 							"logistic_delivery_date":this.logistic_delivery_date,

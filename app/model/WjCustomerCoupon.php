@@ -647,11 +647,11 @@ class WjCustomerCoupon extends Model
         }
         switch($type){
             case 1://锁定时，需要将所有该商品未锁定的，锁定为当前操作员，和司机没有关系，为了防止切换司机时，部分完成，剩余未锁定的也需要改为当前操作员
-                $where[] = ['wcc.dispatching_is_producing_done', '=', 0];
+                $where[] = ['wcc.dispatching_is_producing_done', '<>', 1];
                 $update_data = ['wcc.dispatching_item_operator_user_id'=>$operator_user_id];
                 break;
             case 2:
-                $where[] = ['wcc.dispatching_is_producing_done', '=', 0];
+                $where[] = ['wcc.dispatching_is_producing_done', '<>', 1];
                 $update_data = ['wcc.dispatching_item_operator_user_id'=>0];
                 break;
             case 3:

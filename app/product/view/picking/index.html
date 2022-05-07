@@ -1012,7 +1012,7 @@
 							if(this.logistic_delivery_date && this.currentPage == 3) {
 								this.returnPage(3)
 							}
-						}, 30000);
+						}, 5000);
 					}
 				},
 				loginOutPincode(){
@@ -1679,11 +1679,16 @@
 				//index-1:返回首页 2:返回类目页 3:返回司机和订单页面 4:按照产品拣货
  				returnPage(index){
 					this.currentPage=index
-					//返回首页时，将默认获取第一个分类的信息
-					this.currentMenu=0
 					//获取大类
 					var _this=this
 					localStorage.currentPage=index
+					if(_this.currentPage != 2){
+						//返回首页时，将默认获取第一个分类的信息
+						this.currentMenu=0
+					}
+					if(_this.currentPage == 1){
+						_this.dataRefreh();
+					}
 					if(_this.currentPage == 2){
 						var data = {
 							"logistic_delivery_date":this.logistic_delivery_date,
@@ -2422,7 +2427,11 @@
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
-				this.dataRefreh();
+				if(this.currentPage==1){
+					this.dataRefreh();
+				}else{
+					this.dataRefrehPage23();
+				}
 			},
 			beforeDestroy(){
 				window.removeEventListener('online',  this.updateOnlineStatus);
