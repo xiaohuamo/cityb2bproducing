@@ -2427,11 +2427,7 @@
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
-				if(this.currentPage==1){
-					this.dataRefreh();
-				}else{
-					this.dataRefrehPage23();
-				}
+				this.returnPage(this.currentPage)
 			},
 			beforeDestroy(){
 				window.removeEventListener('online',  this.updateOnlineStatus);
