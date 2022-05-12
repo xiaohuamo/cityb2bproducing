@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app\product\controller;
 
+use app\product\service\BoxNumber;
 use think\facade\Cookie;
 use app\product\validate\LoginValidate;
 use think\facade\Console;
@@ -153,5 +154,13 @@ class Login extends Base
         }
         $truck_info = $truck_info??[];
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],['user'=>$user,'truck_info'=>$truck_info]);
+    }
+
+
+    public function test(){
+        $param = $this->request->only(['orderId']);
+        $BoxNumber = new BoxNumber();
+        $order = $BoxNumber->getOrderBoxes($param['orderId']);
+        halt($order);
     }
 }

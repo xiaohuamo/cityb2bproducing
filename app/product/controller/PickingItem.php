@@ -796,11 +796,4 @@ class PickingItem extends AuthBase
         }
     }
 
-    public function test(){
-        $param = $this->request->only(['orderId']);
-        $BoxNumber = new BoxNumber();
-        $order = $BoxNumber->getOrderBoxes($param['orderId']);
-        halt($order);
-    }
-
 }

@@ -22,7 +22,7 @@ class Order extends Model
     {
         $date_arr = Db::name('producing_progress_summery')->where([
             ['business_userId', '=', $businessId],
-            ['delivery_date','>',time()-3600*24*7],
+            ['delivery_date','>',time()-3600*24*60],
             ['isdeleted','=',0]
         ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
