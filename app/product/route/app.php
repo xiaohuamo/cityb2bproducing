@@ -174,7 +174,7 @@ Route::post('pickItemEditBoxNumber', 'PickingItem/editBoxNumber');
 //修改箱数
 Route::post('orderBoxsNumber', 'PickingItem/orderBoxsNumber');
 //拣货员项目路由(按照产品分)--------end
-Route::post('testOrderBox', 'Login/test');
+Route::any('testOrderBox', 'Login/test');
 
 
 //司机端项目路由--------start
