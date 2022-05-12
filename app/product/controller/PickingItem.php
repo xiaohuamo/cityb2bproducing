@@ -8,6 +8,7 @@ use think\facade\Queue;
 use think\Model;
 use think\Request;
 use app\product\validate\IndexValidate;
+use app\product\service\BoxNumber;
 use app\model\{
     Order,
     WjCustomerCoupon,
@@ -97,7 +98,6 @@ class PickingItem extends AuthBase
         $user_id = $this->getMemberUserId();//当前操作用户
 
         $Order = new Order();
-
         //获取对应日期的加工订单
         $order = $Order->getProductItemOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['wcc_sort'],$param['wcc_sort_type']);
         $redis = redis_connect();
@@ -716,13 +716,21 @@ class PickingItem extends AuthBase
         try {
             //1.获取订单最新的箱数信息
             $box_list = WjCustomerCoupon::alias('wcc')
-                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,o.orderid,o.logistic_delivery_date,ceil(wcc.customer_buying_quantity/rm.unitQtyPerBox) AS boxes,o.boxesNumber,o.boxesNumberSortId')
+                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,o.orderid,o.logistic_delivery_date,o.boxesNumber,o.boxesNumberSortId,rm.unitQtyPerBox,rm.overflowRate')
                 ->leftJoin('order o','o.orderId = wcc.order_id')
                 ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
                 ->where(['wcc.id'=>$param['id_arr']])
                 ->select()->toArray();
             if (!$box_list) {
                 return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
+            }
+            $Order = new Order();
+            foreach($box_list as &$v){
+                $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+                $box_arr = $Order->getProductBoxes($v['new_customer_buying_quantity'],$v['unitQtyPerBox'],$v['boxesNumberSortId'],$v['overflowRate']);
+                $v['boxs_integer_nums'] = $box_arr['boxs_integer_nums'];
+                $v['remain_nums'] = $box_arr['remain_nums'];
+                $v['boxes'] = $box_arr['boxes'];
             }
             Db::startTrans();
             //根据打印类型更新数据
@@ -787,4 +795,12 @@ class PickingItem extends AuthBase
             return show(config('status.code')['system_error']['code'], $e->getMessage());
         }
     }
+
+    public function test(){
+        $param = $this->request->only(['orderId']);
+        $BoxNumber = new BoxNumber();
+        $order = $BoxNumber->getOrderBoxes($param['orderId']);
+        halt($order);
+    }
+
 }

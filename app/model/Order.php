@@ -724,7 +724,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,ceil(wcc.customer_buying_quantity/rm.unitQtyPerBox) AS boxes')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId')
@@ -749,6 +749,10 @@ class Order extends Model
         }
         foreach($order as &$v){
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
+            $box_arr = $this->getProductBoxes($v['new_customer_buying_quantity'],$v['unitQtyPerBox'],$v['boxesNumberSortId'],$v['overflowRate']);
+            $v['boxs_integer_nums'] = $box_arr['boxs_integer_nums'];
+            $v['remain_nums'] = $box_arr['remain_nums'];
+            $v['boxes'] = $box_arr['boxes'];
             $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
@@ -772,6 +776,38 @@ class Order extends Model
             $v['boxesNumberSortId'] = $v['boxesNumberSortId'] >= $v['boxesNumber']?$v['boxesNumber']:$v['boxesNumberSortId'];
         }
         return $order;
+    }
+
+    /**
+     * 获取产品需要的箱数
+     */
+    public function getProductBoxes($new_customer_buying_quantity,$unitQtyPerBox,$boxesNumberSortId,$overflowRate)
+    {
+        $boxs_integer_nums = intval($new_customer_buying_quantity/$unitQtyPerBox);
+        $remain_nums = (float)number_format($new_customer_buying_quantity-$boxs_integer_nums*$unitQtyPerBox,2);
+        //如果没有余数，则正好是整箱数
+        if($remain_nums == 0){
+            $boxes = $boxs_integer_nums;
+        }else{
+            //如果有余数，
+            //1.判断溢出率，如果按照溢出率，正好够装满最后一箱，则总箱数就是当前整箱数
+            //2.判断溢出率，如果按照溢出率，$remain_nums>$allow_overflow_nums，判断当前序号是否为1，如果为1，则多打一箱子，如果不是，则不多打一箱
+            $allow_overflow_nums = $overflowRate*$unitQtyPerBox/100;
+            if ($remain_nums <= $allow_overflow_nums) {
+                $boxes = $boxs_integer_nums;
+            } else {
+                if($boxesNumberSortId == 1){
+                    $boxes = $boxs_integer_nums+1;
+                }else{
+                    $boxes = $boxs_integer_nums;
+                }
+            }
+        }
+        return [
+            'boxs_integer_nums' => $boxs_integer_nums,//整箱数
+            'remain_nums' => $remain_nums,//余数
+            'boxes' => $boxes,//实际打印箱数
+        ];
     }
 
     //根据订单信息获得客户名称
