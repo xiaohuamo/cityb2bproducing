@@ -57,7 +57,6 @@ class BoxNumber
         }
         //如果有需要拼箱的数据，则计算拼箱的最优方案
         if($splicingboxnumber_arr){
-            $d = array();//存储所有可能的组合排序
             $splicing_index_arr = $this->permutations($splicingboxnumber_arr);
         }else{
             $splicing_index_arr = [];
@@ -73,6 +72,7 @@ class BoxNumber
             'orderboxnumber' => $orderboxnumber,//该订单的总箱数
             'splicingboxnumber' => $splicingboxnumber,//需要拼箱的箱数
             'splicing_arr' => $splicing_arr,//需要拼箱的数据
+            'order' => $order,//当前订单数据
         ];
     }
 
@@ -153,7 +153,7 @@ class BoxNumber
         $a = array_keys($splicingboxnumber_arr);//需要组合排序的数据的key值;
         $d = array();//存储所有可能的组合排序
         $r = 1;//组合排序综合最大不能超过1
-        for($i=1; $i<count($a); $i++) {
+        for($i=1; $i<=count($a); $i++) {
             foreach($this->Combination($a, $i) as $v){
                 $v = explode(',',(string)$v);
                 //取出组合中大于0小于1的所有组合
