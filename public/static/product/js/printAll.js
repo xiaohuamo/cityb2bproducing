@@ -45,6 +45,49 @@ function generateOrderPrintAll(order,goods,goodsTwoCate,businessName,userName,pr
                     }
                 }
             })
+            //标记开始打印的位置，当前产品已打印的个数
+            // $.each(order,function(i,item){
+            //     if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
+            //         var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
+            //     }else{
+            //         var index = $.inArray(order.current_boxesNumberSortId.toString(),order.print_label_sorts_arr);
+            //     }
+            //     if(index == -1){
+            //         //新的标签号不在已存的标签序号里，说明是新的打印号码，打印剩余的即可
+            //         var end = order.boxes-order.print_label_sorts_length;
+            //     }else{
+            //         //如果当前标签号已打印过，则打印当前号码之后的所有号码，直到当前产品全部打印完成
+            //         if(index == order.print_label_sorts_length-1){
+            //             var pls_start = 0;
+            //             var pls_end = order.print_label_sorts_length;
+            //         }else{
+            //             var pls_start = index;
+            //             var pls_end = order.print_label_sorts_length;
+            //         }
+            //         for (var i = pls_start; i < pls_end; i++) {
+            //             var newcopysortid = parseInt(order.print_label_sorts_arr[i])
+            //             if(newcopysortid<=parseInt(copy)){
+            //                 order.boxLabel = newcopysortid + " of " + copy;
+            //                 addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+            //             }
+            //         }
+            //         //判断是否有剩余的标签要打，有则打印新的
+            //         if(order.print_label_sorts_length<order.boxes){
+            //             var end = order.boxes-order.print_label_sorts_length;
+            //         }else{
+            //             var end = 0;
+            //         }
+            //     }
+            //     if(end > 0){
+            //         for (var i = 0; i < end; i++) {
+            //             var newcopysortid = parseInt(order.old_boxesNumberSortId)+i
+            //             if(newcopysortid<=parseInt(copy)){
+            //                 order.boxLabel = newcopysortid + " of " + copy;
+            //                 addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+            //             }
+            //         }
+            //     }
+            // })
             break;
     }
 }
@@ -205,8 +248,26 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
         html+='	<small>'+order.message_to_business+'</small>';
         html+='</div>';
         html+='<br>';
-        html+='<hr><br>';
-
+        html+='<hr>';
+        if(order.mix_group_data != undefined && order.mix_group_data.length > 0){
+            if(order.mix_group_data.length > 3){
+                html+='<div style="display: flex;"><label>MIX:</label>\n';
+                html+='<div style="margin-left: 5px;">';
+                for(var i=0;i<order.mix_group_data.length;i++){
+                    html+='<span>'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</span>&nbsp;<span style="font-weight: bold;">|</span>&nbsp;';
+                }
+                html+='</div></div><hr>';
+            }else{
+                html+='<div style="display: flex;"><label>MIX:</label>\n';
+                html+='<div style="margin-left: 5px;">';
+                for(var i=0;i<order.mix_group_data.length;i++){
+                    html+='<div>'+order.mix_group_data[i].menu_id+'&nbsp;&nbsp;'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</div>';
+                }
+                html+='</div></div><hr>';
+            }
+        }else{
+            html+='<br><div><span>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
+        }
         html+='<div>';
         html+='	<label>Order ID:</label>';
         html+='	<span >'+order.orderId+'</span>&nbsp;&nbsp;';
@@ -215,71 +276,13 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
         html+='	<span style="float:right;">'+order.phone+'</span>';
         html+='</div>';
         html+='<hr>';
-        html+='<label>Suppliers Name:</label>';
-        html+='<div style="border: 0px solid black; padding: 5px">';
-        //html+='	<span >'+order.logistic_suppliers_info+'</span>';
-        html+='	<span >DNL FOOD   license  NO:P01417</span></div>';
-        html+='<div style="border: 0px solid black; padding: 5px">	<span >TEL:93988222  0450599336 </span></div>';
-        html+='<div style="border: 0px solid black; padding: 5px">	<span >ADD:30 Blaxland Ave, Thomastown VIC 3074</span></div>';
-        html+='</div>';
-
-        // html+='<p>offline|Delivery  CustId:'+order.userId+ '<br>CustName:<strong  style=\"width: 100%;font-size:25px;font-weight:bolder\" >'+order.nickname+'</strong></p>';
-        // html+='<table style="width: 100%;font-size:30px;font-weight:bolder" cellspacing="0" cellpadding="0">';
-        // html+='<tr>';
-        // html+=	'<td style="font-size:18px ;border-width: 2px 1px 1px 2px;border-style:solid;text-align: left; ">&nbsp;&nbsp;'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</td>';
-        // html+=	'<td style=" border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;"><span style="font-size:18px">Drop No:&nbsp;&nbsp;</span>'+order.logistic_stop_No+'&nbsp;&nbsp;</td>';
-        // html+='</tr>';
-        // html+='<tr>';
-        // html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: left;" >&nbsp;&nbsp;'+order.logistic_sequence_No+'</td>';
-        // html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;" >&nbsp;<span style="font-size:18px">Box </span> '+order.boxLabel+'&nbsp;&nbsp;</td>';
-        //
-        // html+='</tr>';
-        // html+='</table>';
-        //
-        // html+='<br>';
-        // html+='	<label>Deliver Address:</label>';
-        // html+='<br>';
-        // html+='<div style="border: 3px solid black; padding: 5px">';
-        // html+='	<span style="font-weight: bolder;">'+order.address + '</span>';
-        //
-        // html+='</div>';
-        // html+='<div>';
-        // html+='	<label>Note:</label>  ';
-        // html+='	<small>'+order.message_to_business+'</small>';
-        // html+='</div>';
-        // html+='<br><br>';
-        // html+='<hr><br>';
-        //
-        // html+='<div>';
-        // html+='	<label>Order ID:</label>';
-        // html+='	<span style="float:right;">'+order.orderId+'</span>';
-        // html+='</div>';
-        // html+='<div>';
-        // html+='	<label>Name:</label>';
-        // html+='	<span style="float:right;">'+order.first_name+' '+order.last_name+'</span>';
-        // html+='</div>';
-        // html+='<div>';
-        // html+='	<label>Phone:</label>';
-        // html+='	<span style="float:right;">'+order.phone+'</span>';
-        // html+='</div>';
-        //
-        // html+='<div>';
-        // html+='	<label>Truck No:</label>';
-        // html+='	<span style="float:right;">'+order.logistic_truck_No+'</span>';
-        // html+='</div>';
-        // html+='<div>';
-        // html+='	<label>Stop No:</label>';
-        // html+='	<span style="float:right;">'+order.logistic_stop_No+'</span>';
-        // html+='</div>';
-        // html+='<br><hr><br>';
-        // html+='<div>';
-        // html+='	<label>Suppliers Count:</label>';
-        // html+='	<span style="float:right;">'+order.logistic_suppliers_count+'</span>';
-        // html+='</div>';
         // html+='<label>Suppliers Name:</label>';
-        // html+='<div style="border: 1px solid black; padding: 5px">';
-        // html+='	<span >'+order.logistic_suppliers_info+'</span>';
-        // html+='</div>';
+        html+='<div style="border: 0px solid black; padding: 2px">';
+        //html+='	<span >'+order.logistic_suppliers_info+'</span>';
+        html+='	<span>DNL FOOD   license  NO:P01417</span></div>';
+        html+='<div style="border: 0px solid black; padding: 0 5px 2px;">	<span >TEL:93988222  0450599336 </span></div>';
+        html+='<div style="border: 0px solid black; padding: 0 5px;">	<span >ADD:30 Blaxland Ave, Thomastown VIC 3074</span></div>';
+        html+='</div>';
     }
     return html;
 }

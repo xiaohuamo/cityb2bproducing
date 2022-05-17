@@ -1,5 +1,6 @@
 //print_type=-1 打印类型 -1打印生产类型 1-Fit print all 2-fit print 3-print order 4-blank label
 function preview(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessName,print_type=-1) {
+    print_type = parseInt(print_type)
     // if(parsedOrders.first_name || parsedOrders.last_name){
     //     parsedOrders.nickname_print = parsedOrders.nickname+'('+parsedOrders.last_name+' '+parsedOrders.first_name+')'
     // }
@@ -26,6 +27,7 @@ function init(order,totalCopy,goods,goodsTwoCate,businessName,userName,print_typ
     }else{
         LODOP.SET_PRINT_PAGESIZE(1, '100mm', '100mm', "");
     }
+
     if (DEFAULT_PRINT_MODE === PRINT_MODE_SINGLE_LABEL_PER_PAGE) {
         generateOrderPrint(order, totalCopy,goods,goodsTwoCate,businessName,userName,print_type);
     } else if (DEFAULT_PRINT_MODE === PRINT_MODE_THREE_LABEL_PER_PAGE) {
@@ -38,7 +40,9 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
     switch (print_type){
         //默认打印一张带标签的
         case 0:
-            var newcopysortid = parseInt(order.boxesNumberSortId);
+            //如果当前标签id是已打印过的标签id，则只打印当前输入的标签id
+            //如果未打印过，则需要打印新的id
+            var newcopysortid = parseInt(order.current_boxesNumberSortId);
             order.boxLabel = newcopysortid + " of " + copy;
             addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
             return;
@@ -48,11 +52,46 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
             break;
         //print fit 打印该订单明细的当前所有标签
         case 2:
-            for (var i = 0; i < order.boxes; i++) {
-                var newcopysortid = parseInt(order.boxesNumberSortId)+i
-                if(newcopysortid<=parseInt(copy)){
-                    order.boxLabel = newcopysortid + " of " + copy;
-                    addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+            //标记开始打印的位置，当前产品已打印的个数
+            // alert(typeof order.current_boxesNumberSortId);
+            if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
+                var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
+            }else{
+                var index = $.inArray(order.current_boxesNumberSortId.toString(),order.print_label_sorts_arr);
+            }
+            if(index == -1){
+                //新的标签号不在已存的标签序号里，说明是新的打印号码，打印剩余的即可
+                var end = order.boxes-order.print_label_sorts_length;
+            }else{
+                //如果当前标签号已打印过，则打印当前号码之后的所有号码，直到当前产品全部打印完成
+                if(index == order.print_label_sorts_length-1){
+                    var pls_start = 0;
+                    var pls_end = order.print_label_sorts_length;
+                }else{
+                    var pls_start = index;
+                    var pls_end = order.print_label_sorts_length;
+                }
+                for (var i = pls_start; i < pls_end; i++) {
+                    var newcopysortid = parseInt(order.print_label_sorts_arr[i])
+                    if(newcopysortid<=parseInt(copy)){
+                        order.boxLabel = newcopysortid + " of " + copy;
+                        addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+                    }
+                }
+                //判断是否有剩余的标签要打，有则打印新的
+                if(order.print_label_sorts_length<order.boxes){
+                    var end = order.boxes-order.print_label_sorts_length;
+                }else{
+                    var end = 0;
+                }
+            }
+            if(end > 0){
+                for (var i = 0; i < end; i++) {
+                    var newcopysortid = parseInt(order.old_boxesNumberSortId)+i
+                    if(newcopysortid<=parseInt(copy)){
+                        order.boxLabel = newcopysortid + " of " + copy;
+                        addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+                    }
                 }
             }
             return;
@@ -112,7 +151,6 @@ function generateOrderPrint2(order, copy,goods,goodsTwoCate,businessName,userNam
 
     if (copy > 2) {
         for (var i = 1; i <= copy/2-1; i++) {
-            console.log('sssss---')
             LODOP.NewPage();
             //QR CODE
             var qrvalue = 'https://www.cityb2b.com/company/customer_order_redeem_qrscan?qrscanredeemcode=' + order.redeem_code;
@@ -231,8 +269,26 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
         html+='	<small>'+order.message_to_business+'</small>';
         html+='</div>';
         html+='<br>';
-        html+='<hr><br>';
-
+        html+='<hr>';
+        if(order.mix_group_data != undefined && order.mix_group_data.length > 0){
+            if(order.mix_group_data.length > 3){
+                html+='<div style="display: flex;"><label>MIX:</label>\n';
+                html+='<div style="margin-left: 5px;">';
+                for(var i=0;i<order.mix_group_data.length;i++){
+                    html+='<span>'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</span>&nbsp;<span style="font-weight: bold;">|</span>&nbsp;';
+                }
+                html+='</div></div><hr>';
+            }else{
+                html+='<div style="display: flex;"><label>MIX:</label>\n';
+                html+='<div style="margin-left: 5px;">';
+                for(var i=0;i<order.mix_group_data.length;i++){
+                    html+='<div>'+order.mix_group_data[i].menu_id+'&nbsp;&nbsp;'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</div>';
+                }
+                html+='</div></div><hr>';
+            }
+        }else{
+            html+='<br><div><span>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
+        }
         html+='<div>';
         html+='	<label>Order ID:</label>';
         html+='	<span >'+order.orderId+'</span>&nbsp;&nbsp;';
@@ -241,12 +297,12 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
         html+='	<span style="float:right;">'+order.phone+'</span>';
         html+='</div>';
         html+='<hr>';
-        html+='<label>Suppliers Name:</label>';
-        html+='<div style="border: 0px solid black; padding: 5px">';
+        // html+='<label>Suppliers Name:</label>';
+        html+='<div style="border: 0px solid black; padding: 2px">';
         //html+='	<span >'+order.logistic_suppliers_info+'</span>';
-        html+='	<span >DNL FOOD   license  NO:P01417</span></div>';
-        html+='<div style="border: 0px solid black; padding: 5px">	<span >TEL:93988222  0450599336 </span></div>';
-        html+='<div style="border: 0px solid black; padding: 5px">	<span >ADD:30 Blaxland Ave, Thomastown VIC 3074</span></div>';
+        html+='	<span>DNL FOOD   license  NO:P01417</span></div>';
+        html+='<div style="border: 0px solid black; padding: 0 5px 2px;">	<span >TEL:93988222  0450599336 </span></div>';
+        html+='<div style="border: 0px solid black; padding: 0 5px;">	<span >ADD:30 Blaxland Ave, Thomastown VIC 3074</span></div>';
         html+='</div>';
 
         // html+='<p>offline|Delivery  CustId:'+order.userId+ '<br>CustName:<strong  style=\"width: 100%;font-size:25px;font-weight:bolder\" >'+order.nickname+'</strong></p>';

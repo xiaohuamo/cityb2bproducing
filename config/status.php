@@ -166,5 +166,21 @@ return [
             'code' => 137,//该订单已完成送货
             'msg' => 'You have completed the delivery'
         ],
+        'boxnum_max_error' => [
+            'code' => 138,//修改标签数最大限制
+            'msg' => 'The number of boxes exceeds the maximum limit'
+        ],
+        'boxnum_min_error' => [
+            'code' => 139,//修改标签数最小限制
+            'msg' => 'The number of boxes exceeds the minimum limit'
+        ],
+        'boxnum_permission_error' => [
+            'code' => 140,//不允许修改标签序号
+            'msg' => 'You do not have permission to modify the label serial number'
+        ],
+        'item_boxnum_error' => [
+            'code' => 141,//标签序号不正确
+            'msg' => 'Incorrect label serial number'
+        ],
     ]
 ];

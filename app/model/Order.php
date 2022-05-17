@@ -724,7 +724,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId')
@@ -749,10 +749,6 @@ class Order extends Model
         }
         foreach($order as &$v){
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
-            $box_arr = $this->getProductBoxes($v['new_customer_buying_quantity'],$v['unitQtyPerBox'],$v['boxesNumberSortId'],$v['overflowRate']);
-            $v['boxs_integer_nums'] = $box_arr['boxs_integer_nums'];
-            $v['remain_nums'] = $box_arr['remain_nums'];
-            $v['boxes'] = $box_arr['boxes'];
             $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
@@ -773,9 +769,36 @@ class Order extends Model
             $name = $this->getCustomerName($v);
             $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
             $v['old_boxesNumberSortId'] = $v['boxesNumberSortId'];
-            $v['boxesNumberSortId'] = $v['boxesNumberSortId'] >= $v['boxesNumber']?$v['boxesNumber']:$v['boxesNumberSortId'];
+            $v['boxes'] = $v['splicingboxnumber']>0?$v['boxnumber']+1:$v['boxnumber'];//获取该产品需要打印的总箱数
+            //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
+            $v = $this->getOrderItemBoxSortId($v);
+            $v['print_label_sorts_length'] = count($v['print_label_sorts_arr']);//获取该产品打印标签的个数
         }
         return $order;
+    }
+
+    /**
+     * 获取订单明细当前的打印序号id
+     */
+    public function getOrderItemBoxSortId($data)
+    {
+        //获取该订单的总箱数
+        if($data['edit_boxesNumber']<=0){
+            $data['edit_boxesNumber'] = $data['boxesNumber'];
+        }
+        //获取当前明细的序号id
+        if(empty($data['print_label_sorts'])){
+            $data['print_label_sorts_arr'] = [];
+            if($data['current_box_sort_id'] <= 0){
+                $data['current_box_sort_id'] = $data['boxesNumberSortId'] >= $data['boxesNumber']?$data['boxesNumber']:$data['boxesNumberSortId'];
+            }
+        }else{
+            $data['print_label_sorts_arr'] = array_filter(explode(',',$data['print_label_sorts']));
+            if($data['current_box_sort_id'] <= 0) {
+                $data['current_box_sort_id'] = count($data['print_label_sorts_arr']) < $data['boxes'] ? $data['boxesNumberSortId'] : $data['print_label_sorts_arr'][count($data['print_label_sorts_arr']) - 1];
+            }
+        }
+        return $data;
     }
 
     /**
