@@ -892,15 +892,15 @@ class PickingItem extends AuthBase
     public function updateWccBox($data,$sortId=0,$type=1){
         $mix_group_arr = [];//存储拼箱的数据
         //如果当前打印的序号是混合标签id,则需要输出混合标签信息
-        if($sortId>0 && $data['mix_box_sort_id']==$sortId && $data['splicingboxnumber'] > 0 && $data['mix_box_group'] > 0){
+        if($sortId>0 && $data['mix_box_sort_id']==$sortId || $data['splicingboxnumber'] > 0 && $data['mix_box_group'] > 0){
             $mix_group_arr = WjCustomerCoupon::alias('wcc')
-                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.boxnumber,wcc.splicingboxnumber,wcc.current_box_sort_id,rm.unitQtyPerBox,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.boxnumber,wcc.splicingboxnumber,wcc.print_label_sorts,wcc.current_box_sort_id,rm.unitQtyPerBox,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
                 ->leftJoin('order o','o.orderId = wcc.order_id')
                 ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
                 ->leftJoin('restaurant_menu_option rmo','rmo.id = wcc.guige1_id')
                 ->where([
                     ['wcc.order_id','=',$data['orderid']],
-                    ['wcc.id','<>',$data['id']],
+//                    ['wcc.id','<>',$data['id']],
                     ['wcc.mix_box_group','=',$data['mix_box_group']]
                 ])
                 ->select()->toArray();
@@ -931,30 +931,34 @@ class PickingItem extends AuthBase
             if(count($print_label_sorts_arr) < $item_box_number) {
                 //1.判断整箱数是否打印完成，如果未打印完成，需要先将整箱数打印完，再打印拼箱数
                 $print_label_sorts = '';
-                if (count($print_label_sorts_arr) < $data['boxnumber']) {
-                    if ($type == 1) {
-                        $end_i = $data['boxnumber'] - count($print_label_sorts_arr);
-                        $order_inc_number = $item_box_number - count($print_label_sorts_arr);
-                    } else {
+                if ($type == 1) {
+                    $end_i = $data['boxnumber'] - count($print_label_sorts_arr);
+                    $order_inc_number = $item_box_number - count($print_label_sorts_arr);
+                } else {
+                    if($data['boxnumber'] - count($print_label_sorts_arr)>0){
                         $end_i = 1;
-                        $order_inc_number = 1;
+                    }else{
+                        $end_i = 0;
                     }
-                    for ($i = 0; $i < $end_i; $i++) {
-                        $print_label_sorts .= $data['boxesNumberSortId'] + $i . ',';
-                    }
-                    $print_label_sorts = $data['print_label_sorts'] . ',' . trim($print_label_sorts, ',');
+                    $order_inc_number = 1;
                 }
+                for ($i = 0; $i < $end_i; $i++) {
+                    $print_label_sorts .= $data['boxesNumberSortId'] + $i . ',';
+                }
+                $print_label_sorts = $data['print_label_sorts'] . ',' . trim($print_label_sorts, ',');
                 //如果拼箱数>0并且已拼箱分组的,说明有拼箱，需要找到一起拼箱的数据
                 $update_label_sorts = [];//存储更新的打印数据
                 $splicing_label = 0;//存放拼箱标签id
                 if ($data['splicingboxnumber'] > 0 && $data['mix_box_group'] > 0) {
-                    $splicing_label = $data['boxesNumberSortId'] + $data['boxnumber'];//拼箱的箱号
-                    $print_label_sorts .= $splicing_label;
+                    $splicing_label = $data['boxesNumberSortId'] + $order_inc_number - 1;//拼箱的箱号
+                    $print_label_sorts .= ','.$splicing_label;
                     //如果有在一个箱的拼箱数据，则修改该明细的打印序号
                     if (!empty($mix_group_arr)) {
                         foreach ($mix_group_arr as $mgak => $mgav) {
-                            $mga_print_label_sorts = $mgav['print_label_sorts'] . ',' . $splicing_label;
-                            $update_label_sorts[] = ['id' => $mgav['id'], 'print_label_sorts' => trim($mga_print_label_sorts, ","), 'mix_box_sort_id' => $splicing_label, 'current_box_sort_id'=>$v['current_box_sort_id']];
+                            if($mgav['id'] != $data['id']){
+                                $mga_print_label_sorts = $mgav['print_label_sorts'] . ',' . $splicing_label;
+                                $update_label_sorts[] = ['id' => $mgav['id'], 'print_label_sorts' => trim($mga_print_label_sorts, ","), 'mix_box_sort_id' => $splicing_label, 'current_box_sort_id'=>$v['current_box_sort_id']];
+                            }
                         }
                     }
                 }

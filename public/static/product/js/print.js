@@ -42,6 +42,7 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
         case 0:
             //如果当前标签id是已打印过的标签id，则只打印当前输入的标签id
             //如果未打印过，则需要打印新的id
+            console.log(order,order.current_boxesNumberSortId,typeof order.current_boxesNumberSortId);
             var newcopysortid = parseInt(order.current_boxesNumberSortId);
             order.boxLabel = newcopysortid + " of " + copy;
             addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
@@ -57,6 +58,7 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
             if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
                 var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
             }else{
+                console.log(order,order.current_boxesNumberSortId,typeof order.current_boxesNumberSortId);
                 var index = $.inArray(order.current_boxesNumberSortId.toString(),order.print_label_sorts_arr);
             }
             if(index == -1){
