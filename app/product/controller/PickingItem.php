@@ -822,7 +822,7 @@ class PickingItem extends AuthBase
 //                            $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
 //                        }
                         //更新订单明细需要打印的标签号
-                        $res = $this->updateWccBox($v,$param['sortId'][$k],1,$param['print_type']);
+                        $res = $this->updateWccBox($v,$param['sortId'][$k],1);
                         $v['newboxesNumberSortId'] = $res['newboxesNumberSortId'];
                         $v['print_label_sorts'] = $res['print_label_sorts'];
                         $v['mix_group_data'] = $res['mix_group_data'];
@@ -889,7 +889,7 @@ class PickingItem extends AuthBase
      * @param $type 1-打印该产品剩余标签 2-打印一张标签
      * @throws \Exception
      */
-    public function updateWccBox($data,$sortId=0,$type=1,$print_type){
+    public function updateWccBox($data,$sortId=0,$type=1){
         $mix_group_arr = [];//存储拼箱的数据
         //如果当前打印的序号是混合标签id,则需要输出混合标签信息
         if($sortId>0 && $data['mix_box_sort_id']==$sortId && $data['splicingboxnumber'] > 0 && $data['mix_box_group'] > 0){
