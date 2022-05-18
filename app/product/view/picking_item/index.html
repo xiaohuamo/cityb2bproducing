@@ -381,7 +381,7 @@
 	</div>
 	</body>
 	<script>
-		new Vue({
+		var vm=new Vue({
 			el:"#main",
 			data: {
 				onLine: false,//navigator.onLine,
@@ -1576,17 +1576,22 @@
 					});
 				},
 				//打印
-				async print(item,index,e){
+				print(item,index,e){
 					var obj = $(e.target)
 					if(obj.hasClass('printBg2')){
 						return
 					}
+					var _this=this
+					vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
+					setTimeout(function(){
+						_this.orderItemOtherData[index].printBg = '';
+					},5000);
 					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
-						this.popBox('Please lock the product')
+						_this.popBox('Please lock the product')
 						return
 					}
 					if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
-						this.popBox('This Order has been locked by other')
+						_this.popBox('This Order has been locked by other')
 						return
 					}
 					if(item.boxesNumberSortId < 0 || item.boxesNumber <= 0){
@@ -1594,11 +1599,11 @@
 					}
 					//如果该明细的打印总箱数为0,则不打印
 					if(item.boxes <= 0){
-						this.popBox('The total number of boxes for this item is 0')
+						_this.popBox('The total number of boxes for this item is 0')
 						return
 					}
 					// console.log('ssss',item);
-					if(this.print_type == 0 || this.print_type == 2){
+					if(_this.print_type == 0 || _this.print_type == 2){
 						//如果该明细的标签已全部打完，提示是否还要打印
 						if(item.print_label_sorts_length >= item.boxes){
 							swal({
@@ -1610,11 +1615,11 @@
 								if (!willContinue) {
 									return
 								}else{
-									this.printFun(item,index,e,this.print_type)
+									_this.printFun(item,index,e,_this.print_type)
 								}
 							});
 						}else{
-							if(this.print_type == 2){
+							if(_this.print_type == 2){
 								//判断该明细是否已打印部分标签,若打印部分，提示是否打印剩余，还是打印全部标签
 								if(item.print_label_sorts_length > 0){
 									swal({
@@ -1626,18 +1631,18 @@
 										if (!willContinue) {
 											return
 										}else{
-											this.printFun(item,index,e,this.print_type)
+											_this.printFun(item,index,e,_this.print_type)
 										}
 									});
 								}else{
-									this.printFun(item,index,e,this.print_type)
+									_this.printFun(item,index,e,_this.print_type)
 								}
 							}else{
-								this.printFun(item,index,e,this.print_type)
+								_this.printFun(item,index,e,_this.print_type)
 							}
 						}
 					}else{
-						this.printFun(item,index,e,this.print_type)
+						_this.printFun(item,index,e,_this.print_type)
 					}
 				},
 				//fit print all
@@ -1679,10 +1684,6 @@
 				},
 				async printFun(item,index,e='',print_type){
 					let _this=this
-					_this.orderItemOtherData[index].printBg = 'printBg2';
-					setTimeout(function(){
-						_this.orderItemOtherData[index].printBg = '';
-					},5000);
 					order_data = await _this.orderBoxNumber(item,print_type)
 					if(order_data.length == 0){
 						_this.popBox('Data exception')
