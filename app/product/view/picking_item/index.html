@@ -1578,11 +1578,11 @@
 				//打印
 				print(item,index,e){
 					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
-						_this.popBox('Please lock the product')
+						this.popBox('Please lock the product')
 						return
 					}
 					if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
-						_this.popBox('This Order has been locked by other')
+						this.popBox('This Order has been locked by other')
 						return
 					}
 					if(item.boxesNumberSortId < 0 || item.boxesNumber <= 0){
@@ -1590,7 +1590,7 @@
 					}
 					//如果该明细的打印总箱数为0,则不打印
 					if(item.boxes <= 0){
-						_this.popBox('The total number of boxes for this item is 0')
+						this.popBox('The total number of boxes for this item is 0')
 						return
 					}
 					var obj = $(e.target)
