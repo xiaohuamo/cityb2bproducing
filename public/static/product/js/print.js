@@ -272,24 +272,29 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
         html+='</div>';
         html+='<br>';
         html+='<hr>';
+        //判断产品是否只有一个，若只有一个，则字体放大
+        var product_style = '';
+        if(order.mix_group_data.length <= 1){
+            product_style = ' style="font-size:16px;"';
+        }
         if(order.mix_group_data != undefined && order.mix_group_data.length > 0){
             if(order.mix_group_data.length > 3){
                 html+='<div style="display: flex;"><label>MIX:</label>\n';
                 html+='<div style="margin-left: 5px;">';
                 for(var i=0;i<order.mix_group_data.length;i++){
-                    html+='<span>'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</span>&nbsp;<span style="font-weight: bold;">|</span>&nbsp;';
+                    html+='<span'+product_style+'>'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].new_customer_buying_quantity+order.unit_en+'</span>&nbsp;<span style="font-weight: bold;">|</span>&nbsp;';
                 }
                 html+='</div></div><hr>';
             }else{
                 html+='<div style="display: flex;"><label>MIX:</label>\n';
                 html+='<div style="margin-left: 5px;">';
                 for(var i=0;i<order.mix_group_data.length;i++){
-                    html+='<div>'+order.mix_group_data[i].menu_id+'&nbsp;&nbsp;'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</div>';
+                    html+='<div'+product_style+'>'+order.mix_group_data[i].menu_id+'&nbsp;&nbsp;'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].new_customer_buying_quantity+order.unit_en+'</div>';
                 }
                 html+='</div></div><hr>';
             }
         }else{
-            html+='<br><div><span>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
+            html+='<br><div><span '+product_style+'>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
         }
         html+='<div>';
         html+='	<label>Order ID:</label>';

@@ -218,7 +218,7 @@
 											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @click="showKeyBoxQuantity(item,index,3)">{{item.edit_boxesNumber}}</div>
 <!--											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event,2)">+</div>-->
 										</div>
-										<div class="printBg echo echoMl" @click="print(item,index,$event)"></div>
+										<div class="echo echoMl" :class="orderItemOtherData[index].printBg" @click="print(item,index,$event)"></div>
 									</div>
 									<div class="rbtn3 F18 bg34C079 colfff relative" v-if="item.dispatching_is_producing_done==1" @click="handle(index)">
 										processed
@@ -489,6 +489,7 @@
 				is_product_permission: 2,//判断是否有生产权限 1-有 2-没有
 				print_type: 2,//打印类型 0-one label 1-Fit print all 2-fit print 3-print order 4-blank label
 				is_print_all:2,//是否全部打印 1-是 2-否
+				orderItemOtherData:[],//订单明细的其他数据
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -687,15 +688,6 @@
 						_this.is_print_all = res.is_print_all
 						if(type == 'refresh'){
 							//更新数据时，保持原数据位置不变
-							//1.更新数据时判断修改加工数量和打印标签是否获取焦点，获取焦点时加工数量不更新
-							// var eq_length = $('.J_main_box .J_edit_quantity').length
-							// for(var i=0;i<eq_length;i++){
-							// 	for(var j in res.order){
-							// 		if(res.order[j]['id'] == _this.handleListSort[i]['id']){
-							// 			res.order[j]['boxesNumberSortId'] = $('.J_main_box .J_edit_lable_start').eq(i).text()
-							// 		}
-							// 	}
-							// }
 							_this.handleList=_this.sortAccordingOtherData(res.order,_this.handleList,'id')
 							_this.handleListSort=_this.sortAccordingOtherData(res.order,_this.handleListSort,'id')
 						}else{
@@ -703,6 +695,7 @@
 							_this.handleListSort = []
 							_this.handleList = res.order
 							_this.handleListSort = res.order
+							_this.orderItemOtherData=_this.handleListSort
 						}
 						console.log('获取产品加工明细单2222-----',res)
 					});
@@ -1584,6 +1577,10 @@
 				},
 				//打印
 				async print(item,index,e){
+					var obj = $(e.target)
+					if(obj.hasClass('printBg2')){
+						return
+					}
 					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
 						this.popBox('Please lock the product')
 						return
@@ -1665,7 +1662,7 @@
 					}
 					if(orders.length>0){
 						//重新获取订单箱数
-						await this.orderBoxNumber('',1)
+						order = await this.orderBoxNumber('',1)
 						//跳转到打印标签页,item-订单信息 item.num1-打印数量
 						is_has_two_cate = item.guige1_id>0?1:2
 						var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
@@ -1680,94 +1677,35 @@
 						return
 					}
 				},
-				printFun(item,index,e='',print_type){
-					if(e!=''){
-						var obj = $(e.target)
-						if(obj.hasClass('printBg2')){
-							return
-						}
-						obj.removeClass("printBg").addClass("printBg2");
-						setTimeout(function(){
-							obj.removeClass("printBg2").addClass("printBg");
-						},5000);
+				async printFun(item,index,e='',print_type){
+					let _this=this
+					_this.orderItemOtherData[index].printBg = 'printBg2';
+					setTimeout(function(){
+						_this.orderItemOtherData[index].printBg = '';
+					},5000);
+					order_data = await _this.orderBoxNumber(item,print_type)
+					if(order_data.length == 0){
+						_this.popBox('Data exception')
+						return
 					}
-					//订单信息需要重新获取-为防止更新不及时，并更改标签序号
-					var id_arr = []
-					var sortId_arr = [];
-					if(print_type==1){
-						for(var i in this.handleListSort){
-							id_arr.push(this.handleListSort[i]['id'])
-							sortId_arr.push(this.handleListSort[i]['current_box_sort_id'])
-						}
-					}else{
-						id_arr.push(item.id)
-						sortId_arr.push(item.current_box_sort_id)
+					item = order_data[0]
+					//跳转到打印标签页,item-订单信息 item.num1-打印数量
+					is_has_two_cate = item.guige1_id > 0 ? 1 : 2
+					var goods = {
+						"menu_id": item.menu_id,
+						"menu_en_name": item.menu_en_name,
+						"is_has_two_cate": is_has_two_cate
 					}
-					var data = {
-						"id_arr":id_arr,
-						"print_type":print_type,
-						"sortId":sortId_arr,//当前打印的序号标签id
+					var goodsTwoCate = {"guige1_id": item.guige1_id, "guige_name": item.guige_name}
+					// console.log('到打印了---',this.handleListSort[index].boxes);
+					// print_type = 0
+					if (is_has_two_cate == 1) {
+						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
+						preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+					} else {
+						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
+						preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
 					}
-					console.log('打印修改箱数参数----',data)
-					var _this = this
-					getData("{:url('/product/orderBoxsNumber')}", data, function (res) {
-						console.log('打印修改箱数结果----', res)
-						_this.isLoading = false
-						//修改打印数量
-						//boxesNumberSortId 记录打印之后最新的序号id
-						//current_boxesNumberSortId 记录打印前的序号id
-						//old_boxesNumberSortId 记录订单原先的序号id
-						if (res.status == 200) {
-							var data = res.result
-							for (var i in data) {
-								for (var j in _this.handleListSort) {
-									if (_this.handleListSort[j].id == data[i].id) {
-										_this.handleListSort[j].boxesNumber = data[i].boxesNumber
-										_this.handleListSort[j].boxesNumberSortId = data[i].newboxesNumberSortId
-										_this.handleListSort[j].current_boxesNumberSortId = data[i].current_boxesNumberSortId
-										_this.handleListSort[j].old_boxesNumberSortId = data[i].boxesNumberSortId
-										_this.handleListSort[j].print_label_sorts_length = data[i].print_label_sorts_length
-										_this.handleListSort[j].boxes = data[i].boxes
-										_this.handleListSort[j].mix_group_data = data[i].mix_group_data
-										_this.handleListSort[j].menu_en_name = data[i].menu_en_name
-										_this.handleListSort[j].menu_id = data[i].menu_id
-										_this.handleListSort[j].unit_en = data[i].unit_en
-										_this.handleListSort[j].guige_name = data[i].guige_name
-										_this.handleListSort[j].mix_box_sort_id = data[i].mix_box_sort_id
-										break;
-									}
-								}
-								for (var k in _this.handleList) {
-									if (_this.handleList[k].id == data[i].id) {
-										_this.handleList[k].boxesNumber = data[i].boxesNumber
-										_this.handleList[k].boxesNumberSortId = data[i].newboxesNumberSortId
-										_this.handleList[k].old_boxesNumberSortId = data[i].boxesNumberSortId
-										break;
-									}
-								}
-								//跳转到打印标签页,item-订单信息 item.num1-打印数量
-								is_has_two_cate = item.guige1_id > 0 ? 1 : 2
-								var goods = {
-									"menu_id": item.menu_id,
-									"menu_en_name": item.menu_en_name,
-									"is_has_two_cate": is_has_two_cate
-								}
-								var goodsTwoCate = {"guige1_id": item.guige1_id, "guige_name": item.guige_name}
-								// console.log('到打印了---',this.handleListSort[index].boxes);
-								// print_type = 0
-								if (is_has_two_cate == 1) {
-									// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
-									preview(item, item.boxesNumber, goods, goodsTwoCate, this.businessName, this.userName, print_type)
-								} else {
-									// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
-									preview(item, item.boxesNumber, goods, [], this.businessName, this.userName, print_type)
-								}
-							}
-						} else {
-							_this.popBox(res.message)
-							return
-						}
-					})
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
 				orderBoxNumber(item='',print_type){
@@ -1798,6 +1736,7 @@
 							//boxesNumberSortId 记录打印之后最新的序号id
 							//current_boxesNumberSortId 记录打印前的序号id
 							//old_boxesNumberSortId 记录订单原先的序号id
+							var return_data = [];//存储返回的数据
 							if (res.status == 200) {
 								var data = res.result
 								for(var i in data){
@@ -1815,6 +1754,7 @@
 											_this.handleListSort[j].unit_en = data[i].unit_en
 											_this.handleListSort[j].guige_name = data[i].guige_name
 											_this.handleListSort[j].mix_box_sort_id = data[i].mix_box_sort_id
+											return_data.push(_this.handleListSort[j])
 											break;
 										}
 									}
@@ -1823,14 +1763,22 @@
 											_this.handleList[k].boxesNumber = data[i].boxesNumber
 											_this.handleList[k].boxesNumberSortId = data[i].newboxesNumberSortId
 											_this.handleList[k].old_boxesNumberSortId = data[i].boxesNumberSortId
+											_this.handleList[k].print_label_sorts_length = data[i].print_label_sorts_length
+											_this.handleList[k].boxes = data[i].boxes
+											_this.handleList[k].mix_group_data = data[i].mix_group_data
+											_this.handleList[k].menu_en_name = data[i].menu_en_name
+											_this.handleList[k].menu_id = data[i].menu_id
+											_this.handleList[k].unit_en = data[i].unit_en
+											_this.handleList[k].guige_name = data[i].guige_name
+											_this.handleList[k].mix_box_sort_id = data[i].mix_box_sort_id
 											break;
 										}
 									}
 								}
-								resolve();
+								resolve(return_data);
 							} else {
 								_this.popBox(res.message)
-								resolve();
+								resolve(return_data);
 								return
 							}
 						});

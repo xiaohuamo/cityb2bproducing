@@ -36,60 +36,61 @@ function generateOrderPrintAll(order,goods,goodsTwoCate,businessName,userName,pr
         //print fit all 打印该产品的订单明细
         case 1:
             $.each(order,function(i,item){
-                var copy = order[i].boxesNumber
-                for (var j = 0; j < order[i].boxes; j++) {
-                    var newcopysortid = parseInt(order[i].boxesNumberSortId)+j
-                    if(newcopysortid<=parseInt(copy)){
-                        order[i].boxLabel = newcopysortid + " of " + copy;
-                        addOnePageAll(order[i],goods,goodsTwoCate,businessName,userName,print_type);
-                    }
-                }
+                printOne(item,goods,goodsTwoCate,businessName,userName,print_type)
+                // var copy = order[i].boxesNumber
+                // for (var j = 0; j < order[i].boxes; j++) {
+                //     var newcopysortid = parseInt(order[i].boxesNumberSortId)+j
+                //     if(newcopysortid<=parseInt(copy)){
+                //         order[i].boxLabel = newcopysortid + " of " + copy;
+                //         addOnePageAll(order[i],goods,goodsTwoCate,businessName,userName,print_type);
+                //     }
+                // }
             })
-            //标记开始打印的位置，当前产品已打印的个数
-            // $.each(order,function(i,item){
-            //     if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
-            //         var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
-            //     }else{
-            //         var index = $.inArray(order.current_boxesNumberSortId.toString(),order.print_label_sorts_arr);
-            //     }
-            //     if(index == -1){
-            //         //新的标签号不在已存的标签序号里，说明是新的打印号码，打印剩余的即可
-            //         var end = order.boxes-order.print_label_sorts_length;
-            //     }else{
-            //         //如果当前标签号已打印过，则打印当前号码之后的所有号码，直到当前产品全部打印完成
-            //         if(index == order.print_label_sorts_length-1){
-            //             var pls_start = 0;
-            //             var pls_end = order.print_label_sorts_length;
-            //         }else{
-            //             var pls_start = index;
-            //             var pls_end = order.print_label_sorts_length;
-            //         }
-            //         for (var i = pls_start; i < pls_end; i++) {
-            //             var newcopysortid = parseInt(order.print_label_sorts_arr[i])
-            //             if(newcopysortid<=parseInt(copy)){
-            //                 order.boxLabel = newcopysortid + " of " + copy;
-            //                 addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
-            //             }
-            //         }
-            //         //判断是否有剩余的标签要打，有则打印新的
-            //         if(order.print_label_sorts_length<order.boxes){
-            //             var end = order.boxes-order.print_label_sorts_length;
-            //         }else{
-            //             var end = 0;
-            //         }
-            //     }
-            //     if(end > 0){
-            //         for (var i = 0; i < end; i++) {
-            //             var newcopysortid = parseInt(order.old_boxesNumberSortId)+i
-            //             if(newcopysortid<=parseInt(copy)){
-            //                 order.boxLabel = newcopysortid + " of " + copy;
-            //                 addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
-            //             }
-            //         }
-            //     }
-            // })
             break;
     }
+}
+function printOne(order,goods,goodsTwoCate,businessName,userName,print_type){
+        if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
+            var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
+        }else{
+            var index = $.inArray(order.current_boxesNumberSortId.toString(),order.print_label_sorts_arr);
+        }
+        if(index == -1){
+            //新的标签号不在已存的标签序号里，说明是新的打印号码，打印剩余的即可
+            var end = order.boxes-order.print_label_sorts_length;
+        }else{
+            //如果当前标签号已打印过，则打印当前号码之后的所有号码，直到当前产品全部打印完成
+            if(index == order.print_label_sorts_length-1){
+                var pls_start = 0;
+                var pls_end = order.print_label_sorts_length;
+            }else{
+                var pls_start = index;
+                var pls_end = order.print_label_sorts_length;
+            }
+            var copy=parseInt(order.boxesNumber)
+            for (var i = pls_start; i < pls_end; i++) {
+                var newcopysortid = parseInt(order.print_label_sorts_arr[i])
+                if(newcopysortid<=copy){
+                    order.boxLabel = newcopysortid + " of " + copy;
+                    addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+                }
+            }
+            //判断是否有剩余的标签要打，有则打印新的
+            if(order.print_label_sorts_length<order.boxes){
+                var end = order.boxes-order.print_label_sorts_length;
+            }else{
+                var end = 0;
+            }
+        }
+        if(end > 0){
+            for (var i = 0; i < end; i++) {
+                var newcopysortid = parseInt(order.old_boxesNumberSortId)+i
+                if(newcopysortid<=parseInt(copy)){
+                    order.boxLabel = newcopysortid + " of " + copy;
+                    addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+                }
+            }
+        }
 }
 function addOnePageAll(order,goods,goodsTwoCate,businessName,userName,print_type) {
     LODOP.NewPage();
@@ -249,24 +250,29 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
         html+='</div>';
         html+='<br>';
         html+='<hr>';
+        //判断产品是否只有一个，若只有一个，则字体放大
+        var product_style = '';
+        if(order.mix_group_data.length <= 1){
+            product_style = ' style="font-size:16px;"';
+        }
         if(order.mix_group_data != undefined && order.mix_group_data.length > 0){
             if(order.mix_group_data.length > 3){
                 html+='<div style="display: flex;"><label>MIX:</label>\n';
                 html+='<div style="margin-left: 5px;">';
                 for(var i=0;i<order.mix_group_data.length;i++){
-                    html+='<span>'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</span>&nbsp;<span style="font-weight: bold;">|</span>&nbsp;';
+                    html+='<span'+product_style+'>'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].new_customer_buying_quantity+order.unit_en+'</span>&nbsp;<span style="font-weight: bold;">|</span>&nbsp;';
                 }
                 html+='</div></div><hr>';
             }else{
                 html+='<div style="display: flex;"><label>MIX:</label>\n';
                 html+='<div style="margin-left: 5px;">';
                 for(var i=0;i<order.mix_group_data.length;i++){
-                    html+='<div>'+order.mix_group_data[i].menu_id+'&nbsp;&nbsp;'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].mix_quantity+order.unit_en+'</div>';
+                    html+='<div'+product_style+'>'+order.mix_group_data[i].menu_id+'&nbsp;&nbsp;'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].new_customer_buying_quantity+order.unit_en+'</div>';
                 }
                 html+='</div></div><hr>';
             }
         }else{
-            html+='<br><div><span>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
+            html+='<br><div><span '+product_style+'>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
         }
         html+='<div>';
         html+='	<label>Order ID:</label>';

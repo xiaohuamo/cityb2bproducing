@@ -172,6 +172,8 @@ a{
   height: 36px;
   margin-left: 50px;
   cursor: pointer;
+  background: url(../img/echo.png) no-repeat center;
+  background-size: 36px;
 }
 .printBg{
 	background: url(../img/echo.png) no-repeat center;
