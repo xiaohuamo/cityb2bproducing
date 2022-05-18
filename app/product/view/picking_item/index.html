@@ -1577,15 +1577,6 @@
 				},
 				//打印
 				print(item,index,e){
-					var obj = $(e.target)
-					if(obj.hasClass('printBg2')){
-						return
-					}
-					var _this=this
-					vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
-					setTimeout(function(){
-						_this.orderItemOtherData[index].printBg = '';
-					},5000);
 					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
 						_this.popBox('Please lock the product')
 						return
@@ -1602,6 +1593,15 @@
 						_this.popBox('The total number of boxes for this item is 0')
 						return
 					}
+					var obj = $(e.target)
+					if(obj.hasClass('printBg2')){
+						return
+					}
+					var _this=this
+					vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
+					setTimeout(function(){
+						_this.orderItemOtherData[index].printBg = '';
+					},5000);
 					// console.log('ssss',item);
 					if(_this.print_type == 0 || _this.print_type == 2){
 						//如果该明细的标签已全部打完，提示是否还要打印
