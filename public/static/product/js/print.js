@@ -42,9 +42,14 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
         case 0:
             //如果当前标签id是已打印过的标签id，则只打印当前输入的标签id
             //如果未打印过，则需要打印新的id
-            console.log(order,order.current_boxesNumberSortId,typeof order.current_boxesNumberSortId);
+            var mix_group_data = order.mix_group_data
             var newcopysortid = parseInt(order.current_boxesNumberSortId);
             order.boxLabel = newcopysortid + " of " + copy;
+            if(newcopysortid!=order.mix_box_sort_id){
+                order.mix_group_data=[];
+            }else{
+                order.mix_group_data=mix_group_data
+            }
             addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
             return;
             break;
@@ -55,6 +60,7 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
         case 2:
             //标记开始打印的位置，当前产品已打印的个数
             // alert(typeof order.current_boxesNumberSortId);
+            var mix_group_data = order.mix_group_data
             if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
                 var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
             }else{
@@ -77,6 +83,11 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
                     var newcopysortid = parseInt(order.print_label_sorts_arr[i])
                     if(newcopysortid<=parseInt(copy)){
                         order.boxLabel = newcopysortid + " of " + copy;
+                        if(newcopysortid!=order.mix_box_sort_id){
+                            order.mix_group_data=[];
+                        }else{
+                            order.mix_group_data=mix_group_data
+                        }
                         addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
                     }
                 }
@@ -92,6 +103,11 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
                     var newcopysortid = parseInt(order.old_boxesNumberSortId)+i
                     if(newcopysortid<=parseInt(copy)){
                         order.boxLabel = newcopysortid + " of " + copy;
+                        if(newcopysortid!=order.mix_box_sort_id){
+                            order.mix_group_data=[];
+                        }else{
+                            order.mix_group_data=mix_group_data
+                        }
                         addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
                     }
                 }

@@ -934,13 +934,14 @@ class PickingItem extends AuthBase
                 for ($i = 0; $i < $end_i; $i++) {
                     $print_label_sorts .= $data['boxesNumberSortId'] + $i . ',';
                 }
-                $print_label_sorts = $data['print_label_sorts'] . ',' . trim($print_label_sorts, ',');
+                $print_label_sorts = trim($print_label_sorts, ',');
+                $print_label_sorts = trim($data['print_label_sorts'] . ',' . $print_label_sorts, ',');
                 //如果拼箱数>0并且已拼箱分组的,说明有拼箱，需要找到一起拼箱的数据
                 $update_label_sorts = [];//存储更新的打印数据
                 $splicing_label = 0;//存放拼箱标签id
                 if ($is_print_splicing == 1 && $data['splicingboxnumber'] > 0 && $data['mix_box_group'] > 0) {
                     $splicing_label = $data['boxesNumberSortId'] + $order_inc_number - 1;//拼箱的箱号
-                    $print_label_sorts .= ','.$splicing_label;
+                    $print_label_sorts = $print_label_sorts.','.$splicing_label;
                     //如果有在一个箱的拼箱数据，则修改该明细的打印序号
                     if (!empty($mix_group_arr)) {
                         foreach ($mix_group_arr as $mgak => $mgav) {

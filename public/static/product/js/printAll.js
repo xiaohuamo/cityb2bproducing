@@ -50,47 +50,58 @@ function generateOrderPrintAll(order,goods,goodsTwoCate,businessName,userName,pr
     }
 }
 function printOne(order,goods,goodsTwoCate,businessName,userName,print_type){
-        if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
-            var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
+    var mix_group_data = order.mix_group_data
+    if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
+        var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
+    }else{
+        var index = $.inArray(order.current_boxesNumberSortId.toString(),order.print_label_sorts_arr);
+    }
+    if(index == -1){
+        //新的标签号不在已存的标签序号里，说明是新的打印号码，打印剩余的即可
+        var end = order.boxes-order.print_label_sorts_length;
+    }else{
+        //如果当前标签号已打印过，则打印当前号码之后的所有号码，直到当前产品全部打印完成
+        if(index == order.print_label_sorts_length-1){
+            var pls_start = 0;
+            var pls_end = order.print_label_sorts_length;
         }else{
-            var index = $.inArray(order.current_boxesNumberSortId.toString(),order.print_label_sorts_arr);
+            var pls_start = index;
+            var pls_end = order.print_label_sorts_length;
         }
-        if(index == -1){
-            //新的标签号不在已存的标签序号里，说明是新的打印号码，打印剩余的即可
+        var copy=parseInt(order.boxesNumber)
+        for (var i = pls_start; i < pls_end; i++) {
+            var newcopysortid = parseInt(order.print_label_sorts_arr[i])
+            if(newcopysortid<=copy){
+                order.boxLabel = newcopysortid + " of " + copy;
+                if(newcopysortid!=order.mix_box_sort_id){
+                    order.mix_group_data=[];
+                }else{
+                    order.mix_group_data=mix_group_data
+                }
+                addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+            }
+        }
+        //判断是否有剩余的标签要打，有则打印新的
+        if(order.print_label_sorts_length<order.boxes){
             var end = order.boxes-order.print_label_sorts_length;
         }else{
-            //如果当前标签号已打印过，则打印当前号码之后的所有号码，直到当前产品全部打印完成
-            if(index == order.print_label_sorts_length-1){
-                var pls_start = 0;
-                var pls_end = order.print_label_sorts_length;
-            }else{
-                var pls_start = index;
-                var pls_end = order.print_label_sorts_length;
-            }
-            var copy=parseInt(order.boxesNumber)
-            for (var i = pls_start; i < pls_end; i++) {
-                var newcopysortid = parseInt(order.print_label_sorts_arr[i])
-                if(newcopysortid<=copy){
-                    order.boxLabel = newcopysortid + " of " + copy;
-                    addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+            var end = 0;
+        }
+    }
+    if(end > 0){
+        for (var i = 0; i < end; i++) {
+            var newcopysortid = parseInt(order.old_boxesNumberSortId)+i
+            if(newcopysortid<=parseInt(copy)){
+                order.boxLabel = newcopysortid + " of " + copy;
+                if(newcopysortid!=order.mix_box_sort_id){
+                    order.mix_group_data=[];
+                }else{
+                    order.mix_group_data=mix_group_data
                 }
-            }
-            //判断是否有剩余的标签要打，有则打印新的
-            if(order.print_label_sorts_length<order.boxes){
-                var end = order.boxes-order.print_label_sorts_length;
-            }else{
-                var end = 0;
+                addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
             }
         }
-        if(end > 0){
-            for (var i = 0; i < end; i++) {
-                var newcopysortid = parseInt(order.old_boxesNumberSortId)+i
-                if(newcopysortid<=parseInt(copy)){
-                    order.boxLabel = newcopysortid + " of " + copy;
-                    addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
-                }
-            }
-        }
+    }
 }
 function addOnePageAll(order,goods,goodsTwoCate,businessName,userName,print_type) {
     LODOP.NewPage();
