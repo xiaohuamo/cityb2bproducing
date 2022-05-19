@@ -466,6 +466,7 @@ class PickingItem extends AuthBase
             }
             $id_arr = [];//存储所有相关的订单明细id
             $order_id_arr = [];//存储需要处理的订单id
+            $order_data = [];//存储需要处理的订单
             $add_quantity = 0;//需要增加的总数量
             //计算完成的总数
             $sum_quantities = 0;//该产品的总数量
@@ -486,6 +487,7 @@ class PickingItem extends AuthBase
                         if($v['dispatching_is_producing_done'] == 0 || $v['dispatching_is_producing_done'] == 2){
                             $id_arr[] = $v['id'];
                             $order_id_arr[] = $v['order_id'];
+                            $order_data[] = $v;
                             $add_quantity += $v['customer_buying_quantity'];
                         }
                     }
@@ -493,6 +495,7 @@ class PickingItem extends AuthBase
                     if($v['dispatching_is_producing_done'] == 0 || $v['dispatching_is_producing_done'] == 2) {
                         $id_arr[] = $v['id'];
                         $order_id_arr[] = $v['order_id'];
+                        $order_data[] = $v;
                         $add_quantity += $v['customer_buying_quantity'];
                     }
                 }
@@ -547,10 +550,10 @@ class PickingItem extends AuthBase
                 }
                 //3.判断该订单是否全部加工完毕
                 //如果该产品对应规则的产品全部加工完毕，则更改订单加工状态
-                foreach ($order_id_arr as $v){
-                    $count = $WjCustomerCoupon->getWccOrderDone($v,'','','','','',2);
+                foreach ($order_data as $v){
+                    $count = $WjCustomerCoupon->getWccOrderDone($v['order_id'],'','','','','',2);
                     if($count == 0){
-                        Order::getUpdate(['orderId' => $v],[
+                        Order::getUpdate(['orderId' => $v['order_id'],],[
                             'dispatching_is_producing_done'=>1
                         ]);
                         $order_inc_num += 1;
@@ -624,16 +627,12 @@ class PickingItem extends AuthBase
                     if($orderBoxNumber['orderboxnumber'] != $wcc_info['boxesNumber']){
                         Order::getUpdate(['orderId'=>$wcc_info['order_id']],['boxesNumber'=>$orderBoxNumber['orderboxnumber']]);
                     }
-                    //1-2。更新该明细的箱数
+                    //1-2。更新所有订单明细的箱数
                     foreach($orderBoxNumber['order'] as $k=>$v){
-                        if($v['id'] == $wcc_info['id']){
-                            $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],[
-                                'boxnumber'=>$v['boxnumber'],
-                                'splicingboxnumber' => $v['splicingboxnumber'],
-                                'mix_box_group' => 0
-                            ]);
-                            break;
-                        }
+                        WjCustomerCoupon::getUpdate(['id' => $v['id']],[
+                            'boxnumber'=>$v['boxnumber'],
+                            'splicingboxnumber' => $v['splicingboxnumber'],
+                            'mix_box_group' => 0]);
                     }
                     //1-3。批量新订单明细的箱数以及分组情况
                     $update_data = [];
@@ -729,10 +728,10 @@ class PickingItem extends AuthBase
             }else{
                 //总表签数最少限制： 通过算法可以算出总箱数。标签最小数不能小于这个数字，只能大于这个数字。比如计算出总箱数为28 ，那么不可以设置27或以下数字。
                 //可以设置超过总箱数的设置，但为了避免误操作带来的极度废纸。比如本来18箱，它输入了188箱，然后选择按print order键，导致输出 188张标签，因此，可以设置最大可更改数量为 2倍的最大箱数，比如 箱数为18，那么最大这个更改的最大标签数的设置为 18-36 .
-                if($param['num'] < $wcc_info['boxesNumber']){
+                if($param['num'] < $wcc_info['old_boxesNumber']){
                     return show(config('status.code')['boxnum_min_error']['code'], config('status.code')['boxnum_min_error']['msg']);
                 }
-                if($param['num'] < $wcc_info['boxesNumber'] && $param['num'] > 2*$wcc_info['boxesNumber']){
+                if($param['num'] > 2*$wcc_info['old_boxesNumber']){
                     return show(config('status.code')['boxnum_max_error']['code'], config('status.code')['boxnum_max_error']['msg']);
                 }
             }
@@ -780,7 +779,7 @@ class PickingItem extends AuthBase
         try {
             //1.获取订单最新的箱数信息
             $box_list = WjCustomerCoupon::alias('wcc')
-                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.boxnumber,wcc.splicingboxnumber,wcc.boxnumber,wcc.splicingboxnumber,wcc.print_label_sorts,wcc.mix_box_group,wcc.mix_box_sort_id,wcc.current_box_sort_id,o.orderid,o.logistic_delivery_date,o.boxesNumber,o.boxesNumberSortId,rm.unitQtyPerBox,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.boxnumber,wcc.splicingboxnumber,wcc.boxnumber,wcc.splicingboxnumber,wcc.print_label_sorts,wcc.mix_box_group,wcc.mix_box_sort_id,wcc.current_box_sort_id,o.orderid,o.logistic_delivery_date,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,rm.unitQtyPerBox,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
                 ->leftJoin('order o','o.orderId = wcc.order_id')
                 ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
                 ->leftJoin('restaurant_menu_option rmo','rmo.id = wcc.guige1_id')
@@ -793,17 +792,9 @@ class PickingItem extends AuthBase
             foreach($box_list as $k=>&$v){
                 $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
                 $v['guige_name'] = empty($v['guige_name']) ? '' : $v['guige_name'];
-                $v['boxes'] = $v['splicingboxnumber']>0?$v['boxnumber']+1:$v['boxnumber'];//获取该产品需要打印的总箱数
                 //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
-                if(empty($v['print_label_sorts'])){
-                    $v['print_label_sorts_arr'] = [];
-//                    $v['boxesNumberSortId'] = $v['boxesNumberSortId'] >= $v['boxesNumber']?$v['boxesNumber']:$v['boxesNumberSortId'];
-                }else{
-                    $v['print_label_sorts_arr'] = array_filter(explode(',',$v['print_label_sorts']));
-//                    $v['boxesNumberSortId'] = $v['print_label_sorts_arr'][count($v['print_label_sorts_arr'])-1];
-                }
-                $v['print_label_sorts_length'] = count($v['print_label_sorts_arr']);//获取该产品打印标签的个数
                 $v['current_boxesNumberSortId'] = $param['sortId'][$k];//记录当前的序号id
+                $v = $Order->getOrderItemBoxSortId($v);
             }
             Db::startTrans();
             $WjCustomerCoupon = new WjCustomerCoupon();

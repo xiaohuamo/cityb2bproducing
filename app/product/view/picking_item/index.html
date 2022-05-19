@@ -1563,6 +1563,9 @@
 							for(var i in _this.handleList){
 								if(_this.handleList[i]['id'] == _this.handleListSort[index].id){
 									_this.handleList[i][field]=num
+									if(type==2){
+										_this.handleList[i]['boxesNumber']=num
+									}
 									break;
 								}
 							}
@@ -1578,8 +1581,20 @@
 				//打印
 				print(item,index,e){
 					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
-						this.popBox('Please lock the product')
+						//如果未锁定，点击自动锁定
+						//是否存在产品规格 1-存在 2-不存在
+						var is_has_three_cate = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'].length>0?1:2;
+						var three_cate_data = []
+						if(is_has_three_cate==1) {
+							three_cate_data = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'][this.menudataThreeIndex]
+							this.gtouchstart(three_cate_data,this.menudataThreeIndex,3)
+						}else{
+							this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
+						}
+						// this.popBox('Please lock the order')
 						return
+						// this.popBox('Please lock the product')
+						// return
 					}
 					if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
 						this.popBox('This Order has been locked by other')
@@ -1665,9 +1680,9 @@
 							orders.push(item)
 						}
 					}
+					//重新获取订单箱数
+					orders = await this.orderBoxNumber('',1)
 					if(orders.length>0){
-						//重新获取订单箱数
-						order = await this.orderBoxNumber('',1)
 						//跳转到打印标签页,item-订单信息 item.num1-打印数量
 						is_has_two_cate = item.guige1_id>0?1:2
 						var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
@@ -1744,6 +1759,8 @@
 									for(var j in _this.handleListSort){
 										if(_this.handleListSort[j].id == data[i].id){
 											_this.handleListSort[j].boxesNumber = data[i].boxesNumber
+											_this.handleListSort[j].edit_boxesNumber = data[i].edit_boxesNumber
+											_this.handleListSort[j].old_boxesNumber = data[i].old_boxesNumber
 											_this.handleListSort[j].boxesNumberSortId = data[i].newboxesNumberSortId
 											_this.handleListSort[j].current_boxesNumberSortId = data[i].current_boxesNumberSortId
 											_this.handleListSort[j].old_boxesNumberSortId = data[i].boxesNumberSortId
@@ -1762,6 +1779,8 @@
 									for(var k in _this.handleList){
 										if(_this.handleList[k].id == data[i].id){
 											_this.handleList[k].boxesNumber = data[i].boxesNumber
+											_this.handleList[k].edit_boxesNumber = data[i].edit_boxesNumber
+											_this.handleList[k].old_boxesNumber = data[i].old_boxesNumber
 											_this.handleList[k].boxesNumberSortId = data[i].newboxesNumberSortId
 											_this.handleList[k].old_boxesNumberSortId = data[i].boxesNumberSortId
 											_this.handleList[k].print_label_sorts_length = data[i].print_label_sorts_length
@@ -1784,6 +1803,14 @@
 							}
 						});
 					});
+				},
+				//两个数组相同字段的数据同步
+				dataSync(data1,data2,field){
+					for(var i in field){
+						var current_field = field[i]
+						data1[current_field]=data2[current_field]
+					}
+					return data1
 				},
 				numSub(arg1,arg2){
 				    var r1,r2,m;
@@ -2416,9 +2443,10 @@
 					this.quantityType = 1
 				},
 				showKeyBoxQuantity(item,index,type=1){
+					this.showQuantity = ''
 					if(type == 1){
 						//如果该产品是加工产品，则拣货员没有修改数量的权限
-						if(item.proucing_item==1){
+						if(item.dispatching_is_producing_done==1){
 							this.popBox('You do not have permission to operate')
 							return
 						}
@@ -2435,7 +2463,7 @@
 							this.popBox('Inoperable completed')
 							return
 						}
-						this.showQuantity = item.new_customer_buying_quantity
+						// this.showQuantity = item.new_customer_buying_quantity
 					}else{
 						if($.inArray(type,[2,3])!==-1){
 							if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
@@ -2446,11 +2474,11 @@
 								this.popBox('This Order has been locked by other')
 								return
 							}
-							if(type == 2){
-								this.showQuantity = item.current_box_sort_id
-							}else{
-								this.showQuantity = item.edit_boxesNumber
-							}
+							// if(type == 2){
+							// 	this.showQuantity = item.current_box_sort_id
+							// }else{
+							// 	this.showQuantity = item.edit_boxesNumber
+							// }
 						}
 					}
 					this.iskeyboardQuantityShow = true
@@ -2513,7 +2541,7 @@
 							this.printLable(handleItem, handleIndex, type, this.quantityType - 1)
 						}else{
 							//调整总箱数最大不能超过原先计算的2倍数
-							if(this.showQuantity < handleItem.boxesNumber || this.showQuantity > handleItem.boxesNumber*2){
+							if(this.showQuantity < handleItem.old_boxesNumber || this.showQuantity > handleItem.old_boxesNumber*2){
 								this.popBox('Quantity exceeds limit')
 								return
 							}

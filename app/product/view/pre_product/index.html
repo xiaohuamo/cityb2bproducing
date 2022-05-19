@@ -1612,7 +1612,12 @@
 				//打印
 				print(item,index,e){
 					if(item.is_producing_done == 0 && item.is_lock!=1){
-						this.popBox('Please lock the product')
+						if(item.guige1_id>0){
+							this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
+						}else{
+							this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
+						}
+						// this.popBox('Please lock the product')
 						return
 					}
 					if(item.is_producing_done == 0 && item.lock_type!=1){
@@ -2381,6 +2386,7 @@
 					this.quantityType = 1
 				},
 				showKeyBoxQuantity(item,index,type=1){
+					this.showQuantity = ''
 					if(type == 1){
 						if(item.is_lock!=1){
 							this.popBox('Please lock the order')
@@ -2395,7 +2401,7 @@
 							this.popBox('Inoperable completed')
 							return
 						}
-						this.showQuantity = item.new_customer_buying_quantity
+						// this.showQuantity = item.new_customer_buying_quantity
 					}else{
 						if(item.is_producing_done == 0 && item.is_lock!=1){
 							this.popBox('Please lock the order')
@@ -2405,17 +2411,16 @@
 							this.popBox('This Order has been locked by other')
 							return
 						}
-						this.showQuantity = item.num1
+						// this.showQuantity = item.num1
 					}
 					this.iskeyboardQuantityShow = true
-					this.showQuantity = item.new_customer_buying_quantity
 					this.quantityType = type
 					this.handleItem = item
 					this.handleIndex = index
 				},
 				//输入数量
 				clickNumber(number){
-					var quantity = this.showQuantityy.toString()
+					var quantity = this.showQuantity.toString()
 					quantity+=number
 					var firstNum = quantity.substr(0, 1)
 					if(firstNum == 0 && number != '.'){

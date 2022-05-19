@@ -51,6 +51,7 @@ function generateOrderPrintAll(order,goods,goodsTwoCate,businessName,userName,pr
 }
 function printOne(order,goods,goodsTwoCate,businessName,userName,print_type){
     var mix_group_data = order.mix_group_data
+    var copy=parseInt(order.boxesNumber)
     if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
         var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
     }else{
@@ -68,7 +69,6 @@ function printOne(order,goods,goodsTwoCate,businessName,userName,print_type){
             var pls_start = index;
             var pls_end = order.print_label_sorts_length;
         }
-        var copy=parseInt(order.boxesNumber)
         for (var i = pls_start; i < pls_end; i++) {
             var newcopysortid = parseInt(order.print_label_sorts_arr[i])
             if(newcopysortid<=copy){

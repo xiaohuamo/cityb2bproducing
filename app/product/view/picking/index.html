@@ -1514,7 +1514,9 @@
 				//打印
 				print(item,index,e){
 					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
-						this.popBox('Please lock the order')
+						//如果未锁定，点击自动锁定
+						this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
+						// this.popBox('Please lock the order')
 						return
 					}
 					if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
@@ -2186,6 +2188,7 @@
 					this.quantityType = 1
 				},
 				showKeyBoxQuantity(item,index,type=1){
+					this.showQuantity = ''
 					if(type == 1){
 						//如果该订单已加工完成，则没有权限操作
 						if(item.dispatching_is_producing_done==1){
@@ -2210,7 +2213,7 @@
 							this.popBox('You do not have permission to operate products')
 							return
 						}
-						this.showQuantity = item.new_customer_buying_quantity
+						// this.showQuantity = item.new_customer_buying_quantity
 					}else{
 						if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
 							this.popBox('Please lock the order')
@@ -2220,7 +2223,7 @@
 							this.popBox('This Order has been locked by other')
 							return
 						}
-						this.showQuantity = item.num1
+						// this.showQuantity = item.num1
 					}
 					this.iskeyboardQuantityShow = true
 					this.quantityType = type

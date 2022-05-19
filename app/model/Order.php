@@ -768,11 +768,8 @@ class Order extends Model
             }
             $name = $this->getCustomerName($v);
             $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
-            $v['old_boxesNumberSortId'] = $v['boxesNumberSortId'];
-            $v['boxes'] = $v['splicingboxnumber']>0?$v['boxnumber']+1:$v['boxnumber'];//获取该产品需要打印的总箱数
             //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
             $v = $this->getOrderItemBoxSortId($v);
-            $v['print_label_sorts_length'] = count($v['print_label_sorts_arr']);//获取该产品打印标签的个数
         }
         return $order;
     }
@@ -782,10 +779,14 @@ class Order extends Model
      */
     public function getOrderItemBoxSortId($data)
     {
+        $data['old_boxesNumberSortId'] = $data['boxesNumberSortId'];
+        $data['boxes'] = $data['splicingboxnumber']>0?$data['boxnumber']+1:$data['boxnumber'];//获取该产品需要打印的总箱数
         //获取该订单的总箱数
         if($data['edit_boxesNumber']<=0){
             $data['edit_boxesNumber'] = $data['boxesNumber'];
         }
+        $data['old_boxesNumber'] = $data['boxesNumber'];
+        $data['boxesNumber'] = $data['edit_boxesNumber'];
         //获取当前明细的序号id
         if(empty($data['print_label_sorts'])){
             $data['print_label_sorts_arr'] = [];
@@ -798,6 +799,7 @@ class Order extends Model
                 $data['current_box_sort_id'] = count($data['print_label_sorts_arr']) < $data['boxes'] ? $data['boxesNumberSortId'] : $data['print_label_sorts_arr'][count($data['print_label_sorts_arr']) - 1];
             }
         }
+        $data['print_label_sorts_length'] = count($data['print_label_sorts_arr']);//获取该产品打印标签的个数
         return $data;
     }
 
