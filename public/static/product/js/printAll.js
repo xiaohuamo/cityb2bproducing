@@ -69,7 +69,7 @@ function generateOrderPrintAll(order,goods,goodsTwoCate,businessName,userName,pr
             let label_length = label_arr.length
             let end_label_sortid = label_arr[label_length-1]['sortid']
             if(end_label_sortid<copy){
-                for(let i=0;i<copy+1-end_label_sortid;i++){
+                for(let i=0;i<copy-end_label_sortid;i++){
                     let new_order=order[0]
                     new_order.mix_group_data=[]
                     new_order.menu_id=''
