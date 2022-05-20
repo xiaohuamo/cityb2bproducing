@@ -1688,11 +1688,11 @@
 						var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
 						var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
 						if(is_has_two_cate == 1) {
-							previewAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
-							// printAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
+							// previewAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
+							printAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
 						}else{
-							previewAll(orders, goods, [], this.businessName, this.userName, 1)
-							// printAll(orders, goods, [], this.businessName, this.userName, 1)
+							// previewAll(orders, goods, [], this.businessName, this.userName, 1)
+							printAll(orders, goods, [], this.businessName, this.userName, 1)
 						}
 					}else{
 						this.popBox('All printed')
@@ -1718,11 +1718,11 @@
 					// console.log('到打印了---',this.handleListSort[index].boxes);
 					// print_type = 0
 					if (is_has_two_cate == 1) {
-						preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
-						// print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						// preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
 					} else {
-						preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
-						// print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						// preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
