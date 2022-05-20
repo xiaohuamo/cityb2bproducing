@@ -38,6 +38,12 @@ function init(order,totalCopy,goods,goodsTwoCate,businessName,userName,print_typ
 //single label per page
 function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,print_type) {
     switch (print_type){
+        case -1:
+            for (var i = 0; i < copy; i++) {
+                order.boxLabel = i + 1 + " of " + copy;
+                addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
+            }
+            break;
         //默认打印一张带标签的
         case 0:
             //如果当前标签id是已打印过的标签id，则只打印当前输入的标签id
@@ -237,6 +243,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
             html += '        <p style="margin: 4px 0;">'+order.nickname+'</p>\n' +
                 '        <div style="position: absolute;top: 8px;right: 15px;font-weight: bolder;font-size: 25px;">'+order.logistic_sequence_No+'</div>\n'
             if(goods.is_has_two_cate == 1){
+                alert(goods.menu_en_name);
                 html += '        <div style="margin: 4px 0;"><span>'+goodsTwoCate.guige_name+'</span><span style="display: inline-block;width: 60px;margin-left: 16px;">'+order.new_customer_buying_quantity+'kg</span></div>\n';
             }else{
                 html += '        <div style="margin: 4px 0;"><span>'+goods.menu_en_name+'</span><span style="display: inline-block;width: 60px;margin-left: 16px;">'+order.new_customer_buying_quantity+'kg</span></div>\n'
