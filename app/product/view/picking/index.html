@@ -231,11 +231,11 @@
 												<div class="col666 menuWidth">{{item.menu_en_name}} {{item.guige_name}}</div>
 											</div>
 											<div class="flexbox2">
-												<div class="outStock" :class="item.proucing_item==1||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock')">out stock</div>
-												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.proucing_item==1||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
+												<div class="outStock" :class="item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock')">out stock</div>
+												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
 <!--												<input class="inputW F18 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;-->
-												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1||item.dispatching_item_operator_user_id>0}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
-												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.proucing_item==1||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'+')">+</div>
+												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.dispatching_item_operator_user_id>0}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
+												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'+')">+</div>
 											</div>
 										</div>
 										<div class="remarkBox orderDetail pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
@@ -1435,10 +1435,10 @@
 						return
 					}
 					//如果该产品是加工产品，则拣货员没有修改数量的权限
-					if(item.proucing_item==1){
-						this.popBox('You do not have permission to operate')
-						return
-					}
+					// if(item.proucing_item==1){
+					// 	this.popBox('You do not have permission to operate')
+					// 	return
+					// }
 					if(item.is_lock!=1){
 						this.popBox('Please lock the order')
 						return
@@ -1626,7 +1626,8 @@
 					order_item = await this.orderBoxNumber('',3)
 					if(order_item.length>0){
 						//跳转到打印标签页
-						previewAll(order_item,[],[],this.businessName,this.userName,3)
+						// previewAll(order_item,[],[],this.businessName,this.userName,3)
+						printAll(order_item,[],[],this.businessName,this.userName,3)
 					}else{
 						this.popBox('All printed')
 						return
@@ -1651,11 +1652,11 @@
 					// console.log('到打印了---',this.handleListSort[index].boxes);
 					// print_type = 0
 					if (is_has_two_cate == 1) {
-						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,goodsTwoCate,this.businessName,this.userName,this.print_type)
+						print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
 						preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
 					} else {
-						// print(this.handleListSort[index],this.handleListSort[index].boxesNumber,goods,[],this.businessName,this.userName,this.print_type)
-						preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						// preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
@@ -1699,6 +1700,7 @@
 											_this.handleListSort[j].boxesNumberSortId = data[i].newboxesNumberSortId
 											_this.handleListSort[j].current_boxesNumberSortId = data[i].current_boxesNumberSortId
 											_this.handleListSort[j].old_boxesNumberSortId = data[i].boxesNumberSortId
+											_this.handleListSort[j].print_label_sorts = data[i].print_label_sorts
 											_this.handleListSort[j].print_label_sorts_arr = data[i].print_label_sorts_arr
 											_this.handleListSort[j].print_label_sorts_length = data[i].print_label_sorts_length
 											_this.handleListSort[j].boxes = data[i].boxes
@@ -1719,6 +1721,7 @@
 											_this.handleList[k].old_boxesNumber = data[i].old_boxesNumber
 											_this.handleList[k].boxesNumberSortId = data[i].newboxesNumberSortId
 											_this.handleList[k].old_boxesNumberSortId = data[i].boxesNumberSortId
+											_this.handleList[k].print_label_sorts = data[i].print_label_sorts
 											_this.handleList[k].print_label_sorts_arr = data[i].print_label_sorts_arr
 											_this.handleList[k].print_label_sorts_length = data[i].print_label_sorts_length
 											_this.handleList[k].boxes = data[i].boxes
@@ -2386,10 +2389,10 @@
 							return
 						}
 						//如果该产品是加工产品，则拣货员没有修改数量的权限
-						if(item.proucing_item==1){
-							this.popBox('You do not have permission to operate')
-							return
-						}
+						// if(item.proucing_item==1){
+						// 	this.popBox('You do not have permission to operate')
+						// 	return
+						// }
 						if(item.is_lock!=1){
 							this.popBox('Please lock the order')
 							return

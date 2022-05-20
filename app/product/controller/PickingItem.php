@@ -769,6 +769,7 @@ class PickingItem extends AuthBase
             }
             Db::startTrans();
             $WjCustomerCoupon = new WjCustomerCoupon();
+            $Order = new Order();
             //根据打印类型更新数据
             switch ($param['print_type']){
                 case 1://fit print all 全部打印，需要修改该产品所有的订单明细所需要的箱数排序的全部序号
@@ -793,6 +794,7 @@ class PickingItem extends AuthBase
                         $v['mix_box_sort_id'] = $res['mix_box_sort_id'];
                         $v['print_label_sorts_arr'] = array_filter(explode(',',$v['print_label_sorts']));
                         $v['print_label_sorts_length'] = count($v['print_label_sorts_arr']);
+                        $v = $Order->getOrderItemBoxSortId($v);
                         if(isset($res['mix_update_data'])){
                             foreach ($res['mix_update_data'] as $kk=>$vv){
                                 $key = array_search($kk,$id_arr);
