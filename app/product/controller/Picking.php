@@ -443,8 +443,11 @@ class Picking extends AuthBase
 
         //2.更新该产品加工数量和状态
         if($wcc_info['new_customer_buying_quantity'] != $param['new_customer_buying_quantity']){
-            $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
-            if ($res) {
+            try{
+                Db::startTrans();
+                $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
+                //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
+                $WjCustomerCoupon->updateOrderItemBox($wcc_info);
                 $DispatchingBehaviorLog = new DispatchingBehaviorLog();
                 $log_data = [
                     "orderId" => $wcc_info['order_id'],
@@ -452,9 +455,12 @@ class Picking extends AuthBase
                     "new_customer_buying_quantity" => $param['new_customer_buying_quantity']
                 ];
                 $DispatchingBehaviorLog->addBehaviorLog($user_id,$businessId,5,$wcc_info['logistic_delivery_date'],$log_data);
+                Db::commit();
                 return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
-            } else {
-                return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::rollback();
+                return show(config('status.code')['system_error']['code'], $e->getMessage());
             }
         } else {
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);

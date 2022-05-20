@@ -620,36 +620,7 @@ class PickingItem extends AuthBase
                 Db::startTrans();
                 $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
                 //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
-                if($wcc_info['boxesNumberSortId'] <= 1){
-                    $BoxNumber = new BoxNumber();
-                    $orderBoxNumber = $BoxNumber->getOrderBoxes($wcc_info['order_id']);
-                    //1-1.判断总箱数是否变化，变化则更新总箱数
-                    if($orderBoxNumber['orderboxnumber'] != $wcc_info['boxesNumber']){
-                        Order::getUpdate(['orderId'=>$wcc_info['order_id']],['boxesNumber'=>$orderBoxNumber['orderboxnumber']]);
-                    }
-                    //1-2。更新所有订单明细的箱数
-                    foreach($orderBoxNumber['order'] as $k=>$v){
-                        WjCustomerCoupon::getUpdate(['id' => $v['id']],[
-                            'boxnumber'=>$v['boxnumber'],
-                            'splicingboxnumber' => $v['splicingboxnumber'],
-                            'mix_box_group' => 0]);
-                    }
-                    //1-3。批量新订单明细的箱数以及分组情况
-                    $update_data = [];
-                    foreach ($orderBoxNumber['splicing_arr'] as $k=>$v){
-                        foreach ($v as $bk=>$bv) {
-                            $update_data[] = [
-                                'id' => $bv['id'],
-                                'boxnumber' => $bv['boxnumber'],
-                                'splicingboxnumber' => $bv['splicingboxnumber'],
-                                'mix_box_group' => $k+1
-                            ];
-                        }
-                    }
-                    if(!empty($update_data)){
-                        $WjCustomerCoupon->saveAll($update_data);
-                    }
-                }
+                $WjCustomerCoupon->updateOrderItemBox($wcc_info);
                 //2.将修改数量加入日志
                 $DispatchingItemBehaviorLog = new DispatchingItemBehaviorLog();
                 $log_data = [
@@ -779,7 +750,7 @@ class PickingItem extends AuthBase
         try {
             //1.获取订单最新的箱数信息
             $box_list = WjCustomerCoupon::alias('wcc')
-                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.boxnumber,wcc.splicingboxnumber,wcc.boxnumber,wcc.splicingboxnumber,wcc.print_label_sorts,wcc.mix_box_group,wcc.mix_box_sort_id,wcc.current_box_sort_id,o.orderid,o.logistic_delivery_date,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,rm.unitQtyPerBox,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.boxnumber,wcc.splicingboxnumber,wcc.boxnumber,wcc.splicingboxnumber,wcc.print_label_sorts,wcc.mix_box_group,wcc.mix_box_sort_id,wcc.current_box_sort_id,o.orderId,o.logistic_delivery_date,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,rm.unitQtyPerBox,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
                 ->leftJoin('order o','o.orderId = wcc.order_id')
                 ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
                 ->leftJoin('restaurant_menu_option rmo','rmo.id = wcc.guige1_id')
@@ -793,7 +764,7 @@ class PickingItem extends AuthBase
                 $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
                 $v['guige_name'] = empty($v['guige_name']) ? '' : $v['guige_name'];
                 //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
-                $v['current_boxesNumberSortId'] = $param['sortId'][$k];//记录当前的序号id
+                $v['current_boxesNumberSortId'] = $param['sortId'][$k]??0;//记录当前的序号id
                 $v = $Order->getOrderItemBoxSortId($v);
             }
             Db::startTrans();
@@ -812,16 +783,32 @@ class PickingItem extends AuthBase
                     }
                     break;
                 case 3://print order 打印该订单的全部标签
-                    foreach($box_list as &$v){
-                        $where['orderId'] = $v['orderid'];
-                        if($v['boxesNumberSortId'] <= $v['boxesNumber']) {
-                            $update['boxesNumberSortId'] = $v['boxesNumber'] + 1;
-                            Order::getUpdate($where, $update, $param['print_type']);
-                            $v['boxesNumberSortId'] = $update['boxesNumberSortId'];
-                            $v['newboxesNumberSortId'] = $update['boxesNumberSortId']>$v['boxesNumber']?$v['boxesNumber']:$update['boxesNumberSortId'];
-                        }else{
-                            $v['newboxesNumberSortId'] = $v['boxesNumber'];//返回新的表标签序号
+                    //同时更新明细的标签序号，明细的标签序号更新与fit print模式相同
+                    $id_arr = array_column($box_list,'id');
+                    foreach($box_list as $k=>&$v){
+                        $res = $this->updateWccBox($v,$param['sortId'][$k],3);
+                        $v['newboxesNumberSortId'] = $res['newboxesNumberSortId'];
+                        $v['print_label_sorts'] = $res['print_label_sorts'];
+                        $v['mix_group_data'] = $res['mix_group_data'];
+                        $v['mix_box_sort_id'] = $res['mix_box_sort_id'];
+                        $v['print_label_sorts_arr'] = array_filter(explode(',',$v['print_label_sorts']));
+                        $v['print_label_sorts_length'] = count($v['print_label_sorts_arr']);
+                        if(isset($res['mix_update_data'])){
+                            foreach ($res['mix_update_data'] as $kk=>$vv){
+                                $key = array_search($kk,$id_arr);
+                                $box_list[$key]['mix_box_sort_id'] = $vv['mix_box_sort_id'];
+                                $box_list[$key]['print_label_sorts'] = $vv['print_label_sorts'];
+                            }
                         }
+                        if($k<count($box_list)-1){
+                            $box_list[$k+1]['boxesNumberSortId'] = $res['newboxesNumberSortId'];//存储新的序号id
+                        }
+                    }
+                    //如果修改后的总标签数与原先的总标签数更新该订单的所有标签
+                    if($box_list[0]['boxesNumber']!=$box_list[0]['old_boxesNumber']){
+                        $where['orderId'] = $box_list[0]['orderId'];
+                        $update['boxesNumberSortId'] = $box_list[0]['boxesNumber'] + 1;
+                        Order::getUpdate($where, $update);
                     }
                     break;
                 case 0://默认打印一张有序号的标签
@@ -872,7 +859,7 @@ class PickingItem extends AuthBase
                 ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
                 ->leftJoin('restaurant_menu_option rmo','rmo.id = wcc.guige1_id')
                 ->where([
-                    ['wcc.order_id','=',$data['orderid']],
+                    ['wcc.order_id','=',$data['orderId']],
 //                    ['wcc.id','<>',$data['id']],
                     ['wcc.mix_box_group','=',$data['mix_box_group']]
                 ])
@@ -900,21 +887,32 @@ class PickingItem extends AuthBase
             $print_label_sorts_arr = [];
         }
         //如果当前的序号id不在已打印的数组,则打印最新的标签
-        if(!in_array($sortId,$data['print_label_sorts_arr'])){
+        if(!in_array($sortId,$data['print_label_sorts_arr'])&&$print_type!=3||$print_type==3){
             if(count($print_label_sorts_arr) < $item_box_number) {
                 //1.判断整箱数是否打印完成，如果未打印完成，需要先将整箱数打印完，再打印拼箱数
                 $print_label_sorts = '';
                 $end_i = 0;//计算整箱数还有几箱需要打印
                 $is_print_splicing = 0;//判断是否需要打印拼箱 0否 1是
+                $splicing_label = 0;//存放拼箱标签id
                 //$print_type为fit print 和 fit print all时，需要计算剩余打印多少张（先计算整箱部分，再计算拼箱部分）
-                if (in_array($print_type,[1,2])) {
-                    $end_i = $data['boxnumber'] - count($print_label_sorts_arr);
+                //判断已打标签中是否包含混合标签
+                if($data['mix_box_sort_id']>0&&in_array($data['mix_box_sort_id'],$print_label_sorts_arr)){
+                    $is_print_splicing=0;
+                    $int_print_label_sorts_arr=$print_label_sorts_arr;//存储整数箱的标签数据
+                    $key=array_search($data['mix_box_sort_id'],$int_print_label_sorts_arr);
+                    array_splice($int_print_label_sorts_arr,$key,1);
+                    $splicing_label = $data['mix_box_sort_id'];
+                }else{
+                    $is_print_splicing=1;
+                    $int_print_label_sorts_arr=$print_label_sorts_arr;
+                }
+                if (in_array($print_type,[1,2,3])) {
+                    $end_i = $data['boxnumber'] - count($int_print_label_sorts_arr);
                     $order_inc_number = $item_box_number - count($print_label_sorts_arr);
-                    $is_print_splicing = 1;
                 }
                 //$print_type为one label时，只可以打印一张（先计算整箱部分（如果整箱已打印完，再打印拼箱），再计算拼箱部分）
                 if (in_array($print_type,[0]) ){
-                    if($data['boxnumber'] - count($print_label_sorts_arr)>0){
+                    if($data['boxnumber'] - count($int_print_label_sorts_arr)>0){
                         $end_i = 1;
                     }else{
                         $end_i = 0;
@@ -929,7 +927,7 @@ class PickingItem extends AuthBase
                 $print_label_sorts = trim($data['print_label_sorts'] . ',' . $print_label_sorts, ',');
                 //如果拼箱数>0并且已拼箱分组的,说明有拼箱，需要找到一起拼箱的数据
                 $update_label_sorts = [];//存储更新的打印数据
-                $splicing_label = 0;//存放拼箱标签id
+                $mix_update_data = [];//存储混合标签的更新数据，订单打印时同步数据使用
                 if ($is_print_splicing == 1 && $data['splicingboxnumber'] > 0 && $data['mix_box_group'] > 0) {
                     $splicing_label = $data['boxesNumberSortId'] + $order_inc_number - 1;//拼箱的箱号
                     $print_label_sorts = $print_label_sorts.','.$splicing_label;
@@ -938,7 +936,9 @@ class PickingItem extends AuthBase
                         foreach ($mix_group_arr as $mgak => $mgav) {
                             if($mgav['id'] != $data['id']){
                                 $mga_print_label_sorts = $mgav['print_label_sorts'] . ',' . $splicing_label;
-                                $update_label_sorts[] = ['id' => $mgav['id'], 'print_label_sorts' => trim($mga_print_label_sorts, ","), 'mix_box_sort_id' => $splicing_label, 'current_box_sort_id'=>$v['current_box_sort_id']];
+                                $update_mix_data = ['id' => $mgav['id'], 'print_label_sorts' => trim($mga_print_label_sorts, ","), 'mix_box_sort_id' => $splicing_label, 'current_box_sort_id'=>$v['current_box_sort_id']];
+                                $update_label_sorts[] = $update_mix_data;
+                                $mix_update_data[$mgav['id']] = $update_mix_data;
                             }
                         }
                     }
@@ -948,27 +948,25 @@ class PickingItem extends AuthBase
                 $WjCustomerCoupon = new WjCustomerCoupon();
                 $res = $WjCustomerCoupon->saveAll($update_label_sorts);
                 //同时更新订单的最新序号
-                $where['orderId'] = $data['orderid'];
+                $where['orderId'] = $data['orderId'];
                 $update['boxesNumberSortId'] = $data['boxesNumberSortId'] + $order_inc_number;
                 Order::getUpdate($where, $update);
                 $res['newboxesNumberSortId'] = $update['boxesNumberSortId'];//最新的订单标签序号
                 $res['print_label_sorts'] = $wcc_print_label_sorts;//该产品的所有打印标签序号
                 $res['mix_group_data'] = $mix_group_arr;//混合标签信息
                 $res['mix_box_sort_id'] = $splicing_label;//拼箱标签id
+                $res['mix_update_data'] = $mix_update_data;//存储混合标签的更新数据，订单打印时同步数据使用
             }else{
-                $res['newboxesNumberSortId'] = $sortId;
+                $res['newboxesNumberSortId'] = $print_type==3?$data['boxesNumberSortId']:$sortId;
                 $res['print_label_sorts'] = $data['print_label_sorts'];
                 $res['mix_group_data'] = $mix_group_arr;
                 $res['mix_box_sort_id'] = $data['mix_box_sort_id'];//拼箱标签id
             }
         }else{
-            $res['newboxesNumberSortId'] = $sortId;
+            $res['newboxesNumberSortId'] = $print_type==3?$data['boxesNumberSortId']:$sortId;
             $res['print_label_sorts'] = $data['print_label_sorts'];
             $res['mix_group_data'] = $mix_group_arr;
             $res['mix_box_sort_id'] = $data['mix_box_sort_id'];//拼箱标签id
-            if($data['current_box_sort_id'] > 0){
-
-            }
         }
         return $res;
     }

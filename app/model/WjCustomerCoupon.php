@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace app\model;
 
 use app\common\traits\modelTrait;
+use app\product\service\BoxNumber;
 use think\facade\Db;
 use think\Model;
 
@@ -675,5 +676,44 @@ class WjCustomerCoupon extends Model
             ->where($where)
             ->update($update_data);
         return $res;
+    }
+
+    /**
+     * 判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
+     * @param $wcc_info 订单明细
+     */
+    public function updateOrderItemBox($wcc_info)
+    {
+        //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
+        if($wcc_info['boxesNumberSortId'] <= 1){
+            $BoxNumber = new BoxNumber();
+            $orderBoxNumber = $BoxNumber->getOrderBoxes($wcc_info['order_id']);
+            //1-1.判断总箱数是否变化，变化则更新总箱数
+            if($orderBoxNumber['orderboxnumber'] != $wcc_info['boxesNumber']){
+                Order::getUpdate(['orderId'=>$wcc_info['order_id']],['boxesNumber'=>$orderBoxNumber['orderboxnumber']]);
+            }
+            //1-2。更新所有订单明细的箱数
+            foreach($orderBoxNumber['order'] as $k=>$v){
+                WjCustomerCoupon::getUpdate(['id' => $v['id']],[
+                    'boxnumber'=>$v['boxnumber'],
+                    'splicingboxnumber' => $v['splicingboxnumber'],
+                    'mix_box_group' => 0]);
+            }
+            //1-3。批量新订单明细的箱数以及分组情况
+            $update_data = [];
+            foreach ($orderBoxNumber['splicing_arr'] as $k=>$v){
+                foreach ($v as $bk=>$bv) {
+                    $update_data[] = [
+                        'id' => $bv['id'],
+                        'boxnumber' => $bv['boxnumber'],
+                        'splicingboxnumber' => $bv['splicingboxnumber'],
+                        'mix_box_group' => $k+1
+                    ];
+                }
+            }
+            if(!empty($update_data)){
+                $this->saveAll($update_data);
+            }
+        }
     }
 }

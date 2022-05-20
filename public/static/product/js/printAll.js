@@ -37,17 +37,61 @@ function generateOrderPrintAll(order,goods,goodsTwoCate,businessName,userName,pr
         case 1:
             $.each(order,function(i,item){
                 printOne(item,goods,goodsTwoCate,businessName,userName,print_type)
-                // var copy = order[i].boxesNumber
-                // for (var j = 0; j < order[i].boxes; j++) {
-                //     var newcopysortid = parseInt(order[i].boxesNumberSortId)+j
-                //     if(newcopysortid<=parseInt(copy)){
-                //         order[i].boxLabel = newcopysortid + " of " + copy;
-                //         addOnePageAll(order[i],goods,goodsTwoCate,businessName,userName,print_type);
-                //     }
-                // }
             })
             break;
+        case 3:
+            //打印该订单的所有标签
+            let copy = order[0].boxesNumber
+            let label_arr = [];//存储所有的label标签序号
+            let print_mix_label = [];//存储已打印的拼箱标签，已打印过的不在重新打印
+            $.each(order,function(i,item){
+                var mix_group_data = order[i].mix_group_data
+                for(let j in item.print_label_sorts_arr){
+                    let newcopysortid = parseInt(item.print_label_sorts_arr[j])
+                    if($.inArray(newcopysortid,print_mix_label) == -1){
+                        if(newcopysortid == item['mix_box_sort_id']){
+                            print_mix_label.push(newcopysortid);
+                            order[i].mix_group_data=mix_group_data;
+                        }else{
+                            order[i].mix_group_data=[];
+                        }
+                        label_data=[];
+                        label_data['sortid']=newcopysortid
+                        label_data['boxLabel']=newcopysortid + " of " + copy;
+                        label_data['order']=order[i]
+                        label_arr.push(label_data)
+                    }
+                }
+            })
+            //利用js中的sort方法
+            label_arr.sort(sortLabel);
+            //判断是否有多余的标签
+            let label_length = label_arr.length
+            let end_label_sortid = label_arr[label_length-1]['sortid']
+            if(end_label_sortid<copy){
+                for(let i=0;i<copy+1-end_label_sortid;i++){
+                    let new_order=order[0]
+                    new_order.mix_group_data=[]
+                    new_order.menu_id=''
+                    let new_label_order = []
+                    new_label_order['order']=new_order
+                    let newcopysortid = end_label_sortid+i+1
+                    new_label_order['sortid']=newcopysortid
+                    new_label_order['boxLabel']=newcopysortid + " of " + copy;
+                    label_arr.push(new_label_order)
+                }
+            }
+            for(let i in label_arr){
+                let label_order=label_arr[i]['order']
+                label_order.boxLabel=label_arr[i]['boxLabel']
+                addOnePageAll(label_order,[],[],businessName,userName,print_type);
+            }
+            break;
     }
+}
+//根据标签序号（sortid）排序
+function sortLabel(a,b){
+    return a.sortid-b.sortid
 }
 function printOne(order,goods,goodsTwoCate,businessName,userName,print_type){
     var mix_group_data = order.mix_group_data
@@ -103,6 +147,7 @@ function printOne(order,goods,goodsTwoCate,businessName,userName,print_type){
         }
     }
 }
+//is_patch_label 是否有匹配的标签（针对手动调整总箱数，导致总箱数和>商品总的标签数时，多余的标签没有对应的商品） 1-是 2-无
 function addOnePageAll(order,goods,goodsTwoCate,businessName,userName,print_type) {
     LODOP.NewPage();
     //QR CODE
@@ -141,7 +186,6 @@ function generateOrderPrint2All(order, copy,goods,goodsTwoCate,businessName,user
 
     if (copy > 2) {
         for (var i = 1; i <= copy/2-1; i++) {
-            console.log('sssss---')
             LODOP.NewPage();
             //QR CODE
             var qrvalue = 'https://www.cityb2b.com/company/customer_order_redeem_qrscan?qrscanredeemcode=' + order.redeem_code;
@@ -283,7 +327,9 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
                 html+='</div></div><hr>';
             }
         }else{
-            html+='<br><div><span '+product_style+'>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
+            if(!jQuery.isEmptyObject(order.menu_id)){
+                html+='<br><div><span '+product_style+'>'+order.menu_id+'&nbsp;&nbsp;'+order.menu_en_name+'&nbsp;'+order.guige_name+'&nbsp;&nbsp;'+order.new_customer_buying_quantity+order.unit_en+'</span></div><hr>';
+            }
         }
         html+='<div>';
         html+='	<label>Order ID:</label>';
