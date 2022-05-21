@@ -1672,8 +1672,8 @@
 					order_item = await this.orderBoxNumber('',3)
 					if(order_item.length>0){
 						//跳转到打印标签页
-						// previewAll(order_item,[],[],this.businessName,this.userName,3)
-						printAll(order_item,[],[],this.businessName,this.userName,3)
+						previewAll(order_item,[],[],this.businessName,this.userName,3)
+						// printAll(order_item,[],[],this.businessName,this.userName,3)
 					}else{
 						this.popBox('All printed')
 						return
@@ -1698,11 +1698,11 @@
 					// console.log('到打印了---',this.handleListSort[index].boxes);
 					// print_type = 0
 					if (is_has_two_cate == 1) {
-						print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
-						// preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						// print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
 					} else {
-						print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
-						// preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						// print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
