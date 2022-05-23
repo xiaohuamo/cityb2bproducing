@@ -177,6 +177,9 @@
 									<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==2}" @click.stop="tab(2)">
 										Processed<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
 									</div>
+									<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==3}" @click.stop="tab(3)">
+										Mix Group<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+									</div>
 								</div>
 								<div class="flexbox2 relative hand rightBox">
 									<div class="flexbox1 xxBox bgFD6921 colfff" @click.stop="orderPrint()">
@@ -244,6 +247,12 @@
 											</div>
 										</div>
 										<div class="remarkBox orderDetail pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
+									</div>
+									<div class="flexbox1 pa5 F18 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+										<div class="flexbox2">
+											<div class="col666 F20" style="width: 35px;" v-if="item.mix_box_group>0">M{{item.mix_box_group}}</div>
+											<div class="col666 F20" style="width: 35px;" v-else></div>
+										</div>
 									</div>
 									<div class="flexbox1 pa5 F18 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
@@ -1389,6 +1398,10 @@
 						case 2:
 							var sort_type = this.wccSortType==1?2:1
 							this.sortData(this.handleListSort,'dispatching_is_producing_done',sort_type);
+							break;
+						case 3:
+							var sort_type = this.wccSortType==1?2:1
+							this.sortData(this.handleListSort,'mix_box_group',sort_type);
 							break;
 					}
 					this.isLoading=false

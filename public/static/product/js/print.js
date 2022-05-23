@@ -267,12 +267,12 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
                 '    </div>';
         }
     }else{
-        html+='<p style="padding-top:10px; padding-left:5px;">'+order.subtitle+'</p>';
+        html+='<p style="padding-top:10px; padding-left:5px;font-size: 15px;">'+order.subtitle+'</p>';
 
         html+='<table style=" padding-left:5px;padding-right:5px; width: 100%;font-size:28px;font-weight:bolder" cellspacing="0" cellpadding="0">';
         html+='<tr style="">';
         html+=	'<td style=" height:36px;;width:25%;font-size:16px ;border-width: 1px 1px 1px 1px;border-style:solid;text-align: left; ">&nbsp;&nbsp;'+new Date(order.logistic_delivery_date*1000).toLocaleDateString("en-US")+'</td>';
-        html+=	'<td style=" height:36px;width:75%;border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;"><span style="font-size:16px">TRUCK&nbsp;'+truck_name+'</span></td>';
+        html+=	'<td style=" height:36px;width:75%;border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;"><span style="font-size:16px">TRUCK&nbsp;'+name+'-'+truck_name+'-'+plate_number+'</span></td>';
         html+='</tr>';
         html+='<tr style="height:36px;">';
         html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: left;" >&nbsp;&nbsp;'+order.logistic_sequence_No+'</td>';
