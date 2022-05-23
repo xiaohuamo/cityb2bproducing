@@ -889,7 +889,7 @@ class PickingItem extends AuthBase
             $print_label_sorts_arr = [];
         }
         //如果当前的序号id不在已打印的数组,则打印最新的标签
-        if(!in_array($sortId,$data['print_label_sorts_arr'])&&$print_type!=3||$print_type==3){
+        if(!in_array($sortId,$data['print_label_sorts_arr'])&&!in_array($print_type,[3,4])||$print_type==3){
             if(count($print_label_sorts_arr) < $item_box_number) {
                 //1.判断整箱数是否打印完成，如果未打印完成，需要先将整箱数打印完，再打印拼箱数
                 $print_label_sorts = '';
