@@ -429,6 +429,13 @@ class Order extends Model
                     $order_by = 'dispatching_is_producing_done asc,id asc';
                 }
                 break;
+            case 3://拼箱排序
+                if($wcc_sort_type == 1) {
+                    $order_by = 'mix_box_group desc,id asc';
+                } else {
+                    $order_by = 'mix_box_group asc,id asc';
+                }
+                break;
             default://产品编号排序
                 if($wcc_sort_type == 1) {
                     $order_by = 'rm.menu_id asc';
@@ -440,7 +447,7 @@ class Order extends Model
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
 //            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,wcc.message,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.boxnumber,wcc.splicingboxnumber,wcc.print_label_sorts,wcc.mix_box_sort_id,wcc.current_box_sort_id')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_stop_No,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_stop_No,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.mix_box_group')
 //            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
@@ -853,7 +860,8 @@ class Order extends Model
         // 如果有客户填写的客户名，同时附上
         if (!empty($order['nickname'])&&trim($order['nickname'])) {
             if(trim($order['displayName'])){
-                return trim($order['nickname']).'('. trim(trim($order['displayName'])).')';
+//                return trim($order['nickname']).'('. trim(trim($order['displayName'])).')';
+                return trim($order['nickname']);
             }else{
                 return trim($order['nickname']);
             }
@@ -861,7 +869,8 @@ class Order extends Model
         //如果没有客户简码，则客户提交订单时的 客户名 为第二优先级 ，如果客户同时填写了姓名，附上姓名；
         if(!empty($order['displayName'])&&trim($order['displayName'])){
             if(trim($order['first_name']) || trim($order['last_name']) ) {
-                return trim($order['displayName']).'('. trim($order['first_name']).' '.trim($order['last_name']).')';
+//                return trim($order['displayName']).'('. trim($order['first_name']).' '.trim($order['last_name']).')';
+                return trim($order['displayName']);
             }else{
                 return trim($order['displayName']);
             }
@@ -878,7 +887,6 @@ class Order extends Model
             }
             if(!empty($order['businessName'])&&trim($user['businessName'])){
                 return trim($user['businessName']);
-
             }
             if((!empty($order['person_first_name'])&&trim($user['person_first_name'])) || (!empty($order['person_last_name'])&&trim($user['person_last_name']))){
                 return trim($user['person_first_name']).' '.trim($user['person_last_name']);
