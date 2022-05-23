@@ -532,6 +532,7 @@
 				is_product_permission:2,//判断是否有生产权限 1-有 2-没有
 				print_type: 2,//打印类型 0-one label 1-Fit print all 2-fit print 3-print order 4-blank label
 				orderItemOtherData:[],//订单明细的其他数据
+				setup_info:'',//供应商设置信息
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -560,6 +561,7 @@
 						_this.pincodeType = 2 //默认显示创建pincode
 					}
 					_this.is_product_permission = res.result.is_product_permission
+					_this.setup_info = res.result.setup_info
 				});
 				//获取配送日期
 				_this.deliveryDateFun();
@@ -1672,8 +1674,11 @@
 					order_item = await this.orderBoxNumber('',3)
 					if(order_item.length>0){
 						//跳转到打印标签页
-						previewAll(order_item,[],[],this.businessName,this.userName,3)
-						// printAll(order_item,[],[],this.businessName,this.userName,3)
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+							printAll(order_item,[],[],this.businessName,this.userName,3)
+						}else{
+							previewAll(order_item, [], [], this.businessName, this.userName, 3)
+						}
 					}else{
 						this.popBox('All printed')
 						return
@@ -1698,11 +1703,17 @@
 					// console.log('到打印了---',this.handleListSort[index].boxes);
 					// print_type = 0
 					if (is_has_two_cate == 1) {
-						// print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
-						preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+							print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						}else{
+							preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						}
 					} else {
-						// print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
-						preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)){
+							print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						}else{
+							preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						}
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
@@ -2315,6 +2326,7 @@
 							_this.pincodeType = 1 //默认显示pincode登录
 							_this.focusDatype = 10 //默认可直接输入密码
 							_this.is_product_permission = res.result.is_product_permission
+							_this.setup_info = res.result.setup_info
 							//清除定时任务
 							_this.clearTime()
 							_this.isLoading = false

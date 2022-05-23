@@ -12,6 +12,7 @@ use think\facade\Queue;
 use app\model\{
     User,
     Order,
+    Supplier,
     StaffRoles,
     RestaurantMenu,
     WjCustomerCoupon,
@@ -256,6 +257,8 @@ class Index extends AuthBase
                 $is_pick_permission = 1;
             }
         }
+        //获取该供应商的设置信息
+        $setup_info = Supplier::getOne(['userId'=>$businessId]);
         $data = [
             "user_name" => $user_name,
             "business_name" => $business_name,
@@ -264,6 +267,7 @@ class Index extends AuthBase
             "is_product_permission" => $is_product_permission,//判断用户是否有生产权限 1有 2没有
             "is_pick_permission" => $is_pick_permission,//判断用户是否有拣货权限 1有 2没有
             "user_info" => $user_info,//获取当前用户信息
+            "setup_info" => $setup_info,//获取当前供应商的设置信息
         ];
 //        //将用户登录信息存入redis
 //        $redis = redis_connect();

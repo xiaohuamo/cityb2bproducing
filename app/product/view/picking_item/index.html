@@ -490,6 +490,7 @@
 				print_type: 2,//打印类型 0-one label 1-Fit print all 2-fit print 3-print order 4-blank label
 				is_print_all:2,//是否全部打印 1-是 2-否
 				orderItemOtherData:[],//订单明细的其他数据
+				setup_info:'',//供应商设置信息
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -519,6 +520,7 @@
 						_this.pincodeType = 2 //默认显示创建pincode
 					}
 					_this.is_product_permission = res.result.is_product_permission
+					_this.setup_info = res.result.setup_info
 				});
 				//获取配送日期
 				_this.deliveryDateFun();
@@ -1688,11 +1690,17 @@
 						var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
 						var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
 						if(is_has_two_cate == 1) {
-							previewAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
-							// printAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
+							if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)){
+								printAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
+							}else{
+								previewAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
+							}
 						}else{
-							previewAll(orders, goods, [], this.businessName, this.userName, 1)
-							// printAll(orders, goods, [], this.businessName, this.userName, 1)
+							if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+								printAll(orders, goods, [], this.businessName, this.userName, 1)
+							}else{
+								previewAll(orders, goods, [], this.businessName, this.userName, 1)
+							}
 						}
 					}else{
 						this.popBox('All printed')
@@ -1718,11 +1726,17 @@
 					// console.log('到打印了---',this.handleListSort[index].boxes);
 					// print_type = 0
 					if (is_has_two_cate == 1) {
-						preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
-						// print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+							print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						}else{
+							preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
+						}
 					} else {
-						preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
-						// print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+							print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						}else{
+							preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
+						}
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
@@ -2333,6 +2347,7 @@
 							_this.pincodeType = 1 //默认显示pincode登录
 							_this.focusDatype = 10 //默认可直接输入密码
 							_this.is_product_permission = res.result.is_product_permission
+							_this.setup_info = res.result.setup_info
 							//清除定时任务
 							_this.clearTime()
 							_this.isLoading = false

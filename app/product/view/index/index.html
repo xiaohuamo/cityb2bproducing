@@ -448,6 +448,7 @@
 				handleIndex:0,//当前点击选中的订单明细索引id
 				quantityType:1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改
 				is_pick_permission:2,//判断是否有生产权限 1-有 2-没有
+				setup_info:'',//供应商设置信息
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -474,6 +475,7 @@
 						_this.pincodeType = 2 //默认显示创建pincode
 					}
 					_this.is_pick_permission = res.result.is_pick_permission
+					_this.setup_info = res.result.setup_info
 				});
 				//获取加工日期
 				_this.deliveryDateFun();
@@ -1351,11 +1353,17 @@
 					// }
 					//跳转到打印标签页,item-订单信息 item.num1-打印数量
 					if(this.menudata2Sort[this.menudata2SortIndex]['is_has_two_cate'] == 1){
-						// print(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],this.menudataTwoCate[this.menudataTwoCateIndex],this.businessName,this.userName)
-						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],this.menudataTwoCate[this.menudataTwoCateIndex],this.businessName,this.userName)
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+							print(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],this.menudataTwoCate[this.menudataTwoCateIndex],this.businessName,this.userName)
+						}else{
+							preview(item, item.num1, this.menudata2Sort[this.menudata2SortIndex], this.menudataTwoCate[this.menudataTwoCateIndex], this.businessName, this.userName)
+						}
 					}else{
-						// print(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],[],this.businessName,this.userName)
-						preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],[],this.businessName,this.userName)
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)){
+							print(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],[],this.businessName,this.userName)
+						}else{
+							preview(item,item.num1,this.menudata2Sort[this.menudata2SortIndex],[],this.businessName,this.userName)
+						}
 					}
 				},
 				numSub(arg1,arg2){
@@ -1849,6 +1857,7 @@
 							_this.pincodeType = 1 //默认显示pincode登录
 							_this.focusDatype = 10 //默认可直接输入密码
 							_this.is_pick_permission = res.result.is_pick_permission
+							_this.setup_info = res.result.setup_info
 							//清除定时任务
 							_this.clearTime()
 							_this.isLoading = false
