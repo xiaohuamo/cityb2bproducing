@@ -9,6 +9,7 @@ function preview(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessNa
 }
 //type=1 默认打印产品信息 type=2 打印物流信息
 function print(parsedOrders,totalCopy=1,goods,goodsTwoCate,userName,businessName,print_type=-1) {
+    print_type = parseInt(print_type)
     init(parsedOrders,totalCopy,goods,goodsTwoCate,userName,businessName,print_type);
     LODOP.PRINT();
 }
