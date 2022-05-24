@@ -304,7 +304,15 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
         //判断产品是否只有一个，若只有一个，则字体放大
         var product_style = '';
         if(order.mix_group_data.length <= 1){
-            product_style = ' style="font-size:16px;"';
+            let one_menu_len = 0;//记录商品的总长度，大于一定长度，字体缩小
+            if(order.mix_group_data.length == 1){
+                one_menu_len += order.mix_group_data[0].menu_en_name.length+order.mix_group_data[0].guige_name.length+order.mix_group_data[0].new_customer_buying_quantity.length+order.unit_en.length
+            }else{
+                one_menu_len += order.menu_en_name.length+order.guige_name.length+order.new_customer_buying_quantity.length+order.unit_en.length
+            }
+            if(one_menu_len<40){
+                product_style = ' style="font-size:16px;"';
+            }
         }
         if(order.mix_group_data != undefined && order.mix_group_data.length > 0){
             if(order.mix_group_data.length > 3){
