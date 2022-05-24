@@ -66,7 +66,6 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
         //print fit 打印该订单明细的当前所有标签
         case 2:
             //标记开始打印的位置，当前产品已打印的个数
-            // alert(typeof order.current_boxesNumberSortId);
             var mix_group_data = order.mix_group_data
             if((typeof order.current_boxesNumberSortId=='string')&&order.current_boxesNumberSortId.constructor==String){
                 var index = $.inArray(order.current_boxesNumberSortId,order.print_label_sorts_arr);
@@ -131,6 +130,13 @@ function generateOrderPrint(order,copy,goods,goodsTwoCate,businessName,userName,
         //blank label 打印一张空白标签
         case 4:
             order.boxLabel = '__' + " of " + '__';
+            var mix_group_data = order.mix_group_data
+            var newcopysortid = parseInt(order.current_boxesNumberSortId);
+            if(newcopysortid!=order.mix_box_sort_id){
+                order.mix_group_data=[];
+            }else{
+                order.mix_group_data=mix_group_data
+            }
             addOnePage(order,goods,goodsTwoCate,businessName,userName,print_type);
             return;
             break;
@@ -302,10 +308,14 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
         }
         if(order.mix_group_data != undefined && order.mix_group_data.length > 0){
             if(order.mix_group_data.length > 3){
-                html+='<div style="display: flex;"><label>MIX:</label>\n';
-                html+='<div style="margin-left: 5px;">';
+                html+='<div style="display: flex;width: 100%;"><label>MIX:</label>\n';
+                html+='<div style="margin-left: 5px; word-break:break-all;"'+product_style+'>';
+                let menu_len = 0;//记录商品总的字符串长度
                 for(var i=0;i<order.mix_group_data.length;i++){
-                    html+='<span'+product_style+'>'+order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;&nbsp;'+order.mix_group_data[i].new_customer_buying_quantity+order.unit_en+'</span>&nbsp;<span style="font-weight: bold;">|</span>&nbsp;';
+                    menu_len += order.mix_group_data[i].menu_en_name.length+1+order.mix_group_data[i].guige_name.length+1+order.mix_group_data[i].new_customer_buying_quantity.length+order.unit_en.length+1
+                    if(menu_len<=155){
+                        html+=order.mix_group_data[i].menu_en_name+'&nbsp;'+order.mix_group_data[i].guige_name+'&nbsp;'+order.mix_group_data[i].new_customer_buying_quantity+order.unit_en+'&nbsp;|&nbsp;';
+                    }
                 }
                 html+='</div></div><hr>';
             }else{
@@ -328,9 +338,9 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
         html+='</div>';
         html+='<hr>';
         // html+='<label>Suppliers Name:</label>';
-        html+='<div style="border: 0px solid black; padding: 2px">';
+        html+='<div>';
         //html+='	<span >'+order.logistic_suppliers_info+'</span>';
-        html+='	<span>DNL FOOD   license  NO:P01417</span></div>';
+        html+='	<div style="border: 0px solid black; padding: 0 5px;"><span>DNL FOOD   license  NO:P01417</span></div>';
         html+='<div style="border: 0px solid black; padding: 0 5px 2px;">	<span >TEL:93988222  0450599336 </span></div>';
         html+='<div style="border: 0px solid black; padding: 0 5px;">	<span >ADD:30 Blaxland Ave, Thomastown VIC 3074</span></div>';
         html+='</div>';

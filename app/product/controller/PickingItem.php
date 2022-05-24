@@ -916,6 +916,7 @@ class PickingItem extends AuthBase
                 if (in_array($print_type,[0]) ){
                     if($data['boxnumber'] - count($int_print_label_sorts_arr)>0){
                         $end_i = 1;
+                        $is_print_splicing = 0;
                     }else{
                         $end_i = 0;
                         $is_print_splicing = 1;
