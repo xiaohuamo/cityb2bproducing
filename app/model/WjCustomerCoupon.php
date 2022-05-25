@@ -205,7 +205,7 @@ class WjCustomerCoupon extends Model
                     'menu_en_name' => $v['menu_en_name'],
                     'unit_en' => $v['unit_en'],
                     'proucing_item' => $v['proucing_item'],
-                    'sum_quantities' => $v['customer_buying_quantity'],
+                    'sum_quantities' => sprintf("%01.2f",$v['customer_buying_quantity']),
                     'status' => $v['status'],
                     'operator_user' => $v['operator_user'],
                 ];

@@ -278,6 +278,9 @@ a{
 .bgf9f20c{
 	background: #f9f20c;
 }
+.F10{
+	font-size: 10px;
+}
 .F13{
 	font-size: 13px;
 }
@@ -414,10 +417,10 @@ a{
 .lbtn4{
 	margin: 0 6px 10px;
 	box-sizing: border-box;
-	padding: 15px;
+	padding: 5px;
 	min-width: 220px;
-	/*height: 108px;*/
-	height: 140px;
+	height: 100px;
+	/*height: 140px;*/
 }
 
 .rbtn{
@@ -520,6 +523,9 @@ a{
 .rsection2Box{
 	max-height: 220px;
 	overflow: auto;
+}
+.maT-5{
+	margin-top: -5px;
 }
 .maT5{
 	margin-top: 5px;
@@ -1166,14 +1172,14 @@ tbody tr td{
 	position: absolute;
 	top: 0;
 	left: 0;
-	width: 20px;
+	width: 15px;
 }
 
 .pslog{
 	position: absolute;
 	bottom: 0;
-	left: 0;
-	width: 35px;
+	left: 5px;
+	width: 18px;
 }
 .pslogbottom{
 	width: 16px;
@@ -1210,4 +1216,7 @@ tbody tr td{
 .inputBox{
 	width: 30px;
 	height: 20px;
+}
+.fwb{
+	font-weight: bold;
 }
