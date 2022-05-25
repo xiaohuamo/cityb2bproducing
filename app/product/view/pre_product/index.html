@@ -73,6 +73,7 @@
 
 			<div class="btn bgFD6921">{{operatorOrderDoneNum}}/{{operatorOrderNum}}</div>
 			<div class="btn bg34C079">{{orderDoneNum}}/{{orderNum}}</div>
+			<div><img src="__STATIC__/product/img/fullscreen.png" class="systemIcon2" @click="handleFullScreen"/></div>
 		</div>
 
 		<div class="flexbox3" style="min-height:100%;">
@@ -515,6 +516,7 @@
 				quantityType:1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改
 				is_pick_permission:2,//判断是否有生产权限 1-有 2-没有
 				setup_info:'',//供应商设置信息
+				fullscreen: false  // 是否全屏
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -2488,6 +2490,36 @@
 				gotoDispatchingCentre(){
 					window.location.href = common.dWebUrl+'product/picking'
 				},
+				// 全屏事件
+				handleFullScreen(){
+					let element = document.documentElement;
+					// 判断是否已经是全屏
+					// 如果是全屏，退出
+					if (this.fullscreen) {
+						if (document.exitFullscreen) {
+							document.exitFullscreen();
+						} else if (document.webkitCancelFullScreen) {
+							document.webkitCancelFullScreen();
+						} else if (document.mozCancelFullScreen) {
+							document.mozCancelFullScreen();
+						} else if (document.msExitFullscreen) {
+							document.msExitFullscreen();
+						}
+					} else {    // 否则，进入全屏
+						if (element.requestFullscreen) {
+							element.requestFullscreen();
+						} else if (element.webkitRequestFullScreen) {
+							element.webkitRequestFullScreen();
+						} else if (element.mozRequestFullScreen) {
+							element.mozRequestFullScreen();
+						} else if (element.msRequestFullscreen) {
+							// IE11
+							element.msRequestFullscreen();
+						}
+					}
+					// 改变当前全屏状态
+					this.fullscreen = !this.fullscreen;
+				}
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间

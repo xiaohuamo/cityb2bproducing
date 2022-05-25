@@ -21,7 +21,7 @@
 			</div>
 			<div class="flexbox2" v-if="is_product_permission==1">
 				<!--				<img src="__STATIC__/product/img/printZCentre.png" class="systemIcon"/>&nbsp;-->
-				</a><img src="__STATIC__/product/img/productCentre.png" class="systemIcon1" @click="gotoProductCentre()"/>
+				<img src="__STATIC__/product/img/productCentre.png" class="systemIcon1" @click="gotoProductCentre()"/>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
 				<span class="blink1">{{list.length>0?choseDate1.date+' '+choseDate1.date_day:''}}</span>
@@ -49,6 +49,7 @@
 
 			<div class="btn bgFD6921">{{driverOrderDoneNum}}/{{driverOrderNum}}</div>
 			<div class="btn bg34C079">{{orderDoneNum}}/{{orderNum}}</div>
+			<div><img src="__STATIC__/product/img/fullscreen.png" class="systemIcon2" @click="handleFullScreen"/></div>
 		</div>
 
 		<div class="flexbox3" style="min-height:100%;">
@@ -542,6 +543,7 @@
 				print_type: 2,//打印类型 0-one label 1-Fit print all 2-fit print 3-print order 4-blank label
 				orderItemOtherData:[],//订单明细的其他数据
 				setup_info:'',//供应商设置信息
+				fullscreen: false  // 是否全屏
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -2732,6 +2734,36 @@
 				gotoProductCentre(){
 					window.location.href = common.webUrl+'product/index'
 				},
+				// 全屏事件
+				handleFullScreen(){
+					let element = document.documentElement;
+					// 判断是否已经是全屏
+					// 如果是全屏，退出
+					if (this.fullscreen) {
+						if (document.exitFullscreen) {
+							document.exitFullscreen();
+						} else if (document.webkitCancelFullScreen) {
+							document.webkitCancelFullScreen();
+						} else if (document.mozCancelFullScreen) {
+							document.mozCancelFullScreen();
+						} else if (document.msExitFullscreen) {
+							document.msExitFullscreen();
+						}
+					} else {    // 否则，进入全屏
+						if (element.requestFullscreen) {
+							element.requestFullscreen();
+						} else if (element.webkitRequestFullScreen) {
+							element.webkitRequestFullScreen();
+						} else if (element.mozRequestFullScreen) {
+							element.mozRequestFullScreen();
+						} else if (element.msRequestFullscreen) {
+							// IE11
+							element.msRequestFullscreen();
+						}
+					}
+					// 改变当前全屏状态
+					this.fullscreen = !this.fullscreen;
+				}
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
