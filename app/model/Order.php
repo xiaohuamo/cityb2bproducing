@@ -482,7 +482,18 @@ class Order extends Model
             if($v['operator_user_id'] > 0){
                 if($v['isDone'] == 0){
                     $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
-                    $v['lock_type'] = $user_id == $v['operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
+                    //产品锁定的优先级高于订单锁定，因此，当产品被锁定时，判断当前锁定类型
+                    if($v['dispatching_item_operator_user_id']>0) {
+                        $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                    }else{
+                        $v['lock_type'] = $user_id == $v['operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                    }
+                }
+            }else{
+                //如果该明细当前被产品拣货锁定时，则此条明细的锁定状态为锁定
+                if($v['dispatching_item_operator_user_id']>0){
+                    $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                    $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
                 }
             }
             if($v['customer_delivery_option']=='1'){
@@ -766,7 +777,18 @@ class Order extends Model
                 $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];
             }
         }
+        $picking_user_id = 0;//存储当前正在拣货的用户id
+        $no_picking_id_arr = [];//存储当前未同步的拣货员用户id(因为拣货时，可能会实时增加订单，所以需要将正在进行拣货时，未存储的用户id给同步上)
         foreach($order as &$v){
+            if($v['dispatching_item_operator_user_id']>0&&$v['dispatching_is_producing_done']!=1){
+                $picking_user_id = $v['dispatching_item_operator_user_id'];
+            }
+            if($v['dispatching_item_operator_user_id']==0&&$v['dispatching_is_producing_done']!=1){
+                if($picking_user_id>0){
+                    $v['dispatching_item_operator_user_id']=$picking_user_id;
+                }
+                $no_picking_id_arr[] = $v['id'];
+            }
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
             $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
             //判断当前加工明细是否被锁定
@@ -789,6 +811,9 @@ class Order extends Model
             $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
             //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
             $v = $this->getOrderItemBoxSortId($v);
+        }
+        if($picking_user_id>0 && !empty($no_picking_id_arr)){
+            WjCustomerCoupon::getUpdate(['id'=>$no_picking_id_arr],['dispatching_item_operator_user_id'=>$picking_user_id]);
         }
         return $order;
     }

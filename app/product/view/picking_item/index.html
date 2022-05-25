@@ -227,10 +227,10 @@
 											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
 										</div>
 									</div>
-									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.dispatching_is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
+									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_lock==0" @click="changeStatus(item,index)">
 										waitting lock
 									</div>
-									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.dispatching_is_producing_done==0&&item.is_lock==1&&item.lock_type==1,'bgGrey':item.dispatching_is_producing_done==0&&item.is_lock==1&&item.lock_type==2,'bgFD6921 blink':item.dispatching_is_producing_done==2&&item.is_lock==1&&item.lock_type==1,'bgGrey blink':item.dispatching_is_producing_done==2&&item.is_lock==1&&item.lock_type==2}" @click="changeStatus(item,index)">
+									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.is_lock==1&&item.lock_type==1,'bgGrey':item.is_lock==1&&item.lock_type==2,'bgFD6921 blink':item.dispatching_is_producing_done==2&&item.is_lock==1&&item.lock_type==1,'bgGrey blink':item.dispatching_is_producing_done==2&&item.is_lock==1&&item.lock_type==2}" @click="changeStatus(item,index)">
 										<span v-if="item.dispatching_is_producing_done==0">waitting process</span>
 										<span v-else>processing</span>
 									</div>
@@ -1596,7 +1596,7 @@
 						// this.popBox('Please lock the order')
 						// return
 						// this.popBox('Please lock the product')
-						// return
+						return
 					}
 					if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
 						this.popBox('This Order has been locked by other')

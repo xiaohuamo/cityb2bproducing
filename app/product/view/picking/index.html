@@ -276,10 +276,10 @@
 											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
 										</div>
 									</div>
-									<div class="rbtn3 F22 bgFFF7F3 col5e5656" :class="{'bgGrey':item.dispatching_item_operator_user_id>0}" v-else-if="item.dispatching_is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
+									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.dispatching_is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
 										waitting lock
 									</div>
-									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':(item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==1&&item.dispatching_item_operator_user_id==0,'bgGrey':((item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==2&&item.dispatching_item_operator_user_id==0)||item.dispatching_item_operator_user_id>0,'blink':item.dispatching_is_producing_done==2}" @click="changeStatus(item,index)">
+									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':(item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==1,'bgGrey':(item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==2,'blink':item.dispatching_is_producing_done==2}" @click="changeStatus(item,index)">
 										<span v-if="item.dispatching_is_producing_done==0">waitting process</span>
 										<span v-else>processing</span>
 									</div>
@@ -923,27 +923,24 @@
 									//修改对应的加工明细单为可处理
 									var renew_id_arr = [];//判断是否需要更新handleList的值
 									$.each(_this.handleListSort,function(i,n){
-										_this.handleList[i]['is_lock'] = 0
-										_this.handleList[i]['lock_type'] = 0
-										_this.handleListSort[i]['is_lock'] = 0
-										_this.handleListSort[i]['lock_type'] = 0
-										if(_this.handleListSort[i]['dispatching_is_producing_done'] == 2){
-											renew_id_arr.push(_this.handleListSort[i].id)
+										if(_this.handleListSort[i]['lock_type']==1){
+											_this.handleListSort[i]['is_lock'] = 0
+											_this.handleListSort[i]['lock_type'] = 0
 											_this.handleListSort[i]['dispatching_is_producing_done'] = 0
+											renew_id_arr.push(_this.handleListSort[i].id)
 										}
 									});
 									if (renew_id_arr.length > 0) {
 										for(var i in _this.handleList){
 											for(var j in renew_id_arr) {
 												if (_this.handleList[i]['id'] == j) {
+													_this.handleList[i]['is_lock'] = 0
+													_this.handleList[i]['lock_type'] = 0
 													_this.handleList[i]['dispatching_is_producing_done'] = 0
 												}
 											}
 										}
 									}
-									//修改可编辑数量和标签数量为可编辑状态
-									$('.J_edit_quantity').attr("disabled","disabled")
-									$('.J_edit_lable').attr("disabled","disabled")
 								} else {
 									_this.popBox(res.message)
 									return
@@ -1001,16 +998,21 @@
 								}
 								//修改对应的加工明细单为可处理
 								$.each(_this.handleListSort,function(i,n){
-									_this.handleList[i]['is_lock'] = 1
-									_this.handleList[i]['lock_type'] = 1
-									_this.handleListSort[i]['is_lock'] = 1
-									_this.handleListSort[i]['lock_type'] = 1
-									if(_this.handleListSort[i]['proucing_item'] != 1){
-										$('.J_order_detail').eq(i).find('.J_edit_quantity').removeAttr("disabled")
+									if(_this.handleListSort[i]['is_lock']==0){
+										_this.handleListSort[i]['is_lock'] = 1
+										_this.handleListSort[i]['lock_type'] = 1
 									}
 								});
-								//查询是是生产明细，生产明细的不可变更，其他可以变更为可编辑状态，修改可编辑数量和标签数量为可编辑状态
-								$('.J_edit_lable').removeAttr("disabled")
+								//修改原数组的值
+								for(let i in _this.handleList) {
+									for(let j in _this.handleList) {
+										if (_this.handleList[i]['id'] == _this.handleListSort[j].id) {
+											_this.handleList[i].is_lock = _this.handleListSort[j]['is_lock']
+											_this.handleList[i].lock_type = _this.handleListSort[j]['lock_type']
+											break;
+										}
+									}
+								}
 							}else{
 								_this.popBox(res.message)
 								return
@@ -1113,10 +1115,10 @@
 						"logistic_truck_No": this.logistic_truck_No
 					}
 					//判断改产品是否被产品拣货端锁定，按照产品拣货优先级高
-					if(item.dispatching_item_operator_user_id > 0){
-						this.popBox('You do not have permission to operate products')
-						return
-					}
+					// if(item.dispatching_item_operator_user_id > 0){
+					// 	this.popBox('You do not have permission to operate products')
+					// 	return
+					// }
 					if(item.dispatching_is_producing_done == 0){
 						if(item.is_lock!=1){
 							//如果未锁定，点击自动锁定
@@ -1125,7 +1127,7 @@
 							return
 						}
 						if(item.lock_type!=1){
-							this.popBox('This order has been locked by other')
+							this.popBox('This item has been locked by other')
 							return
 						}
 						data.is_producing_done = 2;
@@ -1604,7 +1606,7 @@
 						//如果未锁定，点击自动锁定
 						this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
 						// this.popBox('Please lock the order')
-						// return
+						return
 					}
 					if(item.dispatching_is_producing_done == 0 && item.lock_type!=1){
 						this.popBox('This Order has been locked by other')

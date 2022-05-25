@@ -2,7 +2,7 @@
 namespace app\job;
 
 use think\queue\Job;
-use app\model\{DispatchingProgressSummery, DispatchingBehaviorLog};
+use app\model\{DispatchingProgressSummery, DispatchingBehaviorLog, WjCustomerCoupon};
 use think\queue\job\Redis;
 
 class JobLockOrder
@@ -49,6 +49,16 @@ class JobLockOrder
             //2.锁定当前操作人
             $udpate_data = ['operator_user_id'=>$data['user_id']];
             $res = DispatchingProgressSummery::getUpdate(['id' => $data['dps_info']['id']],$udpate_data);
+            //3.锁定订单明细当前操作人
+            $wcc_where = [
+                ['o.business_userId','=',$data['dps_info']['business_id']],
+                ['o.logistic_delivery_date','=',$data['dps_info']['delivery_date']],
+                ['wcc.order_id','=',$dps_info['orderId']],
+                ['wcc.dispatching_is_producing_done','<>',1]
+            ];
+            $wcc_data = ['wcc.dispatching_operator_user_id' => $data['user_id']];
+            $WjCustomerCoupon = new WjCustomerCoupon();
+            $WjCustomerCoupon->updateWccData($wcc_where,$wcc_data);
             //添加用户行为日志
             $DispatchingBehaviorLog = new DispatchingBehaviorLog();
             $DispatchingBehaviorLog->addBehaviorLog($data['user_id'],$data['dps_info']['business_id'],1,$data['dps_info']['delivery_date'],$data['dps_info']);

@@ -232,9 +232,12 @@ class Picking extends AuthBase
                 ['o.business_userId','=',$businessId],
                 ['o.logistic_delivery_date','=',$param['logistic_delivery_date']],
                 ['wcc.order_id','=',$param['orderId']],
-                ['wcc.dispatching_is_producing_done','=',2]
+                ['wcc.dispatching_is_producing_done','<>',1]
             ];
-            $wcc_data = ['wcc.dispatching_is_producing_done' => 0];
+            $wcc_data = [
+                'wcc.dispatching_operator_user_id' => 0,
+                'wcc.dispatching_is_producing_done' => 0
+            ];
             $WjCustomerCoupon = new WjCustomerCoupon();
             $WjCustomerCoupon->updateWccData($wcc_where,$wcc_data);
             Db::commit();
@@ -291,19 +294,25 @@ class Picking extends AuthBase
             //一.已处理和正在处理流程
             if($param['is_producing_done'] == 1 || $param['is_producing_done'] == 2){
                 //1-1.判断该产品是否有人加工，无人加工不可点击已处理
-                if(!($dps_info['operator_user_id'] > 0)){
+                if(!($dps_info['operator_user_id'] > 0)&&!($wcc_info['dispatching_item_operator_user_id'] > 0)){
                     return show(config('status.code')['summary_process_error']['code'], config('status.code')['summary_process_error']['msg']);
                 }
-                //如果当前操作员工处理员工是否是同一个人
-                if($dps_info['operator_user_id'] != $user_id){
-                    return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
+                //如果当前操作员工处理员工是否是同一个人(产品锁定的优先级高，所以先判断产品锁定的人员)
+                if($wcc_info['dispatching_item_operator_user_id'] > 0){
+                    if($wcc_info['dispatching_item_operator_user_id'] != $user_id){
+                        return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
+                    }
+                }else{
+                    if($dps_info['operator_user_id'] != $user_id){
+                        return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
+                    }
                 }
                 //1-2.该产品已处理完成，不可重复处理
                 if($dps_info['isDone'] == $param['is_producing_done']){
                     return show(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
                 }
                 //2.更新该产品加工数量和状态
-                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['dispatching_operator_user_id'=>$user_id,'dispatching_is_producing_done'=>$param['is_producing_done']]);
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['operator_user_id'=>$user_id,'dispatching_is_producing_done'=>$param['is_producing_done']]);
                 if($param['is_producing_done'] == 2){
                     Db::commit();
                     return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
@@ -368,7 +377,19 @@ class Picking extends AuthBase
                     return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
                 }
                 //2.更新该产品加工数量和状态
-                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['dispatching_operator_user_id'=>$user_id,'dispatching_is_producing_done'=>0]);
+                $wcc_update_data = [
+                    'dispatching_operator_user_id'=>$user_id,
+                    'dispatching_is_producing_done'=>0
+                ];
+                //2-1.如果产品拣货用户>0,判断当前产品是否都拣货完成，拣货完成，则可以清空当前的拣货用户id,否则返回操作的用户权限还是产产品端有限
+                //获取该产品的数据
+                if($wcc_info['dispatching_item_operator_user_id']>0){
+                    $product_data = $WjCustomerCoupon->getPickProductData($businessId,$user_id,$wcc_info['logistic_delivery_date'],'',$wcc_info['product_id'],$wcc_info['guige1_id']);
+                    if ($product_data['isDone'] == 1) {
+                        $wcc_update_data['dispatching_item_operator_user_id'] = 0;
+                    }
+                }
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],$wcc_update_data);
                 $finish_quantities = $dps_info['finish_quantities']-1;
                 $dps_data['finish_quantities'] = $finish_quantities;
                 $dps_data['operator_user_id'] = $user_id;
