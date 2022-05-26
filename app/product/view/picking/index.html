@@ -280,7 +280,7 @@
 											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
 										</div>
 									</div>
-									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.dispatching_is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
+									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_lock==0" @click="changeStatus(item,index)">
 										waitting lock
 									</div>
 									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':(item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==1,'bgGrey':(item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==2,'blink':item.dispatching_is_producing_done==2}" @click="changeStatus(item,index)">

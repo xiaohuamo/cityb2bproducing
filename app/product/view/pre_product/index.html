@@ -213,7 +213,7 @@
 										<div class="rbtn3 F20 bg34C079 colfff relative" v-if="item.is_producing_done==1" @click="handle(index)">
 											processed
 										</div>
-										<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_producing_done==0&&item.is_lock==0" @click="changeStatus(item,index)">
+										<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_lock==0" @click="changeStatus(item,index)">
 											waitting lock
 										</div>
 										<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.is_producing_done==0&&item.is_lock==1&&item.lock_type==1,'bgGrey':item.is_producing_done==0&&item.is_lock==1&&item.lock_type==2,'bgFD6921 blink':item.is_producing_done==2&&item.is_lock==1&&item.lock_type==1,'bgGrey blink':item.is_producing_done==2&&item.is_lock==1&&item.lock_type==2}" @click="changeStatus(item,index)">
