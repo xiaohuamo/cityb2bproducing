@@ -75,10 +75,11 @@ class AuthBase extends Base
         $allow = [
             'product/index/index',      //生产加工页面
             'product/pre_product/index',//预加工页面
-            'product/picking/index',    //拣货员页面
+            'product/picking/index',    //拣货员(按照订单拣货)页面
+            'product/picking_item/index', //拣货员(按照产品拣货)页面
         ];
         if (in_array($action, $allow)) {
-            if ($action == $allow[2]) {
+            if (in_array($action,[$allow[2],$allow[3]])) {
                 if($SERVER_NAME != D_SERVER_NAME){
                     $this->_empty();
 //                    return redirect(D_SITE_URL.'product/picking')->send();
