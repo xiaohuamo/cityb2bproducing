@@ -1136,16 +1136,16 @@
 					// 	this.popBox('You do not have permission to operate products')
 					// 	return
 					// }
+					if(item.is_lock!=1){
+						//如果未锁定，点击自动锁定
+						this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
+						// this.popBox('Please lock the order')
+						return
+					}
 					if(dispatching_is_producing_done>-1){
 						data.is_producing_done = dispatching_is_producing_done;
 					}else{
 						if(item.dispatching_is_producing_done == 0){
-							if(item.is_lock!=1){
-								//如果未锁定，点击自动锁定
-								this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
-								// this.popBox('Please lock the order')
-								return
-							}
 							if(item.lock_type!=1){
 								this.popBox('This item has been locked by other')
 								return
@@ -1623,7 +1623,7 @@
 				},
 				//打印
 				async print(item,index,e){
-					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
+					if(item.is_lock!=1){
 						//如果未锁定，点击自动锁定
 						lock_res = await this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
 						if(lock_res!=1){

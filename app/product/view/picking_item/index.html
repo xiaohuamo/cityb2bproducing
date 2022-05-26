@@ -1021,20 +1021,20 @@
 					if(is_has_three_cate==1) {
 						three_cate_data = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'][this.menudataThreeIndex]
 					}
+					if (item.is_lock != 1) {
+						//如果未锁定，点击自动锁定
+						if (is_has_three_cate == 1) {
+							this.gtouchstart(three_cate_data, this.menudataThreeIndex, 3)
+						} else {
+							this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex], this.menudataTwoCateIndex, 2)
+						}
+						// this.popBox('Please lock the order')
+						return
+					}
 					if(dispatching_is_producing_done>-1){
 						data.is_producing_done = dispatching_is_producing_done;
 					}else {
 						if (item.dispatching_is_producing_done == 0) {
-							if (item.is_lock != 1) {
-								//如果未锁定，点击自动锁定
-								if (is_has_three_cate == 1) {
-									this.gtouchstart(three_cate_data, this.menudataThreeIndex, 3)
-								} else {
-									this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex], this.menudataTwoCateIndex, 2)
-								}
-								// this.popBox('Please lock the order')
-								return
-							}
 							if (item.lock_type != 1) {
 								this.popBox('This order has been locked by other')
 								return
@@ -1601,7 +1601,7 @@
 				},
 				//打印
 				async print(item,index,e){
-					if(item.dispatching_is_producing_done == 0 && item.is_lock!=1){
+					if(item.is_lock!=1){
 						//如果未锁定，点击自动锁定
 						//是否存在产品规格 1-存在 2-不存在
 						let is_has_three_cate = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'].length>0?1:2;

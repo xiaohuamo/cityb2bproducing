@@ -1014,20 +1014,19 @@
 				},
 				//修改处理状态 is_producing_done 0-未加工 1-加工完成 2-正在加工中
 				changeStatus(item,index){
-				    console.log(item)
 					var data = {
 						"id": item.id
 					}
-					if(item.is_producing_done == 0){
-						if(item.is_lock!=1){
-							if(item.guige1_id>0){
-								this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
-							}else{
-								this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
-							}
-							// this.popBox('Please lock the product')
-							return
+					if(item.is_lock!=1){
+						if(item.guige1_id>0){
+							this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
+						}else{
+							this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
 						}
+						// this.popBox('Please lock the product')
+						return
+					}
+					if(item.is_producing_done == 0){
 						if(item.lock_type!=1){
 							this.popBox('Product has been locked by other')
 							return
@@ -1632,7 +1631,7 @@
 				//打印
 				async print(item,index,e){
 					let lock_data,lock_index,lock_cate_level
-					if(item.is_producing_done == 0 && item.is_lock!=1){
+					if(item.is_lock!=1){
 						if(item.guige1_id>0){
 							lock_data = this.menudataTwoCate[this.menudataTwoCateIndex]
 							lock_index = this.menudataTwoCateIndex
