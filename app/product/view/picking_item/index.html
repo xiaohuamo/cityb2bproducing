@@ -1780,13 +1780,13 @@
 					// console.log('到打印了---',this.handleListSort[index].boxes);
 					// print_type = 0
 					if (is_has_two_cate == 1) {
-						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+						if(!_this.setup_info||(_this.setup_info&&_this.setup_info.print_mode==1)) {
 							print(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
 						}else{
 							preview(item, item.boxesNumber, goods, goodsTwoCate, _this.businessName, _this.userName, print_type)
 						}
 					} else {
-						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
+						if(!_this.setup_info||(_this.setup_info&&_this.setup_info.print_mode==1)) {
 							print(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
 						}else{
 							preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)

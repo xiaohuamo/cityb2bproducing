@@ -134,7 +134,7 @@ class OrderProductPlaning extends Model
             ->field('oppd.id,oppd.restaurant_menu_id product_id,oppd.guige1_id,opp.orderId,opp.logistic_delivery_date,opp.logistic_sequence_No,uf.nickname,oppd.customer_buying_quantity,oppd.new_customer_buying_quantity,oppd.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone,rm.unit_en')
             ->leftJoin('restaurant_menu rm','rm.id = oppd.restaurant_menu_id')
             ->leftJoin('order_product_planing opp','oppd.order_id = opp.orderId')
-            ->leftJoin('user_factory uf','uf.user_id = opp.userId')
+            ->leftJoin('user_factory uf','uf.user_id = opp.userId and factory_id='.$businessId)
             ->leftJoin('producing_planing_progress_summery pps',"pps.delivery_date = opp.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=oppd.restaurant_menu_id and pps.guige1_id=oppd.guige1_id and pps.isdeleted=0")
             ->where($where)
             ->order($order_by)
