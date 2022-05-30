@@ -241,6 +241,9 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
         truck_name = order.truck_info.truck_name
         plate_number = order.truck_info.plate_number
     }
+    if(order.unit_en==null){
+        order.unit_en=''
+    }
     if(print_type == -1){
         if(order.nickname.length>20 || goods.menu_en_name.length>20 || (goods.is_has_two_cate == 1 && goodsTwoCate.guige_name.length > 20)){
             if(order.nickname.length>25){
