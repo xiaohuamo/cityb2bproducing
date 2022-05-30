@@ -29,6 +29,9 @@ class OrderProductPlanningDetails extends Model
                 ['oppd.id','=',$id],
                 ['opp.business_userId','=',$businessId]
             ])->find();
+        if(!empty($wcc_info)){
+            $wcc_info['new_customer_buying_quantity'] = $wcc_info['new_customer_buying_quantity']>=0?$wcc_info['new_customer_buying_quantity']:$wcc_info['customer_buying_quantity'];
+        }
         return $wcc_info;
     }
 

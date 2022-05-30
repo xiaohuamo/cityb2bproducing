@@ -8,8 +8,10 @@ use think\facade\Db;
 use think\facade\Queue;
 use app\model\{
     User,
+    Order,
     StaffRoles,
     RestaurantMenu,
+    ProducingItemStock,
     RestaurantCategory,
     OrderProductPlaning,
     ProducingPlaningSelect,
@@ -342,8 +344,9 @@ class PreProduct extends AuthBase
             $is_product_guige1_done = 0;//该产品/规格对应的总量是否加工完毕
             $is_product_all_done = 0;//该产品是否所有规则都加工完毕
 
-            //1.获取加工明细信息
             $OrderProductPlaningDetails = new OrderProductPlanningDetails();
+            $ProducingItemStock = new ProducingItemStock();
+            //1.获取加工明细信息
             $wcc_info = $OrderProductPlaningDetails->getWccInfo($param['id'],$businessId);
             if (!$wcc_info) {
                 return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
@@ -420,6 +423,14 @@ class PreProduct extends AuthBase
                         $is_product_all_done = 1;
                     }
                 }
+                //5.将该产品的加工量加入库存库
+                $pis_data = [
+                    'product_id'=>$wcc_info['product_id'],
+                    'guige1_id'=>$wcc_info['guige1_id'],
+                    'businessId'=>$businessId,
+                    'quantity'=>$wcc_info['new_customer_buying_quantity']
+                ];
+                $ProducingItemStock->stockUpdate($pis_data,1);
                 Db::commit();
                 $ProducingBehaviorLog = new ProducingPlaningBehaviorLog();
                 $log_data = [
@@ -473,6 +484,14 @@ class PreProduct extends AuthBase
                 }
                 //4.还原当前产品加工状态，未加工完
                 $is_product_all_done = 0;
+                //5.将该产品的加工量加入库存库
+                $pis_data = [
+                    'product_id'=>$wcc_info['product_id'],
+                    'guige1_id'=>$wcc_info['guige1_id'],
+                    'businessId'=>$businessId,
+                    'quantity'=>$wcc_info['new_customer_buying_quantity']
+                ];
+                $ProducingItemStock->stockUpdate($pis_data,2);
                 Db::commit();
                 $data = [
                     'operator_order_inc_num' => $operator_order_inc_num,//对应操作员的订单数是否增加

@@ -23,7 +23,7 @@ class WjCustomerCoupon extends Model
     public function getWccInfo($id,$businessId)
     {
         $wcc_info = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.print_label_sorts,wcc.current_box_sort_id,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,wcc.dispatching_item_operator_user_id,rm.restaurant_category_id cate_id')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.print_label_sorts,wcc.current_box_sort_id,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,wcc.dispatching_item_operator_user_id,rm.restaurant_category_id cate_id,wcc.assign_stock,wcc.operator_user_id')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->where([
@@ -573,8 +573,9 @@ class WjCustomerCoupon extends Model
             $where[] = ['wcc.guige1_id','=',$guige1_id];
         }
         $data = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,wcc.assign_stock,rm.proucing_item')
             ->leftJoin('order o','o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->where($where)
             ->where($map)
             ->select()->toArray();
@@ -593,6 +594,13 @@ class WjCustomerCoupon extends Model
         //通过产品的信息获取该产品当前的状态
         $done = [];
         //获取该产品的状态
+        $is_producing_done_arr = [];//存储当前产品的所有状态
+        //需要去掉生产未分配的状态
+        foreach ($data as $k=>$v){
+            if($v['proucing_item']!=1 || $v['assign_stock']!=0){
+                $is_producing_done_arr[] = $v['dispatching_is_producing_done'];
+            }
+        }
         $is_producing_done_arr = array_column($data,'dispatching_is_producing_done');
         $operator_user_id = 0;//操作人员id
         if(in_array(0,$is_producing_done_arr)){

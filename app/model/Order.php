@@ -229,7 +229,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,o.userId,o.orderId,o.first_name,o.last_name,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone,rm.unit_en')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,o.userId,o.orderId,o.first_name,o.last_name,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone,rm.unit_en,wcc.assign_stock')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId')
@@ -446,9 +446,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-//            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,wcc.message,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.boxnumber,wcc.splicingboxnumber,wcc.print_label_sorts,wcc.mix_box_sort_id,wcc.current_box_sort_id')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_stop_No,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.mix_box_group')
-//            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_stop_No,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.mix_box_group,wcc.assign_stock')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
@@ -482,18 +480,28 @@ class Order extends Model
             if($v['operator_user_id'] > 0){
                 if($v['isDone'] == 0){
                     $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
-                    //产品锁定的优先级高于订单锁定，因此，当产品被锁定时，判断当前锁定类型
-                    if($v['dispatching_item_operator_user_id']>0) {
-                        $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
-                    }else{
+                    //如果是生产未分配的产品，锁定类型由当前锁定员确定，优先级高于按产品拣货锁定的级别
+                    if($v['proucing_item'] == 1 && $v['assign_stock'] == 0){
                         $v['lock_type'] = $user_id == $v['operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                    }else{
+                        //产品锁定的优先级高于订单锁定，因此，当产品被锁定时，判断当前锁定类型
+                        if($v['dispatching_item_operator_user_id']>0) {
+                            $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                        }else{
+                            $v['lock_type'] = $user_id == $v['operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                        }
                     }
                 }
             }else{
-                //如果该明细当前被产品拣货锁定时，则此条明细的锁定状态为锁定
-                if($v['dispatching_item_operator_user_id']>0){
+                if($v['proucing_item'] == 1 && $v['assign_stock'] == 0){
                     $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
-                    $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
+                    $v['lock_type'] = 2;//1-被自己锁定 2-被他人锁定
+                }else{
+                    //如果该明细当前被产品拣货锁定时，则此条明细的锁定状态为锁定
+                    if ($v['dispatching_item_operator_user_id'] > 0) {
+                        $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                        $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                    }
                 }
             }
             if($v['customer_delivery_option']=='1'){
@@ -754,7 +762,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate,wcc.assign_stock')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId')
@@ -780,14 +788,17 @@ class Order extends Model
         $picking_user_id = 0;//存储当前正在拣货的用户id
         $no_picking_id_arr = [];//存储当前未同步的拣货员用户id(因为拣货时，可能会实时增加订单，所以需要将正在进行拣货时，未存储的用户id给同步上)
         foreach($order as &$v){
-            if($v['dispatching_item_operator_user_id']>0&&$v['dispatching_is_producing_done']!=1){
-                $picking_user_id = $v['dispatching_item_operator_user_id'];
-            }
-            if($v['dispatching_item_operator_user_id']==0&&$v['dispatching_is_producing_done']!=1){
-                if($picking_user_id>0){
-                    $v['dispatching_item_operator_user_id']=$picking_user_id;
+            //如果是生产未分配的产品，当前的拣货操作员由生产端的确定,所以确定当前产品的拣货员id,需要排除掉生产未分配的
+            if($v['proucing_item'] != 1 || $v['assign_stock'] == 0) {
+                if ($v['dispatching_item_operator_user_id'] > 0 && $v['dispatching_is_producing_done'] != 1) {
+                    $picking_user_id = $v['dispatching_item_operator_user_id'];
                 }
-                $no_picking_id_arr[] = $v['id'];
+                if ($v['dispatching_item_operator_user_id'] == 0 && $v['dispatching_is_producing_done'] != 1) {
+                    if ($picking_user_id > 0) {
+                        $v['dispatching_item_operator_user_id'] = $picking_user_id;
+                    }
+                    $no_picking_id_arr[] = $v['id'];
+                }
             }
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
             $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
@@ -795,6 +806,7 @@ class Order extends Model
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;
             if($v['dispatching_item_operator_user_id'] > 0){
+                //如果是生产未分配的产品，锁定类型由当前操作员来判断
                 if($v['dispatching_is_producing_done'] == 0||$v['dispatching_is_producing_done'] == 2){
                     $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
                     $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定

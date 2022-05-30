@@ -715,9 +715,9 @@ class PickingItem extends AuthBase
                     $DispatchingItemBehaviorLog = new DispatchingItemBehaviorLog();
                     $log_data = [
                         "wj_customer_coupon_id" => $param['id'],
-                        "$field" => $param['num']
+                        "boxesNumber" => $param['num']
                     ];
-                    $DispatchingItemBehaviorLog->addProducingBehaviorLog($user_id,$businessId,5,$wcc_info['logistic_delivery_date'],$log_data);
+                    $DispatchingItemBehaviorLog->addProducingBehaviorLog($user_id,$businessId,9,$wcc_info['logistic_delivery_date'],$log_data);
                 }else{
                     WjCustomerCoupon::getUpdate(['id'=>$param['id']],$data);
                 }

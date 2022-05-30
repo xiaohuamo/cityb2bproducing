@@ -238,16 +238,10 @@
 												<div class="col666 menuWidth">{{item.menu_en_name}} {{item.guige_name}}</div>
 											</div>
 											<div class="flexbox2">
-<!--												<div class="outStock" :class="item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock')">out stock</div>-->
-<!--												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>-->
-<!--&lt;!&ndash;												<input class="inputW F18 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;&ndash;&gt;-->
-<!--												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.dispatching_item_operator_user_id>0}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;-->
-<!--												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.dispatching_item_operator_user_id>0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'+')">+</div>-->
-												<div class="outStock bgFA8752" @click="editQuantity(item,index,'outstock')">out stock</div>
-												<div class="numicon" :class="item.new_customer_buying_quantity==0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0||item.dispatching_item_operator_user_id>0" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
-												<!--												<input class="inputW F18 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;-->
-												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
-												<div class="numicon" :class="item.new_customer_buying_quantity==0?'bgGrey':'bgFA8752'" :disabled="item.new_customer_buying_quantity<=0" @click="editQuantity(item,index,'+')">+</div>
+												<div class="outStock" :class="item.is_lock!=1||item.lock_type!=1||item.new_customer_buying_quantity==0||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock')">out stock</div>
+												<div class="numicon" :class="item.is_lock!=1||item.lock_type!=1||item.new_customer_buying_quantity==0||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
+												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
+												<div class="numicon" :class="item.is_lock!=1||item.lock_type!=1||item.new_customer_buying_quantity==0||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'+')">+</div>
 											</div>
 										</div>
 										<div class="remarkBox orderDetail pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
@@ -260,33 +254,44 @@
 									</div>
 									<div class="flexbox1 pa5 F18 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 										<div class="flexbox2">
-<!--											<div class="numicon" :class="item.num1==0?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-',$event)"><span class="numiconSub"></span></div>-->
-<!--											<input class="inputW4 F18 J_edit_lable" v-model="item.num1" type="number" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1" @focus="focusEvent($event)" @keyup="handleInput" @keypress.enter="printLable(item,index,'enter',$event)"/>-->
-<!--											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.dispatching_item_operator_user_id>0}" @click="showKeyBoxQuantity(item,index,2)">{{item.current_box_sort_id}}</div>-->
-<!--&lt;!&ndash;											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event)">+</div>&ndash;&gt;-->
-<!--											<span class="pa5-10">of</span>-->
-<!--											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.dispatching_item_operator_user_id>0}" @click="showKeyBoxQuantity(item,index,3)">{{item.boxesNumber}}</div>-->
-											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" @click="showKeyBoxQuantity(item,index,2)">{{item.current_box_sort_id}}</div>
-											<!--											<div class="numicon bgFA8752" @click="printLable(item,index,'+',$event)">+</div>-->
+											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1}" @click="showKeyBoxQuantity(item,index,2)">{{item.current_box_sort_id}}</div>
 											<span class="pa5-10">of</span>
-											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1}" @click="showKeyBoxQuantity(item,index,3)">{{item.boxesNumber}}</div>
+											<div class="inputW4 F18 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1}" @click="showKeyBoxQuantity(item,index,3)">{{item.boxesNumber}}</div>
 										</div>
 										<div class="echo echoMl" :class="orderItemOtherData[index].printBg" @click="print(item,index,$event)"></div>
 									</div>
-									<div class="rbtn3 F18 bg34C079 colfff relative" v-if="item.dispatching_is_producing_done==1" @click="handle(index)">
-										processed
-										<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-show="currentHandlePop==index">
-											<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>
-											<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
+									<template v-if="item.proucing_item==1&&item.assign_stock==0">
+										<div class="rbtn3 F18 bg34C079 colfff relative" v-if="item.dispatching_is_producing_done==1" @click="changeStatus(item,index)">
+											processed
 										</div>
-									</div>
-									<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_lock==0" @click="changeStatus(item,index)">
-										waitting lock
-									</div>
-									<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':(item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==1,'bgGrey':(item.dispatching_is_producing_done==0||item.dispatching_is_producing_done==2)&&item.is_lock==1&&item.lock_type==2,'blink':item.dispatching_is_producing_done==2}" @click="changeStatus(item,index)">
-										<span v-if="item.dispatching_is_producing_done==0">waitting process</span>
-										<span v-else>processing</span>
-									</div>
+										<div class="rbtn3 F18 bgGrey colfff relative" v-else-if="item.dispatching_is_producing_done==5" @click="changeStatus(item,index)">
+											waiting approval
+										</div>
+										<div class="rbtn3 F18 bgGrey colfff relative" v-else @click="changeStatus(item,index)">
+											<template v-if="item.is_producing_done==0">waitting process</template>
+											<template v-else>processing</template>
+										</div>
+									</template>
+									<template v-else>
+										<template v-if="item.dispatching_is_producing_done==1">
+											<div class="rbtn3 F18 bg34C079 colfff relative" @click="handle(index)">
+												picked
+												<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-show="currentHandlePop==index">
+													<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>
+													<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
+												</div>
+											</div>
+										</template>
+										<template v-else>
+											<div v-if="item.is_lock==0" class="rbtn3 F22 bgFFF7F3 col5e5656" @click="changeStatus(item,index)">
+												waitting lock
+											</div>
+											<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.lock_type==1,'bgGrey':item.lock_type==2}" @click="changeStatus(item,index)">
+												<span v-if="item.dispatching_is_producing_done==0">waitting pick</span>
+												<span v-else class="blink">picking</span>
+											</div>
+										</template>
+									</template>
 								</div>
 							</div>
 						</div>
@@ -1136,16 +1141,21 @@
 					// 	this.popBox('You do not have permission to operate products')
 					// 	return
 					// }
-					if(item.is_lock!=1){
-						//如果未锁定，点击自动锁定
-						this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
-						// this.popBox('Please lock the order')
-						return
-					}
 					if(dispatching_is_producing_done>-1){
 						data.is_producing_done = dispatching_is_producing_done;
 					}else{
+						//如果该产品是加工未分配的，则没有权限操作
+						if(item.proucing_item==1&&item.assign_stock==0){
+							this.popBox('You cannot operate')
+							return
+						}
 						if(item.dispatching_is_producing_done == 0){
+							if(item.is_lock!=1){
+								//如果未锁定，点击自动锁定
+								this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
+								// this.popBox('Please lock the order')
+								return
+							}
 							if(item.lock_type!=1){
 								this.popBox('This item has been locked by other')
 								return
@@ -1476,6 +1486,11 @@
 				},
 				//修改购买数量
 				editQuantity(item,index,addType){
+					//如果该产品是加工未分配的，则没有权限操作
+					if(item.proucing_item==1&&item.assign_stock==0){
+						this.popBox('You cannot operate')
+						return
+					}
 					//如果该订单已加工完成，则没有权限操作
 					if(item.dispatching_is_producing_done==1){
 						this.popBox('Inoperable completed')
@@ -1758,7 +1773,7 @@
 						}
 					}
 					//如果是fit print打印，判断当前明细的拣货状态是否是拣货完成状态，如果不是，调用更改拣货状态程序
-					if(print_type == 2&&$.inArray(item.dispatching_is_producing_done,[0,2])!=-1){
+					if(print_type == 2&&$.inArray(item.dispatching_is_producing_done,[0,2])!=-1&&(item.procuing_item!=1||item.assign_stock!=0)){
 						this.changeStatus(item,index,1)
 					}
 				},
@@ -2487,6 +2502,11 @@
 				showKeyBoxQuantity(item,index,type=1){
 					this.showQuantity = ''
 					if(type == 1){
+						//如果该产品是加工未分配的，则没有权限操作
+						if(item.proucing_item==1&&item.assign_stock==0){
+							this.popBox('You cannot operate')
+							return
+						}
 						//如果该订单已加工完成，则没有权限操作
 						if(item.dispatching_is_producing_done==1){
 							this.popBox('Inoperable completed')

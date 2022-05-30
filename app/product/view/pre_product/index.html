@@ -212,6 +212,10 @@
 										</div>
 										<div class="rbtn3 F20 bg34C079 colfff relative" v-if="item.is_producing_done==1" @click="handle(index)">
 											processed
+<!--											<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-show="currentHandlePop==index">-->
+<!--												<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>-->
+<!--												<div class="actionHeight col000" @click.stop="Popreturn">Return</div>-->
+<!--											</div>-->
 										</div>
 										<div class="rbtn3 F22 bgFFF7F3 col5e5656" v-else-if="item.is_lock==0" @click="changeStatus(item,index)">
 											waitting lock
@@ -1017,16 +1021,16 @@
 					var data = {
 						"id": item.id
 					}
-					if(item.is_lock!=1){
-						if(item.guige1_id>0){
-							this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
-						}else{
-							this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
-						}
-						// this.popBox('Please lock the product')
-						return
-					}
 					if(item.is_producing_done == 0){
+						if(item.is_lock!=1){
+							if(item.guige1_id>0){
+								this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
+							}else{
+								this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
+							}
+							// this.popBox('Please lock the product')
+							return
+						}
 						if(item.lock_type!=1){
 							this.popBox('Product has been locked by other')
 							return

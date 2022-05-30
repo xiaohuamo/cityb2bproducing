@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app\product\controller;
 
+use app\product\service\OrderItemStatus;
 use app\product\validate\LoginValidate;
 use app\product\validate\IndexValidate;
 use app\common\service\RedisService;
@@ -655,6 +656,10 @@ class Index extends AuthBase
                         }
                     }
                 }
+                //5.如果该明细是未分配库存的，需要将拣货端（产品拣货和订单拣货）的拣货状态=5，同时更新当前的操作员
+                if($wcc_info['assign_stock'] == 0){
+                    WjCustomerCoupon::getUpdate(['id'=>$param['id']],['dispatching_is_producing_done'=>5,'dispatching_operator_user_id'=>$user_id,'dispatching_item_operator_user_id'=>$user_id]);
+                }
                 Db::commit();
                 $ProducingBehaviorLog = new ProducingBehaviorLog();
                 $log_data = [
@@ -708,6 +713,14 @@ class Index extends AuthBase
                 }
                 //4.还原当前产品加工状态，未加工完
                 $is_product_all_done = 0;
+                //5.如果该明细是未分配库存的，需要将拣货端（产品拣货和订单拣货）的拣货状态=0，同时更新当前的操作员
+                if($wcc_info['assign_stock'] == 0){
+                    $OrderItemStatus = new OrderItemStatus();
+                    $pick_res = $OrderItemStatus->PickingOrderItemStatusChange($businessId,$user_id,$param);
+                    if($pick_res['status'] != 200){
+                        return show($pick_res['status'],$pick_res['message']);
+                    }
+                }
                 Db::commit();
                 $data = [
                     'driver_order_inc_num' => $driver_order_inc_num,//对应司机的订单数是否增加
