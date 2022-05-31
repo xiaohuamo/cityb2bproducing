@@ -270,6 +270,8 @@ class Index extends AuthBase
                     $is_product_permission = 2;
                 }
             }
+        }else{
+            $is_product_permission = 2;
         }
         //$is_pick_permission 1-用户拣货全部权限 2-没有拣货权限 3-只有产品拣货权限 4-只有订单拣货权限
         if(in_array(3,$pannel_arr) || in_array(4,$pannel_arr)) {
@@ -289,6 +291,8 @@ class Index extends AuthBase
                     $is_pick_permission = 2;
                 }
             }
+        }else{
+            $is_product_permission = 2;
         }
         //获取该供应商的设置信息
         $setup_info = Supplier::getOne(['userId'=>$businessId]);
