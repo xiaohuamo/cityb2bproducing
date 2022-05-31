@@ -277,7 +277,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
                 '    </div>';
         }
     }else{
-        html+='<p style="padding-top:10px; padding-left:5px;font-size: 15px;">'+order.subtitle+'</p>';
+        html+='<p style="padding-top:0px; padding-left:5px;font-size: 15px;">'+order.subtitle+'</p>';
 
         html+='<table style=" padding-left:5px;padding-right:5px; width: 100%;font-size:28px;font-weight:bolder" cellspacing="0" cellpadding="0">';
         html+='<tr style="">';

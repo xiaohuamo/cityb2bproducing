@@ -6,8 +6,10 @@ namespace app\product\controller;
 
 use think\App;
 use think\facade\Cookie;
+use think\Model;
 use app\model\{
     User,
+    Supplier,
     StaffRoles
 };
 
@@ -71,16 +73,38 @@ abstract class Base
                         $roles = [];
                     }
                     $user['roles'] = $roles;
+                    if($user['role'] == 20){
+                        $business_id = $user['user_belong_to_user'];
+                    } else {
+                        $business_id = $user['id'];
+                    }
+                    //查询该商家的权限
+                    $Supplier = new Supplier();
+                    $pannel_arr = $Supplier->getCompanyPermission($business_id);
                     //判断当前域名
                     $SERVER_NAME = $_SERVER['HTTP_HOST'];
                     if($SERVER_NAME == M_SERVER_NAME){
-                        if($user['role'] == 3 || in_array(0,$roles) || in_array(1,$roles) || in_array(9,$roles) || in_array(11,$roles)) {
-                            return redirect('index')->send();
+                        if(in_array(1,$pannel_arr)||in_array(2,$pannel_arr)){
+                            if($user['role'] == 3 || in_array(0,$roles) || in_array(1,$roles) || in_array(9,$roles) || in_array(11,$roles)) {
+                                //如果既有生产权限又有预生产权限或者只有生产权限，则直接进入生产端
+                                if(in_array(1,$pannel_arr)&&in_array(2,$pannel_arr)||in_array(1,$pannel_arr)&&!in_array(2,$pannel_arr)){
+                                    return redirect('index')->send();
+                                }else{
+                                    return redirect('preProduct')->send();
+                                }
+                            }
                         }
                     } elseif ($SERVER_NAME == D_SERVER_NAME) {
-                        //如果当前使拣货员页面，判断是否有拣货权限
-                        if ($user['role'] == 3 || in_array(0, $user['roles']) || in_array(1, $user['roles']) || in_array(9, $user['roles']) || in_array(12, $user['roles'])) {
-                            return redirect('picking')->send();
+                        //判断该商家是否有拣货权限
+                        if(in_array(3,$pannel_arr)||in_array(4,$pannel_arr)) {
+                            //如果当前使拣货员页面，判断是否有拣货权限
+                            if ($user['role'] == 3 || in_array(0, $user['roles']) || in_array(1, $user['roles']) || in_array(9, $user['roles']) || in_array(12, $user['roles'])) {
+                                if(in_array(3,$pannel_arr)&&in_array(4,$pannel_arr)||in_array(3,$pannel_arr)&&!in_array(4,$pannel_arr)) {
+                                    return redirect('picking')->send();
+                                }else{
+                                    return redirect('pickingOrder')->send();
+                                }
+                            }
                         }
                     } elseif ($SERVER_NAME == DRIVER_SERVER_NAME) {
 //                        return redirect('me')->send();

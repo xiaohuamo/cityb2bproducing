@@ -7,7 +7,8 @@ use think\App;
 use think\facade\View;
 use app\model\{
     User,
-    StaffRoles
+    StaffRoles,
+    Supplier
 };
 
 class AuthBase extends Base
@@ -75,18 +76,33 @@ class AuthBase extends Base
         $allow = [
             'product/index/index',      //生产加工页面
             'product/pre_product/index',//预加工页面
-            'product/picking/index',    //拣货员(按照订单拣货)页面
             'product/picking_item/index', //拣货员(按照产品拣货)页面
+            'product/picking/index',    //拣货员(按照订单拣货)页面
         ];
+        //查询该商家的权限
+        $Supplier = new Supplier();
+        $pannel_arr = $Supplier->getCompanyPermission($business_id);
         if (in_array($action, $allow)) {
+            //查找当前访问地址的键值
+            $pannel_type = array_search($action, $allow)+1;
             if (in_array($action,[$allow[2],$allow[3]])) {
                 if($SERVER_NAME != D_SERVER_NAME){
                     $this->_empty();
 //                    return redirect(D_SITE_URL.'product/picking')->send();
+                }else{
+                    //判断该商家是否有拣货权限
+                    if(!in_array($pannel_type,$pannel_arr)){
+                        $this->_empty();
+                    }
                 }
             } else {
                 if($SERVER_NAME != M_SERVER_NAME){
                     $this->_empty();
+                }else{
+                    //判断该商家是否有生产权限
+                    if(!in_array($pannel_type,$pannel_arr)){
+                        $this->_empty();
+                    }
                 }
             }
         }

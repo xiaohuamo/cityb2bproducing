@@ -712,12 +712,12 @@ class PickingItem extends AuthBase
                     //更改箱子数量
                     Order::getUpdate(['orderId'=>$wcc_info['order_id']],$data);
                     //同时将修改数量加入日志
-                    $DispatchingItemBehaviorLog = new DispatchingItemBehaviorLog();
-                    $log_data = [
-                        "wj_customer_coupon_id" => $param['id'],
-                        "boxesNumber" => $param['num']
-                    ];
-                    $DispatchingItemBehaviorLog->addProducingBehaviorLog($user_id,$businessId,9,$wcc_info['logistic_delivery_date'],$log_data);
+//                    $DispatchingItemBehaviorLog = new DispatchingItemBehaviorLog();
+//                    $log_data = [
+//                        "wj_customer_coupon_id" => $param['id'],
+//                        "boxesNumber" => $param['num']
+//                    ];
+//                    $DispatchingItemBehaviorLog->addProducingBehaviorLog($user_id,$businessId,9,$wcc_info['logistic_delivery_date'],$log_data);
                 }else{
                     WjCustomerCoupon::getUpdate(['id'=>$param['id']],$data);
                 }

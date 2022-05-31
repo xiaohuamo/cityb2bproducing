@@ -244,18 +244,50 @@ class Index extends AuthBase
 
         $User = new User();
         $StaffRoles = new StaffRoles();
+        $Supplier = new Supplier();
+        //获取商家权限
+        $pannel_arr = $Supplier->getCompanyPermission($businessId);
+        //获取用户管理员权限
         $isPermission = $StaffRoles->getProductPlaningPermission($user['id']);
+        //获取用户信息
         $user_info = $User->getUsers($businessId,$user['id']);
         $roles_arr = [];
-        $is_product_permission = $isPermission==1?1:2;
-        $is_pick_permission = $isPermission==1?1:2;
-        if(!empty($user_info['roles'])){
-            $roles_arr = array_filter(explode(",",$isPermission['roles']));
-            if($is_product_permission==2&&in_array(11,$roles_arr)){
-                $is_product_permission = 1;
+        //$is_product_permission 1-用户生产全部权限 2-没有生产权限 3-只有生产权限 4-只有预生产权限
+        if(in_array(1,$pannel_arr) || in_array(2,$pannel_arr)){
+            if(!empty($user_info['roles'])&&in_array(11,$roles_arr)){
+                $isPermission = 1;
             }
-            if($is_pick_permission==2&&in_array(12,$roles_arr)){
-                $is_pick_permission = 1;
+            if(in_array(1,$pannel_arr)){
+                if(in_array(2,$pannel_arr)){
+                    $is_product_permission = $isPermission==1?1:2;
+                }else{
+                    $is_product_permission = $isPermission==1?3:2;
+                }
+            }else{
+                if(in_array(2,$pannel_arr)){
+                    $is_product_permission = $isPermission==1?4:2;
+                }else{
+                    $is_product_permission = 2;
+                }
+            }
+        }
+        //$is_pick_permission 1-用户拣货全部权限 2-没有拣货权限 3-只有产品拣货权限 4-只有订单拣货权限
+        if(in_array(3,$pannel_arr) || in_array(4,$pannel_arr)) {
+            if (!empty($user_info['roles'])&&in_array(12, $roles_arr)) {
+                $isPermission = 1;
+            }
+            if (in_array(3, $pannel_arr)) {
+                if (in_array(4, $pannel_arr)) {
+                    $is_pick_permission = $isPermission == 1 ? 1 : 2;
+                } else {
+                    $is_pick_permission = $isPermission == 1 ? 3 : 2;
+                }
+            } else {
+                if (in_array(4, $pannel_arr)) {
+                    $is_pick_permission = $isPermission == 1 ? 4 : 2;
+                } else {
+                    $is_pick_permission = 2;
+                }
             }
         }
         //获取该供应商的设置信息
@@ -767,8 +799,11 @@ class Index extends AuthBase
 
         //2.更新该产品加工数量和状态
         if($wcc_info['new_customer_buying_quantity'] != $param['new_customer_buying_quantity']){
-            $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
-            if ($res) {
+            try{
+                Db::startTrans();
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
+                //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
+                $WjCustomerCoupon->updateOrderItemBox($wcc_info);
                 $ProducingBehaviorLog = new ProducingBehaviorLog();
                 $log_data = [
                     "product_id" => $wcc_info['product_id'],
@@ -777,9 +812,12 @@ class Index extends AuthBase
                     "new_customer_buying_quantity" => $param['new_customer_buying_quantity']
                 ];
                 $ProducingBehaviorLog->addProducingBehaviorLog($user_id,$businessId,5,$wcc_info['logistic_delivery_date'],$log_data);
+                Db::commit();
                 return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
-            } else {
-                return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::rollback();
+                return show(config('status.code')['system_error']['code'], $e->getMessage());
             }
         } else {
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);

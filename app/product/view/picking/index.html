@@ -19,7 +19,7 @@
 				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
 				<span>City b2b</span>
 			</div>
-			<div class="flexbox2" v-if="is_product_permission==1">
+			<div class="flexbox2" v-if="is_product_permission!=2">
 				<!--				<img src="__STATIC__/product/img/printZCentre.png" class="systemIcon"/>&nbsp;-->
 				<img src="__STATIC__/product/img/productCentre.png" class="systemIcon1" @click="gotoProductCentre()"/>
 			</div>
@@ -439,7 +439,7 @@
 	</div>
 	</body>
 	<script>
-		var vm=new Vue({
+		let vm=new Vue({
 			el:"#main",
 			data:{
 				onLine: false,//navigator.onLine,
@@ -2781,7 +2781,11 @@
 				},
 				//跳转到生产中心页面
 				gotoProductCentre(){
-					window.location.href = common.webUrl+'product/index'
+					if(this.is_product_permission==1||this.is_product_permission==3){
+						window.location.href = common.webUrl+'product/index'
+					}else{
+						window.location.href = common.webUrl+'product/preProduct'
+					}
 				},
 				// 全屏事件
 				handleFullScreen(){

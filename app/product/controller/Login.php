@@ -14,7 +14,8 @@ use app\model\{
     Order,
     ProducingProgressSummery,
     DispatchingProgressSummery,
-    Truck
+    Truck,
+    Supplier
 };
 
 class Login extends Base
@@ -74,6 +75,7 @@ class Login extends Base
         }
 
         $StaffRoles = new StaffRoles();
+        $Supplier = new Supplier();
         //6.判断用户是否有权限可以登录生产页面(role=20-员工，role=3-owner)
         if (in_array($user['role'],[3,20])) {
             if ($user['role'] == 20) {//判断员工具体的职位是否有权限登录
@@ -95,23 +97,44 @@ class Login extends Base
         } else {
             $business_id = $user['id'];
         }
+        //查询该商家的权限
+        $pannel_arr = $Supplier->getCompanyPermission($business_id);
         //判断当前域名
         $SERVER_NAME = $_SERVER['HTTP_HOST'];
         if($SERVER_NAME == M_SERVER_NAME){
-            //如果当前使生产页面，判断是否有生产权限
-            if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(11,$user['roles'])){
-                $user['redirect_type'] = 1;
-                $user['redirect_url'] = M_SITE_URL.'product/index';
-            } else {
+            //判断该商家是否有生产权限
+            if(in_array(1,$pannel_arr)||in_array(2,$pannel_arr)){
+                //如果当前使生产页面，判断是否有生产权限
+                if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(11,$user['roles'])){
+                    $user['redirect_type'] = 1;
+                    //如果既有生产权限又有预生产权限或者只有生产权限，则直接进入生产端
+                    if(in_array(1,$pannel_arr)&&in_array(2,$pannel_arr)||in_array(1,$pannel_arr)&&!in_array(2,$pannel_arr)){
+                        $user['redirect_url'] = M_SITE_URL.'product/index';
+                    }else{
+                        $user['redirect_url'] = M_SITE_URL.'product/preProduct';
+                    }
+                } else {
+                    return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
+                }
+            }else{
                 return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
             }
         } elseif ($SERVER_NAME == D_SERVER_NAME) {
-            //如果当前使拣货员页面，判断是否有拣货权限
-            if($user['role'] == 3 || in_array(0,$user['roles']) || in_array(1,$user['roles']) || in_array(9,$user['roles']) || in_array(12,$user['roles'])){
-                $user['redirect_type'] = 2;
-                $user['redirect_url'] = D_SITE_URL.'product/picking';
-            } else {
-                return show(config('status.code')['account_approved_error']['code'],config('status.code')['account_approved_error']['msg']);
+            //判断该商家是否有拣货权限
+            if(in_array(3,$pannel_arr)||in_array(4,$pannel_arr)){
+                //如果当前使拣货员页面，判断是否有拣货权限
+                if ($user['role'] == 3 || in_array(0, $user['roles']) || in_array(1, $user['roles']) || in_array(9, $user['roles']) || in_array(12, $user['roles'])) {
+                    $user['redirect_type'] = 2;
+                    if(in_array(3,$pannel_arr)&&in_array(4,$pannel_arr)||in_array(3,$pannel_arr)&&!in_array(4,$pannel_arr)) {
+                        $user['redirect_url'] = D_SITE_URL . 'product/picking';
+                    }else{
+                        $user['redirect_url'] = D_SITE_URL . 'product/pickingOrder';
+                    }
+                } else {
+                    return show(config('status.code')['account_approved_error']['code'], config('status.code')['account_approved_error']['msg']);
+                }
+            }else{
+                return show(config('status.code')['account_approved_error']['code'], config('status.code')['account_approved_error']['msg']);
             }
         } elseif ($SERVER_NAME == DRIVER_SERVER_NAME) {
             //如果当前使拣货员页面，判断是否有拣货权限

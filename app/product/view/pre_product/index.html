@@ -19,10 +19,10 @@
 				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
 				<span>City b2b</span>
 			</div>
-			<div class="flexbox2" v-if="is_pick_permission==1">
+			<div class="flexbox2" v-if="is_pick_permission!=2">
 				<img src="__STATIC__/product/img/dispatching.png" class="systemIcon1" @click="gotoDispatchingCentre()"/>
 			</div>
-			<div class="flexbox2 relative hand" @click.stop="chose(0)">
+			<div class="flexbox2 relative hand" v-if="setup_info&&setup_info.company_type==3" @click.stop="chose(0)">
 				<span>{{productType[currentProductTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				<div class="choseCustomerBox w200" v-show="whichPopShow==0">
@@ -2520,7 +2520,11 @@
 				},
 				//跳转到生产中心页面
 				gotoDispatchingCentre(){
-					window.location.href = common.dWebUrl+'product/picking'
+					if(this.is_pick_permission==1||this.is_pick_permission==3){
+						window.location.href = common.dWebUrl+'product/picking'
+					}else{
+						window.location.href = common.dWebUrl+'product/pickingOrder'
+					}
 				},
 				// 全屏事件
 				handleFullScreen(){
