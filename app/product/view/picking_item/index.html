@@ -1174,10 +1174,17 @@
 				},
 				//修改处理状态 is_producing_done 0-未加工 1-加工完成 2-正在加工中
 				changeAllStatus(){
+					let last_menu_data
 					if(this.guige1_id > 0){
-						var status = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'][this.menudataThreeIndex]['status']
+						last_menu_data = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'][this.menudataThreeIndex]
 					}else{
-						var status = this.menudataTwoCate[this.menudataTwoCateIndex]['status']
+						last_menu_data = this.menudataTwoCate[this.menudataTwoCateIndex]
+					}
+					let status = last_menu_data['status']
+					//如果该产品是生产未分配库存的，不允许点击all picked
+					if(last_menu_data['proucing_item'] == 1&&last_menu_data['assign_stock'] == 0){
+						this.popBox('You cannot operate')
+						return
 					}
 					if(status==0){
 						this.popBox('Please lock the product')

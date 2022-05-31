@@ -23,7 +23,7 @@ class WjCustomerCoupon extends Model
     public function getWccInfo($id,$businessId)
     {
         $wcc_info = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.print_label_sorts,wcc.current_box_sort_id,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,wcc.dispatching_item_operator_user_id,rm.restaurant_category_id cate_id,wcc.assign_stock,wcc.operator_user_id')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.voucher_deal_amount,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.money_new,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,wcc.dispatching_item_operator_user_id,rm.restaurant_category_id cate_id,rm.proucing_item,wcc.assign_stock,wcc.operator_user_id')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->where([
@@ -62,7 +62,7 @@ class WjCustomerCoupon extends Model
             $where[] = ['wcc.guige1_id', '=', $guige1_id];
         }
         $data = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,o.logistic_truck_No,rm.restaurant_category_id cate_id')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,wcc.assign_stock,o.logistic_truck_No,rm.restaurant_category_id cate_id,rm.proucing_item')
             ->leftJoin('order o', 'o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->where($where)
@@ -476,7 +476,7 @@ class WjCustomerCoupon extends Model
         }
         $data = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,o.boxesNumber,rm.menu_en_name,rm.unit_en,rm.menu_id,rmo.menu_en_name guige_name,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,rm.restaurant_category_id,rm.sub_category_id,rm.unitQtyPerBox')
+            ->field('wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,o.boxesNumber,rm.menu_en_name,rm.unit_en,rm.menu_id,rmo.menu_en_name guige_name,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,wcc.assign_stock,o.dispatching_is_producing_done order_dispatching_is_producing_done,rm.restaurant_category_id,rm.sub_category_id,rm.unitQtyPerBox,rm.proucing_item')
             ->leftJoin('order o', 'o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm', 'wcc.restaurant_menu_id = rm.id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
@@ -500,6 +500,8 @@ class WjCustomerCoupon extends Model
 //                    'finish_box_number' => 0,
                     'sum_quantities' => floatval($v['customer_buying_quantity']),
                     'finish_quantities' => $v['dispatching_is_producing_done']==1?floatval($v['customer_buying_quantity']):0,
+                    'assign_stock' => $v['assign_stock'],
+                    'proucing_item' => $v['proucing_item'],
                 ];
             }else{
                 $product[$v['product_id']]['box_number'] += $boxs;
@@ -523,6 +525,8 @@ class WjCustomerCoupon extends Model
                         'box_number' => $boxs,
                         'sum_quantities' => floatval($v['customer_buying_quantity']),
                         'finish_quantities' =>  $v['dispatching_is_producing_done']==1?floatval($v['customer_buying_quantity']):0,
+                        'assign_stock' => $v['assign_stock'],
+                        'proucing_item' => $v['proucing_item'],
                     ];
                 }else{
                     $product[$v['product_id']]['two_cate'][$v['guige1_id']]['box_number'] += $boxs;
@@ -594,13 +598,7 @@ class WjCustomerCoupon extends Model
         //通过产品的信息获取该产品当前的状态
         $done = [];
         //获取该产品的状态
-        $is_producing_done_arr = [];//存储当前产品的所有状态
-        //需要去掉生产未分配的状态
-        foreach ($data as $k=>$v){
-            if($v['proucing_item']!=1 || $v['assign_stock']!=0){
-                $is_producing_done_arr[] = $v['dispatching_is_producing_done'];
-            }
-        }
+        //存储当前产品的所有状态
         $is_producing_done_arr = array_column($data,'dispatching_is_producing_done');
         $operator_user_id = 0;//操作人员id
         if(in_array(0,$is_producing_done_arr)){

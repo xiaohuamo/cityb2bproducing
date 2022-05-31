@@ -182,5 +182,9 @@ return [
             'code' => 141,//标签序号不正确
             'msg' => 'Incorrect label serial number'
         ],
+        'pick_permission_error' => [//解锁失败
+            'code' => 142,
+            'msg' => 'You do not have permission to pick'
+        ],
     ]
 ];

@@ -9,12 +9,7 @@ use think\Model;
 use think\Request;
 use app\product\validate\IndexValidate;
 use app\product\service\BoxNumber;
-use app\model\{
-    Order,
-    WjCustomerCoupon,
-    DispatchingProgressSummery,
-    DispatchingItemBehaviorLog
-};
+use app\model\{AutorunData, Order, WjCustomerCoupon, DispatchingProgressSummery, DispatchingItemBehaviorLog};
 use think\Validate;
 
 class PickingItem extends AuthBase
@@ -249,6 +244,13 @@ class PickingItem extends AuthBase
             $wcc_info = $WjCustomerCoupon->getWccInfo($param['id'],$businessId);
             if (!$wcc_info) {
                 return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
+            }else{
+                //获取该产品是否为加工产品，未分配库存的，没有权限修改拣货状态，拣货状态由产品端控制
+                $assign_stock = $wcc_info['assign_stock'];
+                $proucing_item = $wcc_info['proucing_item'];
+                if($proucing_item==1&&$assign_stock==0){
+                    return show(config('status.code')['pick_permission_error']['code'], config('status.code')['pick_permission_error']['msg']);
+                }
             }
             if($wcc_info['dispatching_is_producing_done'] == $param['is_producing_done']){
                 return show(config('status.code')['summary_done_error']['code'], config('status.code')['summary_done_error']['msg']);
@@ -448,6 +450,13 @@ class PickingItem extends AuthBase
             $product_data = $WjCustomerCoupon->getWccProductList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id']);
             if (!$product_data) {
                 return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
+            }else{
+                //获取该产品是否为加工产品，未分配库存的，没有权限修改拣货状态，拣货状态由产品端控制
+                $assign_stock = $product_data[0]['assign_stock'];
+                $proucing_item = $product_data[0]['proucing_item'];
+                if($proucing_item==1&&$assign_stock==0){
+                    return show(config('status.code')['pick_permission_error']['code'], config('status.code')['pick_permission_error']['msg']);
+                }
             }
             //获取该产品的状态
             $product_guige_data = [];
@@ -609,6 +618,8 @@ class PickingItem extends AuthBase
 
         //1.获取加工明细信息
         $WjCustomerCoupon = new WjCustomerCoupon();
+        $AutorunData = new AutorunData();
+
         $wcc_info = $WjCustomerCoupon->getWccInfo($param['id'],$businessId);
         if (!$wcc_info) {
             return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
@@ -618,9 +629,13 @@ class PickingItem extends AuthBase
         if($wcc_info['new_customer_buying_quantity'] != $param['new_customer_buying_quantity']){
             try{
                 Db::startTrans();
-                $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
+                $money_new = sprintf("%01.2f",$wcc_info['money_new']+$wcc_info['voucher_deal_amount']*($param['new_customer_buying_quantity']-$wcc_info['new_customer_buying_quantity']));
+                Order::getUpdate(['orderId' => $wcc_info['order_id']],['money_new'=>$money_new]);
                 //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
                 $WjCustomerCoupon->updateOrderItemBox($wcc_info);
+                //2.修改数据同步到cc_autorun_data表中，供财务api使用
+                $AutorunData = new AutorunData();
                 //2.将修改数量加入日志
                 $DispatchingItemBehaviorLog = new DispatchingItemBehaviorLog();
                 $log_data = [

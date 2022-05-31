@@ -8,7 +8,8 @@ use think\Request;
 use think\facade\Db;
 use think\facade\Queue;
 use app\product\validate\IndexValidate;
-use app\model\{ProducingProgressSummery,
+use app\model\{AutorunData,
+    ProducingProgressSummery,
     User,
     Order,
     StaffRoles,
@@ -457,6 +458,8 @@ class Picking extends AuthBase
 
         //1.获取加工明细信息
         $WjCustomerCoupon = new WjCustomerCoupon();
+        $AutorunData = new AutorunData();
+
         $wcc_info = $WjCustomerCoupon->getWccInfo($param['id'],$businessId);
         if (!$wcc_info) {
             return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
@@ -466,9 +469,13 @@ class Picking extends AuthBase
         if($wcc_info['new_customer_buying_quantity'] != $param['new_customer_buying_quantity']){
             try{
                 Db::startTrans();
-                $res = WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
+                $money_new = sprintf("%01.2f",$wcc_info['money_new']+$wcc_info['voucher_deal_amount']*($param['new_customer_buying_quantity']-$wcc_info['new_customer_buying_quantity']));
+                Order::getUpdate(['orderId' => $wcc_info['order_id']],['money_new'=>$money_new]);
                 //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
                 $WjCustomerCoupon->updateOrderItemBox($wcc_info);
+                //2.修改数据同步到cc_autorun_data表中，供财务api使用
+                $AutorunData->addAutorunData($wcc_info,$user_id);
                 $DispatchingBehaviorLog = new DispatchingBehaviorLog();
                 $log_data = [
                     "orderId" => $wcc_info['order_id'],
