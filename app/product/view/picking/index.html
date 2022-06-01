@@ -1773,7 +1773,7 @@
 						}
 					}
 					//如果是fit print打印，判断当前明细的拣货状态是否是拣货完成状态，如果不是，调用更改拣货状态程序
-					if(print_type == 2&&$.inArray(item.dispatching_is_producing_done,[0,2])!=-1&&(item.procuing_item!=1||item.assign_stock!=0)){
+					if(print_type == 2&&$.inArray(item.dispatching_is_producing_done,[0,2])!=-1&&(item.proucing_item!=1||item.assign_stock!=0)){
 						this.changeStatus(item,index,1)
 					}
 				},
