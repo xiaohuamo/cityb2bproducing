@@ -19,7 +19,7 @@ class AutorunData extends Model
         if(empty($ard_info)){
             self::createData([
                 'data_type' => 100,
-                'ref_id' => $wcc_info['id'],
+                'ref_id' => $wcc_info['order_id'],
                 'ref_value1' => $wcc_info['business_userId'],
                 'status' => 0,
                 'gen_date' => time(),
