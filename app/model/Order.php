@@ -292,10 +292,10 @@ class Order extends Model
      */
     public function addOrderGoodsToProgress($businessId,$logistic_delivery_date,$type)
     {
-        $map = 'o.status=1 or o.accountPay=1';
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='b01' or o.coupon_status='c01')";
         $where = [
             ['o.business_userId', '=', $businessId],
-            ['o.coupon_status', '=', 'c01'],
+//            ['o.coupon_status', '=', 'c01'],
             ['rm.proucing_item', '=', 1],
             ['wcc.customer_buying_quantity','>',0],
             ['o.logistic_delivery_date','=',$logistic_delivery_date]
@@ -358,10 +358,10 @@ class Order extends Model
     public function addDispatchingToProgress($businessId,$logistic_delivery_date,$type)
     {
 //        $map = '(o.status=1 or o.accountPay=1) and o.logistic_truck_No != 0 and o.logistic_truck_No is not null';
-        $map = "o.status=1 or o.accountPay=1";
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='b01' or o.coupon_status='c01')";
         $where = [
             ['o.business_userId', '=', $businessId],
-            ['o.coupon_status', '=', 'c01'],
+//            ['o.coupon_status', '=', 'c01'],
             ['wcc.customer_buying_quantity','>',0],
             ['o.logistic_delivery_date','=',$logistic_delivery_date],
         ];
