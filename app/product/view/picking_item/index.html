@@ -1629,7 +1629,7 @@
 				},
 				//打印
 				async print(item,index,e){
-					if(item.is_lock!=1){
+					if(item.dispatching_is_producing_done != 1 && item.is_lock!=1){
 						//如果未锁定，点击自动锁定
 						//是否存在产品规格 1-存在 2-不存在
 						let is_has_three_cate = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'].length>0?1:2;

@@ -1635,7 +1635,7 @@
 				//打印
 				async print(item,index,e){
 					let lock_data,lock_index,lock_cate_level
-					if(item.is_lock!=1){
+					if(item.is_producing_done != 1 && item.is_lock!=1){
 						if(item.guige1_id>0){
 							lock_data = this.menudataTwoCate[this.menudataTwoCateIndex]
 							lock_index = this.menudataTwoCateIndex

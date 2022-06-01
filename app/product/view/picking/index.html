@@ -1638,7 +1638,7 @@
 				},
 				//打印
 				async print(item,index,e){
-					if(item.is_lock!=1){
+					if(item.dispatching_is_producing_done != 1 && item.is_lock!=1){
 						//如果未锁定，点击自动锁定
 						lock_res = await this.gtouchstart(this.menudataTwoCateSort[this.menudataTwoCateSortIndex],this.menudataTwoCateSortIndex,2)
 						if(lock_res!=1){

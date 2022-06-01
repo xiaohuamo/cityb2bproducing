@@ -1403,11 +1403,11 @@
 				},
 				//打印
 				async print(item,index,e){
-					if($.inArray(item.is_producing_done,[3,5])!=-1||item.assign_stock==1){
-						this.popBox('You cannot operate')
-						return
-					}
-					if(item.is_lock!=1){
+					// if($.inArray(item.is_producing_done,[3,5])!=-1||item.assign_stock==1){
+					// 	this.popBox('You cannot operate')
+					// 	return
+					// }
+					if(item.is_producing_done != 1 && item.is_lock!=1){
 						let lock_data,lock_index,lock_cate_level
 						if(item.guige1_id>0){
 							lock_data = this.menudataTwoCate[this.menudataTwoCateIndex]
