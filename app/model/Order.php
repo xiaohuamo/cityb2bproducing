@@ -274,7 +274,9 @@ class Order extends Model
                 $customer_delivery_option='No Delivery';
             }
             $name = $this->getCustomerName($v);
-            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
+            $v['customer_delivery_option'] = $customer_delivery_option;
+            $v['name'] = $name;
+//            $v['subtitle'] = $customer_delivery_option.'&nbsp;<strong  style=\"width: 80%;font-weight:bolder\" >'. $name."</strong>" ;
             //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
             $v = $this->getOrderItemBoxSortId($v);
         }
@@ -524,7 +526,9 @@ class Order extends Model
                 $customer_delivery_option='No Delivery';
             }
             $name = $this->getCustomerName($v);
-            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
+            $v['customer_delivery_option'] = $customer_delivery_option;
+            $v['name'] = $name;
+//            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
             $v = $this->getOrderItemBoxSortId($v);
         }
         return $order;
@@ -832,7 +836,9 @@ class Order extends Model
                 $customer_delivery_option='No Delivery';
             }
             $name = $this->getCustomerName($v);
-            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
+            $v['customer_delivery_option'] = $customer_delivery_option;
+            $v['name'] = $name;
+//            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
             //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
             $v = $this->getOrderItemBoxSortId($v);
         }
