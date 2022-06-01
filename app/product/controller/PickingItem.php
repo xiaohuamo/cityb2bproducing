@@ -635,7 +635,7 @@ class PickingItem extends AuthBase
                 //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
                 $WjCustomerCoupon->updateOrderItemBox($wcc_info);
                 //2.修改数据同步到cc_autorun_data表中，供财务api使用
-                $AutorunData = new AutorunData();
+                $AutorunData->addAutorunData($wcc_info,$user_id);
                 //2.将修改数量加入日志
                 $DispatchingItemBehaviorLog = new DispatchingItemBehaviorLog();
                 $log_data = [
