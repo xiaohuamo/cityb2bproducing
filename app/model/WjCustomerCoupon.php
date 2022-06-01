@@ -157,11 +157,12 @@ class WjCustomerCoupon extends Model
             $where[] = ['rc.id','=',$category_id];
         }
         $data = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.menu_en_name,rm.unit_en,rm.menu_id,rm.proucing_item,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.assign_stock,rm.menu_en_name,rm.unit_en,rm.menu_id,rm.proucing_item,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name,pis.stock_qty')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+            ->leftJoin('producing_item_stock pis',"pis.item_id = wcc.restaurant_menu_id and pis.spec_id = wcc.guige1_id and pis.factory_id = $businessId")
             ->where($where)
             ->where($map)
 //            ->group('wcc.restaurant_menu_id,wcc.guige1_id')
@@ -177,6 +178,7 @@ class WjCustomerCoupon extends Model
             }else{
                 $product_no_id_arr[] = $v['product_id'];
             }
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
         }
         //如果存在加工产品，则获取该产品的加工状态
         if($product_id_arr){
@@ -208,6 +210,9 @@ class WjCustomerCoupon extends Model
                     'sum_quantities' => sprintf("%01.2f",$v['customer_buying_quantity']),
                     'status' => $v['status'],
                     'operator_user' => $v['operator_user'],
+                    'assign' => -1,
+                    'left_stock' => -1,
+                    'producing_quantity' => -1,
                 ];
             } else {
                 $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] += $v['customer_buying_quantity'];
@@ -218,14 +223,35 @@ class WjCustomerCoupon extends Model
                     $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']] = [
                         'guige1_id' => $v['guige1_id'],
                         'guige_name' => $v['guige_name'],
-                        'customer_buying_quantity' => $v['customer_buying_quantity']
+                        'customer_buying_quantity' => $v['customer_buying_quantity'],
+                        'assign' => -1,
+                        'left_stock' => -1,
+                        'producing_quantity' => -1,
                     ];
+                    //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
+                    if($v['proucing_item'] == 1){
+                        $assign_stock = $v['assign_stock']==1?$v['new_customer_buying_quantity']:0;
+                        $left_stock = $v['stock_qty']?:0;
+                        $producing_quantity = sprintf("%01.2f",$v['new_customer_buying_quantity']-$assign_stock);
+                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['assign'] = $assign_stock;
+                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['left_stock'] = $left_stock;
+                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] = $producing_quantity;
+                    }
                 } else {
                     $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'] += $v['customer_buying_quantity'];
                 }
             } else {
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 2;
                 $list[$v['cate_id']]['product'][$v['product_id']]['customer_buying_quantity'] = $v['customer_buying_quantity'];
+                //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
+                if($v['proucing_item'] == 1){
+                    $assign_stock = $v['assign_stock']==1?$v['new_customer_buying_quantity']:0;
+                    $left_stock = $v['stock_qty']?:0;
+                    $producing_quantity = sprintf("%01.2f",$v['new_customer_buying_quantity']-$assign_stock);
+                    $list[$v['cate_id']]['product'][$v['product_id']]['assign'] = $assign_stock;
+                    $list[$v['cate_id']]['product'][$v['product_id']]['left_stock'] = $left_stock;
+                    $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] = $producing_quantity;
+                }
             }
         }
         $list = array_values($list);

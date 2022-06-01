@@ -308,9 +308,17 @@
 									<div :class="{'blink':item1.status==1||item1.status==2}">
 										<div class="fwb F22">{{item1.menu_en_name}}</div>
 										<div class="maT-5">{{item1.menu_id}}&nbsp;&nbsp;<span class="F22">{{item1.sum_quantities}}{{item1.unit_en}}</span></div>
-										<div class="twoCateBox maT-5" v-if="item1.is_has_two_cate==1">
-											<span class="F14" v-for="item2 in item1.two_cate">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</span>
-										</div>
+										<template v-if="item1.is_has_two_cate==1">
+											<div class="flexbox2 twoCateBox maT-5">
+												<div class="F14" :class="{'par5':index2==0,'pa0-5':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
+													<p class="fwb">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</p>
+													<p class="fwb" v-if="item.assign>-1">ass {{item1.assign}} s.l. {{item1.left_stock}} p.d. {{item1.producing_quantity}}</p>
+												</div>
+											</div>
+										</template>
+										<template v-else>
+											<div v-if="item.assign>-1" class="fwb">ass {{item1.assign}} s.l. {{item1.left_stock}} p.d. {{item1.producing_quantity}}</div>
+										</template>
 										<div class="userBox1 maT-5">
 											<span class="F10" v-for="(item2,index2) in item1.operator_user">{{item2.user_name}}</span>
 										</div>

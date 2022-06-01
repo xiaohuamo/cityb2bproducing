@@ -82,12 +82,13 @@ class ProducingProgressSummery extends Model
             ];
             $goods_one_cate = Db::name('wj_customer_coupon')
                 ->alias('wcc')
-                ->field('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
+                ->field('wcc.restaurant_menu_id product_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name,pis.stock_qty')
                 ->leftJoin('wj_customer_coupon wcc_done','wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
                 ->leftJoin('order o','wcc.order_id = o.orderId')
                 ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
                 ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
                 ->leftJoin('producing_progress_summery pps',"pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
+                ->leftJoin('producing_item_stock pis',"pis.item_id = pps.product_id and pis.spec_id = pps.guige1_id and pis.factory_id = $businessId")
                 ->where($where)
                 ->where(['rm.proucing_item'=>1])
                 ->where($map)
@@ -98,9 +99,10 @@ class ProducingProgressSummery extends Model
             $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No);
             $goods_one_cate = Db::name('producing_progress_summery')
                 ->alias('pps')
-                ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name')
+                ->field('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id,rm.menu_en_name,rm.unit_en,rm.menu_id,rc.id cate_id,rc.category_en_name,pis.stock_qty')
                 ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
                 ->leftJoin('restaurant_category rc','rm.restaurant_category_id = rc.id')
+                ->leftJoin('producing_item_stock pis',"pis.item_id = pps.product_id and pis.spec_id = pps.guige1_id and pis.factory_id = $businessId")
                 ->where($where)
                 ->where(['rm.proucing_item'=>1])
                 ->where($map)
@@ -161,6 +163,12 @@ class ProducingProgressSummery extends Model
                 foreach ($v['operator_user'] as &$vv){
                     $vv['user_name'] = $vv['nickname'] ?: $vv['name'];
                 }
+            }
+            //如果该产品没有二级分类，则展示该产品的库存,不展示用-1判断
+            if($v['is_has_two_cate'] == 2){
+                $v['left_stock'] = $v['stock_qty']?:0;
+            }else{
+                $v['left_stock'] = -1;
             }
         }
         return $goods_one_cate;
@@ -258,12 +266,13 @@ class ProducingProgressSummery extends Model
             ];
             $goods_two_cate = Db::name('wj_customer_coupon')
                 ->alias('wcc')
-                ->field('wcc.restaurant_menu_id product_id,wcc.guige1_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->field('wcc.restaurant_menu_id product_id,wcc.guige1_id,sum(wcc.customer_buying_quantity) sum_quantities,IFNULL(sum(wcc_done.customer_buying_quantity),0.00) finish_quantities,IF(( sum( wcc.customer_buying_quantity )-sum( wcc_done.customer_buying_quantity )=0),1,0) isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name,pis.stock_qty')
                 ->leftJoin('wj_customer_coupon wcc_done','wcc.id = wcc_done.id and wcc_done.is_producing_done = 1')
                 ->leftJoin('order o','wcc.order_id = o.orderId')
                 ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
                 ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
                 ->leftJoin('producing_progress_summery pps',"pps.business_userId = $businessId and pps.delivery_date=$logistic_delivery_date and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id = wcc.guige1_id and pps.isdeleted=0")
+                ->leftJoin('producing_item_stock pis',"pis.item_id = pps.product_id and pis.spec_id = pps.guige1_id and pis.factory_id = $businessId")
                 ->where($where)
                 ->where(['rm.proucing_item'=>1])
                 ->group('wcc.restaurant_menu_id,wcc.guige1_id,pps.product_id')
@@ -272,9 +281,10 @@ class ProducingProgressSummery extends Model
             $where = $this->getGoodsCondition($businessId,$logistic_delivery_date,$logistic_truck_No,$product_id);
             $goods_two_cate = Db::name('producing_progress_summery')
                 ->alias('pps')
-                ->field('pps.product_id,pps.guige1_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->field('pps.product_id,pps.guige1_id,pps.sum_quantities,pps.finish_quantities,pps.isDone,pps.operator_user_id,rm.unit_en,rmo.menu_en_name guige_name,pis.stock_qty')
                 ->leftJoin('restaurant_menu rm','pps.product_id = rm.id')
                 ->leftJoin('restaurant_menu_option rmo','pps.guige1_id = rmo.id')
+                ->leftJoin('producing_item_stock pis',"pis.item_id = pps.product_id and pis.spec_id = pps.guige1_id and pis.factory_id = $businessId")
                 ->where($where)
                 ->where(['rm.proucing_item'=>1])
                 ->group('product_id,guige1_id')
@@ -286,6 +296,7 @@ class ProducingProgressSummery extends Model
             $v['finish_quantities'] = floatval($v['finish_quantities']);
             $v['status'] = $this->getProcessStatus($v,$userId,2);
             $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
+            $v['left_stock'] = $v['stock_qty']?:0;
         }
         return $goods_two_cate;
     }
