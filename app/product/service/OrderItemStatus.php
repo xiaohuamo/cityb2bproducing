@@ -128,7 +128,17 @@ class OrderItemStatus
             //一.已处理流程
             //1-2.该产品已处理完成，不可重复处理
             if($dps_info['isDone'] == $param['is_producing_done']){
-                return show_arr(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
+                if($param['is_producing_done'] == 0){
+                    $wcc_update_data = [
+                        'dispatching_operator_user_id'=>0,
+                        'dispatching_item_operator_user_id'=>0,
+                        'dispatching_is_producing_done'=>0
+                    ];
+                    WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],$wcc_update_data);
+                }
+                Db::commit();
+                return show_arr(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+//                return show_arr(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
             }
             if($param['is_producing_done'] == 1) {
                 //2.更新该产品加工数量和状态
