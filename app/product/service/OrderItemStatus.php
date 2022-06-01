@@ -56,6 +56,9 @@ class OrderItemStatus
 //            }
             //2.更新该产品加工数量和状态
             if($param['is_producing_done'] == 1){
+                if($wcc_info['is_producing_done'] != 5){
+                    return show_arr(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg']);
+                }
                 WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['is_producing_done'=>$param['is_producing_done']]);
                 $finish_quantities = $pps_info['finish_quantities']+$wcc_info['customer_buying_quantity'];
                 $pps_data['finish_quantities'] = $finish_quantities;
@@ -141,6 +144,9 @@ class OrderItemStatus
 //                return show_arr(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
             }
             if($param['is_producing_done'] == 1) {
+                if($wcc_info['dispatching_is_producing_done'] != 5){
+                    return show_arr(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg']);
+                }
                 //2.更新该产品加工数量和状态
                 WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']], ['operator_user_id' => $user_id, 'dispatching_is_producing_done' => $param['is_producing_done']]);
                 $finish_quantities = $dps_info['finish_quantities'] + 1;
