@@ -1736,45 +1736,45 @@
 				//fit print all
 				async fitPrintAll(){
 					//获取当前选中的产品是否已锁定
-					if(this.menudataTwoCate[this.menudataTwoCateIndex].status==0){
+					//是否存在产品规格 1-存在 2-不存在
+					let is_has_three_cate = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'].length>0?1:2;
+					let twoCate,threeCate,lock_data
+					twoCate = this.menudataTwoCate[this.menudataTwoCateIndex]
+					if(is_has_three_cate==1) {
+						threeCate = this.menudataTwoCate[this.menudataTwoCateIndex]['two_cate'][this.menudataThreeIndex]
+						//如果未锁定，点击自动锁定
+						lock_data = threeCate
+					}else{
+						threeCate = '';
+						lock_data = this.menudataTwoCate[this.menudataTwoCateIndex]
+					}
+					if(lock_data.status==0){
 						this.popBox('Please lock the product')
 						return
 					}
-					if(this.menudataTwoCate[this.menudataTwoCateIndex].status==2){
+					if(lock_data.status==2){
 						this.popBox('This Product has been locked by other')
 						return
-					}
-					var orders = []
-					for(index in this.handleListSort){
-						item = this.handleListSort[index]
-						if(item.old_boxesNumberSortId > item.boxesNumber){
-							continue;
-						}else{
-							orders.push(item)
-						}
 					}
 					//重新获取订单箱数
 					orders = await this.orderBoxNumber('',1)
 					if(orders.length>0){
+						console.log(twoCate,threeCate);
 						//跳转到打印标签页,item-订单信息 item.num1-打印数量
-						is_has_two_cate = item.guige1_id>0?1:2
-						var goods = {"menu_id":item.menu_id,"menu_en_name":item.menu_en_name,"is_has_two_cate":is_has_two_cate}
-						var goodsTwoCate = {"guige1_id":item.guige1_id,"guige_name":item.guige_name}
-						if(is_has_two_cate == 1) {
-							if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)){
-								printAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
-							}else{
-								previewAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
-							}
+						let goods = {"menu_id":twoCate.menu_id,"menu_en_name":twoCate.menu_en_name,"is_has_two_cate":is_has_three_cate}
+						let goodsTwoCate;
+						if(is_has_three_cate == 1) {
+							goodsTwoCate = {"guige1_id": threeCate.guige1_id, "guige_name": threeCate.guige_name}
 						}else{
-							if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)) {
-								printAll(orders, goods, [], this.businessName, this.userName, 1)
-							}else{
-								previewAll(orders, goods, [], this.businessName, this.userName, 1)
-							}
+							goodsTwoCate = '';
+						}
+						if(!this.setup_info||(this.setup_info&&this.setup_info.print_mode==1)){
+							printAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
+						}else{
+							previewAll(orders, goods, goodsTwoCate, this.businessName, this.userName, 1)
 						}
 					}else{
-						this.popBox('All printed')
+						this.popBox('No printable labels')
 						return
 					}
 				},
@@ -1822,8 +1822,13 @@
 						var sortId_arr = [];
 						if(print_type==1){
 							for(var i in this.handleListSort){
-								id_arr.push(this.handleListSort[i]['id'])
-								sortId_arr.push(this.handleListSort[i]['current_box_sort_id'])
+								//需要过滤掉生产品未分配的产品
+								if(this.handleListSort[i]['proucing_item']==1&&this.handleListSort[i]['assign_stock']==0){
+									continue;
+								}else{
+									id_arr.push(this.handleListSort[i]['id'])
+									sortId_arr.push(this.handleListSort[i]['current_box_sort_id'])
+								}
 							}
 						}else{
 							id_arr.push(item.id)
