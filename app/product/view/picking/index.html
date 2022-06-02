@@ -2017,7 +2017,7 @@
 							// "category_id":cate_id
 						}
 						getData("{:url('/product/pickCategory')}", data, function (res) {
-							res.result.unshift({"id":-1,"category_en_name":"Current Stock"})
+							// res.result.unshift({"id":-1,"category_en_name":"Current Stock"})
 							_this.menudata = res.result
 							console.log('获取产品大类目---',_this.menudata)
 							//获取默认的展示产品
