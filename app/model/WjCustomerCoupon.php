@@ -230,9 +230,9 @@ class WjCustomerCoupon extends Model
                     ];
                     //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
                     if($v['proucing_item'] == 1){
-                        $assign_stock = $v['assign_stock']==1?$v['new_customer_buying_quantity']:0;
-                        $left_stock = $v['stock_qty']?:0;
-                        $producing_quantity = sprintf("%01.2f",$v['new_customer_buying_quantity']-$assign_stock);
+                        $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
+                        $left_stock = floatval($v['stock_qty']?:0);
+                        $producing_quantity = floatval($v['new_customer_buying_quantity']-$assign_stock);
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['assign'] = $assign_stock;
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['left_stock'] = $left_stock;
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] = $producing_quantity;
@@ -245,9 +245,9 @@ class WjCustomerCoupon extends Model
                 $list[$v['cate_id']]['product'][$v['product_id']]['customer_buying_quantity'] = $v['customer_buying_quantity'];
                 //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
                 if($v['proucing_item'] == 1){
-                    $assign_stock = $v['assign_stock']==1?$v['new_customer_buying_quantity']:0;
-                    $left_stock = $v['stock_qty']?:0;
-                    $producing_quantity = sprintf("%01.2f",$v['new_customer_buying_quantity']-$assign_stock);
+                    $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
+                    $left_stock = floatval($v['stock_qty']?:0);
+                    $producing_quantity = floatval($v['new_customer_buying_quantity']-$assign_stock);
                     $list[$v['cate_id']]['product'][$v['product_id']]['assign'] = $assign_stock;
                     $list[$v['cate_id']]['product'][$v['product_id']]['left_stock'] = $left_stock;
                     $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] = $producing_quantity;

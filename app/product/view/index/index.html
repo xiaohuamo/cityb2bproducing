@@ -61,7 +61,7 @@
 		</div>
 
 		<div class="flexbox3" style="min-height:100%;">
-			<div class="left bgfff">
+			<div class="left1 bgfff">
 				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-show="currentPage==1">
 					<img src="__STATIC__/product/img/goodsIcon.png" class="goodsIcon"/>
 					Product List
@@ -87,8 +87,8 @@
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
 					<div :class="['J_cate_'+item.cate_id,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.product_id">
 						<div :class="item.status==1||item.status==2?'blink':''">
-							<div>{{item.menu_en_name}}</div>
-							<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
+							<div class="fsz">{{item.menu_en_name}}</div>
+							<div class="fsz">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 							<div>{{item.menu_id}}</div>
 							<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">s.l. {{item.left_stock}}{{item.unit_en}}</div>
 							<img v-if="item.is_has_two_cate==2&&item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -101,10 +101,10 @@
 				<div v-show="currentPage==1">
 					<div>
 						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element">
-							<div :class="{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
+							<div :class="{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn1 relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
 								<div :class="item.status==1||item.status==2?'blink':''">
-									<div>{{item.guige_name}}</div>
-									<div>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
+									<div class="fsz">{{item.guige_name}}</div>
+									<div class="fsz">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 									<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">s.l. {{item.left_stock}}{{item.unit_en}}</div>
 									<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
 									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataTwoCateIndex==index"/>
@@ -156,7 +156,7 @@
 										<div class="flexbox1 pa5-10" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 											<div class="flexbox2">
 												<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
-												<div class="col666" style="width: 350px;">{{item.nickname}}</div>
+												<div class="col666 menuWidth">{{item.nickname}}</div>
 											</div>
 											<div class="flexbox2">
 												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
@@ -259,8 +259,8 @@
 								<div class="flexbox2">
 									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn3 cateWH relative pdbtn" @click="goto(item,index,'#anchor-'+item1.product_id)">
 										<div :class="{'blink':item1.status==1||item1.status==2}">
-											<div>{{item1.menu_en_name}}</div>
-											<div>{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</div>
+											<div class="fsz">{{item1.menu_en_name}}</div>
+											<div class="fsz">{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</div>
 											<div>{{item1.menu_id}}</div>
 											<div class="userBox">
 												<span class="F14" v-for="item2 in item1.operator_user">{{item2.user_name}}</span>
@@ -1840,8 +1840,7 @@
 					}
 					this.$nextTick(()=> {
 						var scroll_top = $(".J_left_menu_1").scrollTop()
-						var h = $(selector).offset().top-$(selector).height()-150+scroll_top
-						console.log('计算出滚动的高度---',$(selector).offset().top,$(selector).height())
+						var h = $(".J_left_menu_1").find(selector).offset().top-235+scroll_top
 						$(".J_left_menu_1").animate({scrollTop:h},1000)
 					})
 				},

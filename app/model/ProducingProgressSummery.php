@@ -166,7 +166,7 @@ class ProducingProgressSummery extends Model
             }
             //如果该产品没有二级分类，则展示该产品的库存,不展示用-1判断
             if($v['is_has_two_cate'] == 2){
-                $v['left_stock'] = $v['stock_qty']?:0;
+                $v['left_stock'] = floatval($v['stock_qty']?:0);
             }else{
                 $v['left_stock'] = -1;
             }
@@ -296,7 +296,7 @@ class ProducingProgressSummery extends Model
             $v['finish_quantities'] = floatval($v['finish_quantities']);
             $v['status'] = $this->getProcessStatus($v,$userId,2);
             $v['is_lock'] = $v['operator_user_id']>0&&$v['isDone']==0 ? 1 : 0;
-            $v['left_stock'] = $v['stock_qty']?:0;
+            $v['left_stock'] = floatval($v['stock_qty']?:0);
         }
         return $goods_two_cate;
     }
