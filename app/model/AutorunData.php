@@ -15,11 +15,11 @@ class AutorunData extends Model
 
     public function addAutorunData($wcc_info,$user_id)
     {
-        $ard_info = self::getOne(['data_type'=>100,'ref_id' => $wcc_info['order_id'],'ref_value1' => $wcc_info['business_userId'],'status' => 0]);
+        $ard_info = self::getOne(['data_type'=>100,'ref_id' => $wcc_info['o_id'],'ref_value1' => $wcc_info['business_userId'],'status' => 0]);
         if(empty($ard_info)){
             self::createData([
                 'data_type' => 100,
-                'ref_id' => $wcc_info['order_id'],
+                'ref_id' => $wcc_info['o_id'],
                 'ref_value1' => $wcc_info['business_userId'],
                 'status' => 0,
                 'gen_date' => time(),
