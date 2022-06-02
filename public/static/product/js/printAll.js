@@ -303,7 +303,7 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
 
         html+='</tr>';
         html+='</table>';
-
+        html+='	<label>CustId:'+order.userId+'</label>';
         html+='<br>';
         html+='	<label>Deliver Address:</label>';
         html+='<br>';
