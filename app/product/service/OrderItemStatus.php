@@ -177,7 +177,7 @@ class OrderItemStatus
                 }
                 $finish_quantities = $dps_info['finish_quantities']-1;
                 $dps_data['finish_quantities'] = $finish_quantities;
-                $dps_data['operator_user_id'] = $user_id;
+//                $dps_data['operator_user_id'] = $user_id;
                 //判断之前是否已加工完成，若加工完成，需要修改状态
                 if($dps_info['finish_quantities'] == $dps_info['sum_quantities']){
                     $dps_data['isDone'] = 0;
