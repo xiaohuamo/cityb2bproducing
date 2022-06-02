@@ -90,7 +90,7 @@
 							<div class="fsz">{{item.menu_en_name}}</div>
 							<div class="fsz">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
 							<div>{{item.menu_id}}</div>
-							<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">s.l. {{item.left_stock}}{{item.unit_en}}</div>
+							<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">S.L.&nbsp;&nbsp;{{item.left_stock}}{{item.unit_en}}</div>
 							<img v-if="item.is_has_two_cate==2&&item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
 							<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="menudata2SortIndex==index"/>
 						</div>
@@ -105,7 +105,7 @@
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div class="fsz">{{item.guige_name}}</div>
 									<div class="fsz">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
-									<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">s.l. {{item.left_stock}}{{item.unit_en}}</div>
+									<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">S.L.&nbsp;&nbsp;{{item.left_stock}}{{item.unit_en}}</div>
 									<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
 									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataTwoCateIndex==index"/>
 								</div>
