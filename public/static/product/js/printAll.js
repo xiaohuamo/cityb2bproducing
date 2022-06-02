@@ -281,7 +281,16 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
                 '    </div>';
         }
     }else{
-        html+='<p style="padding-top:10px; padding-left:5px;">'+order.subtitle+'</p>';
+        let pon_style = 'style="padding-top:0px; padding-left:5px;padding-bottom: 6px;"'
+        let on_style = 'style="font-size:20px;"';
+        if(order.name.length>21){
+            if(order.name.length>27){
+                order.name = order.name.slice(0,27);
+            }
+            pon_style = 'style="padding-top:0px; padding-left:5px;padding-bottom: 10px;"'
+            on_style = 'style="font-size:16px;"'
+        }
+        html+='<p '+pon_style+'>'+order.customer_delivery_option+'&nbsp;<strong '+on_style+'>'+order.name+'</strong></p>';
 
         html+='<table style=" padding-left:5px;padding-right:5px; width: 100%;font-size:28px;font-weight:bolder" cellspacing="0" cellpadding="0">';
         html+='<tr style="">';

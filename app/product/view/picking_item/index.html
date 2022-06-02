@@ -1748,6 +1748,11 @@
 						threeCate = '';
 						lock_data = this.menudataTwoCate[this.menudataTwoCateIndex]
 					}
+					//如果该产品是生产端未分配的产品则不打印
+					// if(lock_data.proucing_item==1&&lock_data.assign_stock==0){
+					// 	this.popBox('No printable labels')
+					// 	return
+					// }
 					if(lock_data.status==0){
 						this.popBox('Please lock the product')
 						return
