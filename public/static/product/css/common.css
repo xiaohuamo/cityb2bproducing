@@ -441,7 +441,7 @@ a{
 .rbtn1{
 	max-width: 380px;
 	/*height: 87px;*/
-	height: 140px;
+	height: 125px;
 	border-radius: 3px;
 	padding: 15px;
 	box-sizing: border-box;
@@ -1254,7 +1254,7 @@ tbody tr td{
 	border-right:2px solid #5e5656;
 }
 .fsz{
-	font-size: 28px;
+	font-size: 22px;
 	font-weight: 600;
 	padding: 0 10px;
 }
