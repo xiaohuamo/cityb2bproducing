@@ -129,20 +129,6 @@ class OrderItemStatus
                 return show_arr(config('status.code')['summary_error']['code'], config('status.code')['summary_error']['msg']);
             }
             //一.已处理流程
-            //1-2.该产品已处理完成，不可重复处理
-            if($dps_info['isDone'] == $param['is_producing_done']){
-                if($param['is_producing_done'] == 0){
-                    $wcc_update_data = [
-                        'dispatching_operator_user_id'=>0,
-                        'dispatching_item_operator_user_id'=>0,
-                        'dispatching_is_producing_done'=>0
-                    ];
-                    WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],$wcc_update_data);
-                }
-                Db::commit();
-                return show_arr(config('status.code')['success']['code'],config('status.code')['success']['msg']);
-//                return show_arr(config('status.code')['repeat_done_error']['code'], config('status.code')['repeat_done_error']['msg']);
-            }
             if($param['is_producing_done'] == 1) {
                 if($wcc_info['dispatching_is_producing_done'] != 5){
                     return show_arr(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg']);
@@ -184,6 +170,11 @@ class OrderItemStatus
                     'dispatching_is_producing_done'=>0
                 ];
                 WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],$wcc_update_data);
+                //如果该产品的拣货状态为5，说明更新订单状态程序还没执行，只需要更改订单明细即可
+                if($wcc_info['dispatching_is_producing_done'] == 5){
+                    Db::commit();
+                    return show_arr(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+                }
                 $finish_quantities = $dps_info['finish_quantities']-1;
                 $dps_data['finish_quantities'] = $finish_quantities;
                 $dps_data['operator_user_id'] = $user_id;
