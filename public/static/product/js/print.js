@@ -277,6 +277,9 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
                 '    </div>';
         }
     }else{
+        if(order.name.length>21){
+            order.name = order.name.slice(0,21)
+        }
         html+='<p style="padding-top:0px; padding-left:5px;padding-bottom: 6px;">'+order.customer_delivery_option+'&nbsp;<strong style="font-size: 20px;">'+order.name+'</strong></p>';
 
         html+='<table style=" padding-left:5px;padding-right:5px; width: 100%;font-size:28px;font-weight:bolder" cellspacing="0" cellpadding="0">';
