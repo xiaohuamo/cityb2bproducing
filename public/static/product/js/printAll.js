@@ -45,20 +45,25 @@ function generateOrderPrintAll(order,goods,goodsTwoCate,businessName,userName,pr
             let label_arr = [];//存储所有的label标签序号
             let print_mix_label = [];//存储已打印的拼箱标签，已打印过的不在重新打印
             $.each(order,function(i,item){
-                var mix_group_data = order[i].mix_group_data
-                for(let j in item.print_label_sorts_arr){
+                let mix_group_data = order[i].mix_group_data
+                let label_data;
+                for (let j in item.print_label_sorts_arr) {
                     let newcopysortid = parseInt(item.print_label_sorts_arr[j])
-                    if($.inArray(newcopysortid,print_mix_label) == -1){
-                        if(newcopysortid == item['mix_box_sort_id']){
-                            print_mix_label.push(newcopysortid);
-                            order[i].mix_group_data=mix_group_data;
-                        }else{
-                            order[i].mix_group_data=[];
+                    if ($.inArray(newcopysortid, print_mix_label) == -1) {
+                        var dataObj = {};//在里边定义对象
+                        for(let k in item){
+                            dataObj[k] = item[k]
                         }
-                        label_data=[];
-                        label_data['sortid']=newcopysortid
-                        label_data['boxLabel']=newcopysortid + " of " + copy;
-                        label_data['order']=order[i]
+                        if (newcopysortid == item['mix_box_sort_id']) {
+                            print_mix_label.push(newcopysortid);
+                            dataObj.mix_group_data = mix_group_data;
+                        } else {
+                            dataObj.mix_group_data = [];
+                        }
+                        label_data = [];
+                        label_data['sortid'] = newcopysortid
+                        label_data['boxLabel'] = newcopysortid + " of " + copy;
+                        label_data['order'] = dataObj
                         label_arr.push(label_data)
                     }
                 }
