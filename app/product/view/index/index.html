@@ -47,7 +47,7 @@
 				<div class="choseCustomerBox" v-show="whichPopShow==3">
 					<div class="mb10 F20" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">
 						<span v-if="index == 0">{{item.name}}</span>
-						<span v-else>{{item.name}} {{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
+						<span v-else>{{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
 					</div>
 				</div>
 			</div>
@@ -78,7 +78,8 @@
 					<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				</div>
 				<div v-show="currentPage==2" class="leftMenu2">
-					<div v-for="(item,index) in menudata" :class="currentMenu==index?'bgFD6921 colfff':'bgF1F1F1 col000'" class="F20 lbtn relative hand" @click="clickMenu(item,index)">
+<!--					@click="clickMenu(item,index)-->
+					<div v-for="(item,index) in menudata" :class="['J_product_cate_'+item.id,{'bgFD6921 colfff':currentMenu==index,'bgF1F1F1 col000':currentMenu!=index}]" class="F20 lbtn relative hand" @click="goto(item,index,'.J_product_cate_'+item['id'],4)">
 						{{item.category_en_name}}
 						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
 					</div>
@@ -217,44 +218,44 @@
 						<!-- 下面结束 -->
 					</div>
 				</div>
-				<div v-show="currentPage==2" class="rightCateMenu">
-					<div class="F20">
-						<div v-if="currentMenu>1">
-							<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter F26 colFD6921 relative hand" v-show="isHasCateData" @click="goto([],0,'.J_cate_'+menudata[currentMenu]['id'],2)">
-								<img src="__STATIC__/product/img/return2.png" style="width:11px;position:absolute;left:15px;"/>
-								Back to this category
-							</div>
-							<div class="flexbox2">
-								<div class="J_set_top" v-for="(item,index) in goods">
-									<div class="rbtn4 bgFFF7F3 col5e5656">
-										<div>{{item.menu_en_name}}</div>
-										<div>{{item.menu_id}}</div>
-									</div>
-									<div class="F22 col000 flexbox4 bgfff zdBox" v-if="item.is_set_top==1" @click="cancelZD(item,index,2)">
-										<img src="__STATIC__/product/img/zd.png" class="zd"/>
-										unpin
-									</div>
-									<div class="F22 col000 flexbox4 bgfff zdBox" v-else @click="cancelZD(item,index,1)">
-										<img src="__STATIC__/product/img/zd2.png" class="zd"/>
-										top
-									</div>
-								</div>
-							</div>
-						</div>
-						<div v-else-if="currentMenu==1" class="flexbox2">
-							<div class="J_set_top" v-for="(item,index) in goods">
-								<div class="rbtn4" :class="{'bgdarkGrey colfff':item.is_progress==2,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFD6921 blink':item.is_progress==1&&item.status==1,'bg34C079':item.is_progress==1&&item.status==3,'bgGrey blink':item.is_progress==1&&item.status==2}" @click="goto('#anchor-'+item.product_id)">
-									<div :id="item.is_progress">{{item.menu_en_name}}</div>
-									<div>{{item.menu_id}}</div>
-								</div>
-								<div class="F22 col000 flexbox4 bgfff zdBox" @click="cancelZD(item,index,2,'top')">
-									<img src="__STATIC__/product/img/zd.png" class="zd"/>
-									unpin
-								</div>
-							</div>
-						</div>
-						<div v-else>
-							<div v-for="(item,index) in goods" :class="index>0?'maT30':''">
+				<div v-show="currentPage==2" class="rightCateMenu J_right_menu_2 F20">
+<!--					<div class="F20">-->
+<!--						<div v-if="currentMenu>1">-->
+<!--							<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter F26 colFD6921 relative hand" v-show="isHasCateData" @click="goto([],0,'.J_cate_'+menudata[currentMenu]['id'],2)">-->
+<!--								<img src="__STATIC__/product/img/return2.png" style="width:11px;position:absolute;left:15px;"/>-->
+<!--								Back to this category-->
+<!--							</div>-->
+<!--							<div class="flexbox2">-->
+<!--								<div class="J_set_top" v-for="(item,index) in goods">-->
+<!--									<div class="rbtn4 bgFFF7F3 col5e5656">-->
+<!--										<div>{{item.menu_en_name}}</div>-->
+<!--										<div>{{item.menu_id}}</div>-->
+<!--									</div>-->
+<!--									<div class="F22 col000 flexbox4 bgfff zdBox" v-if="item.is_set_top==1" @click="cancelZD(item,index,2)">-->
+<!--										<img src="__STATIC__/product/img/zd.png" class="zd"/>-->
+<!--										unpin-->
+<!--									</div>-->
+<!--									<div class="F22 col000 flexbox4 bgfff zdBox" v-else @click="cancelZD(item,index,1)">-->
+<!--										<img src="__STATIC__/product/img/zd2.png" class="zd"/>-->
+<!--										top-->
+<!--									</div>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<div v-else-if="currentMenu==1" class="flexbox2">-->
+<!--							<div class="J_set_top" v-for="(item,index) in goods">-->
+<!--								<div class="rbtn4" :class="{'bgdarkGrey colfff':item.is_progress==2,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFFF7F3 col5e5656':item.is_progress==1&&item.status==0,'bgFD6921 blink':item.is_progress==1&&item.status==1,'bg34C079':item.is_progress==1&&item.status==3,'bgGrey blink':item.is_progress==1&&item.status==2}" @click="goto('#anchor-'+item.product_id)">-->
+<!--									<div :id="item.is_progress">{{item.menu_en_name}}</div>-->
+<!--									<div>{{item.menu_id}}</div>-->
+<!--								</div>-->
+<!--								<div class="F22 col000 flexbox4 bgfff zdBox" @click="cancelZD(item,index,2,'top')">-->
+<!--									<img src="__STATIC__/product/img/zd.png" class="zd"/>-->
+<!--									unpin-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<div v-else>-->
+							<div v-for="(item,index) in goods" :class="['J_product_cate_'+item.cate_id,{'maT30':index>0}]">
 								<div class="F20 hand cater mb10 bgFD6921 colfff" @click="goto(item,index,'.J_cate_'+item['cate_id'],2)">{{item['category_en_name']}}</div>
 								<div class="flexbox2">
 									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn3 cateWH relative pdbtn" @click="goto(item,index,'#anchor-'+item1.product_id)">
@@ -270,8 +271,8 @@
 									</div>
 								</div>
 							</div>
-						</div>
-					</div>
+<!--						</div>-->
+<!--					</div>-->
 				</div>
 			</div>
 		</div>
@@ -397,7 +398,7 @@
 				num:20,
 				whichPopShow:-1,
 				currentPage:1,  // 1表示1级页面 2是2级页面
-				menudata:[{"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"}],
+				menudata:[],//[{"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"}],
 				menudata2:[],//加工产品
 				currentContent:0,//未排序的数据，当前选中的产品索引id
 				menudata2Sort:[],//排序后的加工产品，为保证初始化的数据不变
@@ -1690,8 +1691,8 @@
 					this.isLoading=true
 					this.inidata()
 					if(this.currentPage==2){
-						var cate_id = this.menudata[this.currentMenu].id
-						this.cetegoryProduct(cate_id)
+						// var cate_id = this.menudata[this.currentMenu].id
+						this.cetegoryProduct()
 					}
 					this.isLoading=false
 				},
@@ -1716,14 +1717,14 @@
 					this.isLoading=true
 					this.inidata()
 					if(this.currentPage==2){
-						var cate_id = this.menudata[this.currentMenu].id
-						this.cetegoryProduct(cate_id)
+						// var cate_id = this.menudata[this.currentMenu].id
+						this.cetegoryProduct()
 					}
 					this.isLoading=false
 				},
 				//切换司机
 				choseDriver(item,index){
-					this.choseDate3=index==0?item.name:item.name+' '+item.name+'-'+item.truck_name+'-'+item.plate_number
+					this.choseDate3=index==0?item.name:item.name+'-'+item.truck_name+'-'+item.plate_number
 					this.current3=index
 					this.whichPopShow=-1
 					this.logistic_truck_No=item.logistic_truck_No
@@ -1739,8 +1740,8 @@
 					this.isLoading=true
 					this.inidata()
 					if(this.currentPage==2){
-						var cate_id = this.menudata[this.currentMenu].id
-						this.cetegoryProduct(cate_id)
+						// var cate_id = this.menudata[this.currentMenu].id
+						this.cetegoryProduct()
 					}
 					this.isLoading=false
 				},
@@ -1778,11 +1779,11 @@
 					//获取大类
 					var _this=this
 					getData("{:url('/product/category')}", '', function (res) {
-						res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
+						// res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
 						_this.menudata = res.result
 						console.log('获取产品大类目---',_this.menudata)
 						//获取默认的展示产品
-						_this.cetegoryProduct(_this.menudata[0]['id']);
+						_this.cetegoryProduct();
 					});
 				},
 				//切换分类
@@ -1798,7 +1799,7 @@
 					}
 				},
 				//获取对应类别的产品
-				cetegoryProduct(cate_id){
+				cetegoryProduct(cate_id=-1){
 					// this.goods = []
 					//调取获取当前备货接口
 					var data = {
@@ -1824,25 +1825,51 @@
 				},
 				//类目页面跳转到加工页面对应的产品位置  type-1:当前备货页面点击跳转+定位 2：返回此分类点击跳转+定位
 				goto(item,index,selector,type=1){
-					this.currentPage=1
-					if(type == 1){
-						//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
-						var index = $(selector).index()
-						if(this.menudata2SortIndex != index){
-							this.clickGoods(this.menudata2Sort[index],index)
-						}
-					}
-					//分类跳转到首页，需要将排序改为code
-					if(type == 2){
-						// alert(selector)
-						this.isHandle=2
-						this.inidata()
+					switch(type) {
+						case 1:
+							this.currentPage = 1
+							//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
+							var index = $(selector).index()
+							if (this.menudata2SortIndex != index) {
+								this.clickGoods(this.menudata2Sort[index], index)
+							}
+							var obj = '.J_left_menu_1'
+							var top_h = 235
+							break;
+						case 2:
+							//分类跳转到首页，需要将排序改为code
+							this.currentPage = 1
+							this.isHandle = 2
+							this.inidata()
+							var obj = '.J_left_menu_1'
+							var top_h = 235
+							break;
+						case 4:
+							this.currentMenu = index
+							var obj = '.J_right_menu_2'
+							var top_h = 106
+							break;
 					}
 					this.$nextTick(()=> {
-						var scroll_top = $(".J_left_menu_1").scrollTop()
-						var h = $(".J_left_menu_1").find(selector).offset().top-235+scroll_top
-						$(".J_left_menu_1").animate({scrollTop:h},1000)
+						if(selector == '.J_product_cate_-1'){
+							var h = 0
+							$(obj).animate({scrollTop:h},500)
+						} else {
+							//网页被卷去的高度
+							var scroll_top = $(obj).scrollTop()
+							if ( $(obj).find(selector).length > 0 ) {
+								var h = $(obj).find(selector).offset().top - top_h + scroll_top
+								console.log('计算出滚动的高度---',$(obj).find(selector).offset().top,$(obj).scrollTop())
+								$(obj).animate({scrollTop:h},500)
+							}
+						}
 					})
+					// $(obj).animate({scrollTop:h},500)
+					// this.$nextTick(()=> {
+					// 	var scroll_top = $(".J_left_menu_1").scrollTop()
+					// 	var h = $(".J_left_menu_1").find(selector).offset().top-235+scroll_top
+					// 	$(".J_left_menu_1").animate({scrollTop:h},1000)
+					// })
 				},
 				//排序基础数据的同步
 				menudata2Sync(type){

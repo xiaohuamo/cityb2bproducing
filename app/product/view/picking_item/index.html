@@ -43,7 +43,7 @@
 				<div class="choseCustomerBox" v-show="whichPopShow==3">
 					<div class="mb10 F18" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">
 						<span v-if="index == 0">{{item.name}}</span>
-						<span v-else>{{item.name}} {{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
+						<span v-else>{{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
 					</div>
 				</div>
 			</div>
@@ -197,10 +197,11 @@
 									<div class="orderDetail orderItemBox">
 										<div class="flexbox1 pa5 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 											<div class="flexbox2">
-												<div class="col666 F20" style="width: 80px;">{{item.logistic_sequence_No}}</div>
+												<div class="col666 F20" style="width: 50px;">{{item.logistic_sequence_No}}</div>
 												<div class="col666 menuWidth">{{item.nickname}}</div>
 											</div>
 											<div class="flexbox2">
+												<div class="col666" style="width: 72px;overflow: hidden;" v-if="item.truck_info">{{item.truck_info.name}}</div>
 												<div class="outStock" :class="item.is_lock!=1||item.lock_type!=1||item.new_customer_buying_quantity==0||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock')">out stock</div>
 												<div class="numicon" :class="item.is_lock!=1||item.lock_type!=1||item.new_customer_buying_quantity==0||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
 												<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
@@ -1989,7 +1990,7 @@
 				},
 				//切换司机
 				choseDriver(item,index){
-					this.choseDate3=index==0?item.name:item.name+' '+item.name+'-'+item.truck_name+'-'+item.plate_number
+					this.choseDate3=index==0?item.name:item.name+'-'+item.truck_name+'-'+item.plate_number
 					this.current3=index
 					this.whichPopShow=-1
 					this.logistic_truck_No=item.logistic_truck_No
