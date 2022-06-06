@@ -509,7 +509,7 @@ a{
 }
 .rbtn7{
 	width: 200px;
-	height: 100px;
+	height: 120px;
 	border-radius: 3px;
 	padding: 5px;
 	padding-top: 5px;
@@ -1257,4 +1257,7 @@ tbody tr td{
 	font-size: 22px;
 	font-weight: 600;
 	padding: 0 10px;
+}
+.w600{
+	font-weight: 600;
 }

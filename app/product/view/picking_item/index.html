@@ -128,8 +128,8 @@
 						<div class="flexbox2 mb10 rsection2Box F18 J_product_cate" ref="element">
 							<div :class="{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn7 relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
 								<div :class="item.status==1||item.status==2?'blink':''">
-									<div style="text-align:left;"><span class="num">{{item.box_number}}bxs</span>{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
-									<div :class="item.menu_en_name.length>12?'F13 maT5':'F18'">{{item.menu_en_name}}</div>
+									<div style="text-align:left;"><span class="num">{{item.box_number}}bxs</span><span class="F20 w600">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</span></div>
+									<div class="w600" :class="item.menu_en_name.length>15?'F20':'F22'">{{item.menu_en_name}}</div>
 									<div>{{item.menu_id}}</div>
 									<img v-if="item.status==1||item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataTwoCateIndex==index"/>
@@ -139,8 +139,8 @@
 						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element" v-if="menudataTwoCate.length>0&&menudataTwoCate[menudataTwoCateIndex].two_cate.length>0">
 							<div :class="{'arrow_box':menudataThreeIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn relative mb10"  v-for="(item,index) in menudataTwoCate[menudataTwoCateIndex].two_cate"  @click="clickThreeCate(item,index);"  @dblclick="gtouchstart(item,index,3)">
 								<div :class="item.status==1||item.status==2?'blink':''">
-									<div>{{item.guige_name}}</div>
-									<div><span class="num">{{item.box_number}}bxs</span> {{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
+									<div class="F22 w600">{{item.guige_name}}</div>
+									<div><span class="num">{{item.box_number}}bxs</span> <span class="F20 w600">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</span></div>
 									<img v-if="item.status==1||item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataThreeIndex==index"/>
 								</div>
