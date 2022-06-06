@@ -277,16 +277,15 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
                 '    </div>';
         }
     }else{
-        let pon_style = 'style="padding-top:0px; padding-left:5px;padding-bottom: 6px;"'
-        let on_style = 'style="font-size:20px;"';
-        if(order.name.length>21){
-            if(order.name.length>27){
-                order.name = order.name.slice(0,27);
-            }
-            pon_style = 'style="padding-top:0px; padding-left:5px;padding-bottom: 10px;"'
-            on_style = 'style="font-size:16px;"'
+        let pon_style = 'style="padding-top:2px; padding-left:5px;"'
+        let on_style = 'style="font-size:30px;"';
+        if(order.name.length>16){
+            order.name = order.name.slice(0,16);
+            pon_style = 'style="padding-top:5px; padding-left:5px;"'
+            on_style = 'style="font-size:28px;"'
         }
-        html+='<p '+pon_style+'>'+order.customer_delivery_option+'&nbsp;<strong '+on_style+'>'+order.name+'</strong></p>';
+        // html+='<p '+pon_style+'>'+order.customer_delivery_option+'&nbsp;<strong '+on_style+'>'+order.name+'</strong></p>';
+        html+='<p '+pon_style+'><strong '+on_style+'>'+order.name+'</strong></p>';
 
         html+='<table style=" padding-left:5px;padding-right:5px; width: 100%;font-size:28px;font-weight:bolder" cellspacing="0" cellpadding="0">';
         html+='<tr style="">';
@@ -294,7 +293,7 @@ function labelTemplate(order,goods,goodsTwoCate,businessName,userName,print_type
         html+=	'<td style=" height:36px;width:75%;border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;"><span style="font-size:20px">'+name+'-'+truck_name+'-'+plate_number+'</span></td>';
         html+='</tr>';
         html+='<tr style="height:36px;">';
-        html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: left;" >&nbsp;&nbsp;'+order.logistic_sequence_No+'</td>';
+        html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: left;font-size:35px;" >&nbsp;&nbsp;'+order.logistic_sequence_No+'</td>';
         html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;" ><span style="font-size:16px">DROPNO&nbsp;</span>'+order.logistic_stop_No+'&nbsp;&nbsp;<span style="font-size:16px">BOX </span> '+order.boxLabel+'&nbsp;&nbsp;</td>';
 
         html+='</tr>';
