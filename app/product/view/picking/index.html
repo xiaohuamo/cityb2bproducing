@@ -807,30 +807,7 @@
 						_this.isLoading=false
 						res = res.result
 						if(type == 'refresh'){
-							//更新数据时，保持原数据位置不变
-							//1.更新数据时判断修改加工数量和打印标签是否获取焦点，获取焦点时加工数量不更新
-							// var eq_length = $('.J_main_box .J_edit_quantity').length
-							// for(var i=0;i<eq_length;i++){
-							// 	var isFocus=$('.J_main_box .J_edit_quantity').eq(i).is(":focus")
-							// 	if(isFocus){
-							// 		for(var j in res.order){
-							// 			if(res.order[j]['id'] == _this.handleListSort[i]['id']){
-							// 				res.order[j]['new_customer_buying_quantity'] = $('.J_main_box .J_edit_quantity').eq(i).val()
-							// 			}
-							// 		}
-							// 	}
-							// }
 							var lq_length = $('.J_main_box .J_edit_lable').length
-							for(var i=0;i<lq_length;i++){
-								// var isFocus=$('.J_main_box .J_edit_lable').eq(i).is(":focus")
-								// if(isFocus){
-								// 	for(var j in res.order){
-								// 		if(res.order[j]['id'] == _this.handleListSort[i]['id']){
-								// 			res.order[j]['num1'] = $('.J_main_box .J_edit_lable').eq(i).text()
-								// 		}
-								// 	}
-								// }
-							}
 							_this.handleList=_this.sortAccordingOtherData(res.order,_this.handleList,'id')
 							_this.handleListSort=_this.sortAccordingOtherData(res.order,_this.handleListSort,'id')
 						}else{
@@ -2011,20 +1988,9 @@
 					if(_this.currentPage == 1){
 						_this.dataRefreh();
 					}
-					if(_this.currentPage == 2){
-						var data = {
-							"logistic_delivery_date":this.logistic_delivery_date,
-							"logistic_truck_No":this.choose_logistic_truck_No,
-							// "category_id":cate_id
-						}
-						getData("{:url('/product/pickCategory')}", data, function (res) {
-							// res.result.unshift({"id":-1,"category_en_name":"Current Stock"})
-							_this.menudata = res.result
-							console.log('获取产品大类目---',_this.menudata)
-							//获取默认的展示产品
-							_this.cetegoryProduct(_this.menudata[0]['id']);
-						});
-						_this.dataRefrehPage23();
+					if(_this.currentPage == 2) {
+						//跳转到按产品拣货页面
+						window.location.href = "{:url('/product/picking')}"
 					}
 					if(_this.currentPage == 3) {
 						_this.twoCate('allDriverOrder')

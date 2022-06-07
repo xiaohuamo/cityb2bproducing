@@ -103,7 +103,7 @@
 				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="[{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);">
+					<div :class="['J_page1_pick_cate_'+item.id,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);">
 						<div class="maT5" :class="item.status==1||item.status==2?'blink':''">
 							<div>{{item.category_en_name}}</div>
 							<img v-if="item.status==1&&item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -261,7 +261,8 @@
 						<div class="F18 hand cater mb10 bgFD6921 colfff">{{item['category_en_name']}}</div>
 						<div class="flexbox2">
 							<div v-for="(item1,index1) in item['product']">
-								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status==3&&item1.proucing_item!=1&&showReprocess(item,index,item1,index1)">
+<!--								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status==3&&item1.proucing_item!=1&&showReprocess(item,index,item1,index1)">-->
+								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status!=1&&goto(item1,index1,'.J_page1_pick_cate_'+item.cate_id,6,item)">
 									<img v-if="item1.proucing_item==1" class="productImg" src="__STATIC__/product/img/product.png">
 									<div :class="{'blink':item1.status==1||item1.status==2}">
 										<div>{{item1.menu_en_name}}</div>
@@ -659,7 +660,7 @@
 				},
 				//获取二级类目 type=refresh:定时刷新数据
 				//item1 当前选中的二级类目数据
-				twoCate(type=''){
+				twoCate(type='',item1=''){
 					var _this = this
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
@@ -689,7 +690,17 @@
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id和规格id
 							if(!(_this.product_id>0)){
-								_this.product_id = _this.menudataTwoCate[0].product_id
+								if(item1==''){
+									_this.product_id = _this.menudataTwoCate[0].product_id
+								}else{
+									for(var i in _this.menudataTwoCate){
+										if(_this.menudataTwoCate[i].product_id == item1.product_id){
+											_this.menudataTwoCateIndex = i
+											_this.product_id = _this.menudataTwoCate[i].product_id
+											break;
+										}
+									}
+								}
 							}
 							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0 && !(_this.guige1_id>0)){
 								_this.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][0].guige1_id
@@ -1325,11 +1336,11 @@
 					}
 				},
 				//切换一级类目
-				clickOneCate(item,index){
+				clickOneCate(item,index,item1=''){
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
 						this.isLoading=true
-						if(item.id != this.one_cate_id){
+						// if(item.id != this.one_cate_id){
 							this.twoCateTitleIndex = -1
 							this.two_cate_id = 0
 							this.menudataTwoCateIndex = 0
@@ -1344,8 +1355,8 @@
 							this.wccSortType=1
 							//重置加工明细排序信息-end
 							//获取二级类目
-							this.twoCate()
-						}
+							this.twoCate('',item1)
+						// }
 					}, 300);   //大概时间300ms
 				},
 				//切换二级类目，获取对应的产品信息
@@ -2127,6 +2138,13 @@
 								this.twoCate('allDriverOrder')
 							var obj = '.J_right_menu_3'
 							break;
+							//picking&sum页面单击产品跳转到item pick页面对应的产品
+						case 6:
+							this.currentPage=1
+							var obj = '.J_left_menu_1'
+							var index = $(selector).index()
+							this.clickOneCate(this.menudata2Sort[index],index,item)
+							break;
 					}
 					this.$nextTick(()=> {
 						if(selector == '.J_pick_cate_-1'){
@@ -2781,6 +2799,41 @@
 							}
 						}
 					})
+				},
+				//修改处理状态 is_producing_done 0-未完成 1-已完成
+				changeStatusPs(item,index){
+					clearTimeout(this.clickTimer);  //首先清除计时器
+					this.clickTimer = setTimeout(() => {
+						var data = {
+							"logistic_delivery_date":this.logistic_delivery_date,
+							"logistic_truck_No":this.choose_logistic_truck_No,
+							"product_id":item.product_id,
+						}
+						if(item.status == 1){
+							data.is_producing_done = 1;
+						} else {
+							data.is_producing_done = 0;
+						}
+						console.log('处理状态参数----',data)
+						var _this = this
+						_this.isLoading=true
+						getData("{:url('/product/changeNoneProcessedProductStatus')}", data, function (res) {
+							console.log('处理状态结果----',res)
+							_this.isLoading=false
+							if (res.status == 200) {
+								if (data.is_producing_done == 1) {
+									item.status = 3
+								} else {
+									item.status = 1
+									_this.currentPage2OneCateIndex = -1
+									_this.currentPage2TwoCateIndex = -1
+								}
+							} else {
+								_this.popBox(res.message)
+								return
+							}
+						});
+					}, 300);   //大概时间300ms
 				},
 				//显示返回操作按钮
 				showReprocess(item,index,item1,index1){
