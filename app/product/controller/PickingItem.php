@@ -629,7 +629,8 @@ class PickingItem extends AuthBase
         if($wcc_info['new_customer_buying_quantity'] != $param['new_customer_buying_quantity']){
             try{
                 Db::startTrans();
-                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity']]);
+                $adjust_subtotal_amount = $param['new_customer_buying_quantity']*$wcc_info['voucher_deal_amount'];
+                WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['new_customer_buying_quantity'=>$param['new_customer_buying_quantity'],'adjust_subtotal_amount'=>$adjust_subtotal_amount]);
                 $money_new = sprintf("%01.2f",$wcc_info['money_new']+$wcc_info['voucher_deal_amount']*($param['new_customer_buying_quantity']-$wcc_info['new_customer_buying_quantity']));
                 Order::getUpdate(['orderId' => $wcc_info['order_id']],['money_new'=>$money_new]);
                 //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
