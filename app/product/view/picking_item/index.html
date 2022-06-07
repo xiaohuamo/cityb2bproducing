@@ -1704,10 +1704,20 @@
 					},5000);
 					// console.log('ssss',item);
 					if(_this.print_type == 0 || _this.print_type == 2){
-						//如果该明细的标签已全部打完，提示是否还要打印
-						if(item.print_label_sorts_length >= item.boxes){
+						//如果是fit print打印，判断当前明细的拣货状态是否是拣货完成状态，如果不是，调用更改拣货状态程序
+						//如果是one label打印，如果当前打印的是最后一张标签，调用更改拣货状态程序
+						let is_change_status=0;//是否需要更新状态 0否 1是
+						if(_this.print_type==0){
+							if(item.boxes-item.print_label_sorts_length<=1){
+								is_change_status=1
+							}
+						}
+						if((_this.print_type == 2||_this.print_type==0&&is_change_status==1)&&$.inArray(item.dispatching_is_producing_done,[0,2])!=-1&&(item.proucing_item!=1||item.assign_stock!=0)){
+							_this.changeStatus(item,index,1)
+						}
+						if(_this.print_type == 0 && item.mix_box_sort_id>0&&item.current_box_sort_id==item.mix_box_sort_id){
 							swal({
-								title: 'This item has been print,the print number is '+item.print_label_sorts+'/'+item.boxesNumber+' ,do you want still print?',
+								title: 'The mix label is printed, please place this product in the printed mix box,whether to continue printing?',
 								icon: "warning",
 								buttons: true,
 								dangerMode: true,
@@ -1716,29 +1726,46 @@
 									return
 								}else{
 									_this.printFun(item,index,e,_this.print_type)
+									return
 								}
 							});
-						}else{
-							if(_this.print_type == 2){
-								//判断该明细是否已打印部分标签,若打印部分，提示是否打印剩余，还是打印全部标签
-								if(item.print_label_sorts_length > 0){
-									swal({
-										title: 'This item is partially printed,the print number is '+item.print_label_sorts+'/'+item.boxes+' ,whether to print the remaining labels?',
-										icon: "warning",
-										buttons: true,
-										dangerMode: true,
-									}).then((willContinue) => {
-										if (!willContinue) {
-											return
-										}else{
-											_this.printFun(item,index,e,_this.print_type)
-										}
-									});
-								}else{
-									_this.printFun(item,index,e,_this.print_type)
+						}else {
+							//如果该明细的标签已全部打完，提示是否还要打印
+							if (item.print_label_sorts_length >= item.boxes) {
+								swal({
+									title: 'This item has been print,the print number is ' + item.print_label_sorts + '/' + item.boxesNumber + ' ,do you want still print?',
+									icon: "warning",
+									buttons: true,
+									dangerMode: true,
+								}).then((willContinue) => {
+									if (!willContinue) {
+										return
+									} else {
+										_this.printFun(item, index, e, _this.print_type)
+									}
+								});
+							} else {
+								if (_this.print_type == 2) {
+									//判断该明细是否已打印部分标签,若打印部分，提示是否打印剩余，还是打印全部标签
+									if (item.print_label_sorts_length > 0) {
+										swal({
+											title: 'This item is partially printed,the print number is ' + item.print_label_sorts + '/' + item.boxes + ' ,whether to print the remaining labels?',
+											icon: "warning",
+											buttons: true,
+											dangerMode: true,
+										}).then((willContinue) => {
+											if (!willContinue) {
+												return
+											} else {
+												_this.printFun(item, index, e, _this.print_type)
+											}
+										});
+									} else {
+										_this.printFun(item, index, e, _this.print_type)
+									}
+								} else {
+									_this.printFun(item, index, e, _this.print_type)
 								}
-							}else{
-								_this.printFun(item,index,e,_this.print_type)
 							}
 						}
 					}else{
@@ -1825,10 +1852,6 @@
 						}else{
 							preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
 						}
-					}
-					//如果是fit print打印，判断当前明细的拣货状态是否是拣货完成状态，如果不是，调用更改拣货状态程序
-					if(print_type == 2&&$.inArray(item.dispatching_is_producing_done,[0,2])!=-1&&(item.proucing_item!=1||item.assign_stock!=0)){
-						this.changeStatus(item,index,1)
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新

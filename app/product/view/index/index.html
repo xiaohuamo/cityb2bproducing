@@ -954,34 +954,38 @@
 					console.log('最后一次点击时间----',this.lastTime);
 				},
 				//修改处理状态 is_producing_done 0-未加工 1-加工完成 2-正在加工中
-				changeStatus(item,index){
+				changeStatus(item,index,is_producing_done=-1){
 					var data = {
 						"id": item.id,
 						"logistic_truck_No": this.logistic_truck_No
 					}
-					if($.inArray(item.is_producing_done,[3,5])!=-1||item.assign_stock==1){
-						this.popBox('You cannot operate')
-						return
-					}
-					if(item.is_producing_done == 0){
-						if(item.is_lock!=1){
-							if(item.guige1_id>0){
-								this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,2)
-							}else{
-								this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex],this.menudata2SortIndex,1)
+					if(is_producing_done>-1){
+						data.is_producing_done = is_producing_done;
+					}else {
+						if ($.inArray(item.is_producing_done, [3, 5]) != -1 || item.assign_stock == 1) {
+							this.popBox('You cannot operate')
+							return
+						}
+						if (item.is_producing_done == 0) {
+							if (item.is_lock != 1) {
+								if (item.guige1_id > 0) {
+									this.gtouchstart(this.menudataTwoCate[this.menudataTwoCateIndex], this.menudataTwoCateIndex, 2)
+								} else {
+									this.gtouchstart(this.menudata2Sort[this.menudata2SortIndex], this.menudata2SortIndex, 1)
+								}
+								// this.popBox('Please lock the product')
+								return
 							}
-							// this.popBox('Please lock the product')
-							return
+							if (item.lock_type != 1) {
+								this.popBox('Product has been locked by other')
+								return
+							}
+							data.is_producing_done = 2;
+						} else if (item.is_producing_done == 2) {
+							data.is_producing_done = 1;
+						} else {
+							data.is_producing_done = 0;
 						}
-						if(item.lock_type!=1){
-							this.popBox('Product has been locked by other')
-							return
-						}
-						data.is_producing_done = 2;
-					} else if(item.is_producing_done == 2) {
-						data.is_producing_done = 1;
-					} else {
-						data.is_producing_done = 0;
 					}
 					console.log('处理状态参数----',data)
 					var _this = this
@@ -1461,10 +1465,22 @@
 					},5000);
 					if(this.setup_info&&this.setup_info.company_type==3) {
 						if(_this.print_type == 0 || _this.print_type == 2){
-							//如果该明细的标签已全部打完，提示是否还要打印
-							if(item.print_label_sorts_length >= item.boxes){
+							//如果是fit print打印，判断当前明细的拣货状态是否是拣货完成状态，如果不是，调用更改拣货状态程序
+							//如果是one label打印，如果当前打印的是最后一张标签，调用更改拣货状态程序
+							let is_change_status=0;//是否需要更新状态 0否 1是
+							if(_this.print_type==0){
+								if(item.boxes-item.print_label_sorts_length<=1){
+									is_change_status=1
+								}
+							}
+							if((_this.print_type == 2||_this.print_type==0&&is_change_status==1)&&$.inArray(item.is_producing_done,[0,2])!=-1&&item.assign_stock==0){
+								_this.changeStatus(item,index,1)
+							}
+							//如果是one label打印。判断是否是混合标签，混合标签已打印过的需要提示一下
+							item.current_box_sort_id=parseInt(item.current_box_sort_id)
+							if(_this.print_type == 0 && item.mix_box_sort_id>0&&item.current_box_sort_id==item.mix_box_sort_id){
 								swal({
-									title: 'This item has been print,the print number is '+item.print_label_sorts+'/'+item.boxesNumber+' ,do you want still print?',
+									title: 'The mix label is printed, please place this product in the printed mix box,whether to continue printing?',
 									icon: "warning",
 									buttons: true,
 									dangerMode: true,
@@ -1473,29 +1489,46 @@
 										return
 									}else{
 										_this.printFun(item,index,e,_this.print_type)
+										return
 									}
 								});
-							}else{
-								if(_this.print_type == 2){
-									//判断该明细是否已打印部分标签,若打印部分，提示是否打印剩余，还是打印全部标签
-									if(item.print_label_sorts_length > 0){
-										swal({
-											title: 'This item is partially printed,the print number is '+item.print_label_sorts+'/'+item.boxes+' ,whether to print the remaining labels?',
-											icon: "warning",
-											buttons: true,
-											dangerMode: true,
-										}).then((willContinue) => {
-											if (!willContinue) {
-												return
-											}else{
-												_this.printFun(item,index,e,_this.print_type)
-											}
-										});
-									}else{
-										_this.printFun(item,index,e,_this.print_type)
+							}else {
+								//如果该明细的标签已全部打完，提示是否还要打印
+								if (item.print_label_sorts_length >= item.boxes) {
+									swal({
+										title: 'This item has been print,the print number is ' + item.print_label_sorts + '/' + item.boxesNumber + ' ,do you want still print?',
+										icon: "warning",
+										buttons: true,
+										dangerMode: true,
+									}).then((willContinue) => {
+										if (!willContinue) {
+											return
+										} else {
+											_this.printFun(item, index, e, _this.print_type)
+										}
+									});
+								} else {
+									if (_this.print_type == 2) {
+										//判断该明细是否已打印部分标签,若打印部分，提示是否打印剩余，还是打印全部标签
+										if (item.print_label_sorts_length > 0) {
+											swal({
+												title: 'This item is partially printed,the print number is ' + item.print_label_sorts + '/' + item.boxes + ' ,whether to print the remaining labels?',
+												icon: "warning",
+												buttons: true,
+												dangerMode: true,
+											}).then((willContinue) => {
+												if (!willContinue) {
+													return
+												} else {
+													_this.printFun(item, index, e, _this.print_type)
+												}
+											});
+										} else {
+											_this.printFun(item, index, e, _this.print_type)
+										}
+									} else {
+										_this.printFun(item, index, e, _this.print_type)
 									}
-								}else{
-									_this.printFun(item,index,e,_this.print_type)
 								}
 							}
 						}else{
@@ -1548,10 +1581,6 @@
 						}else{
 							preview(item, item.boxesNumber, goods, [], _this.businessName, _this.userName, print_type)
 						}
-					}
-					//如果是fit print打印，判断当前明细的拣货状态是否是拣货完成状态，如果不是，调用更改拣货状态程序
-					if(print_type == 2&&$.inArray(item.dispatching_is_producing_done,[0,2])!=-1&&(item.procuing_item!=1||item.assign_stock!=0)){
-						this.changeStatus(item,index,1)
 					}
 				},
 				//打印时获取最新的箱数以及打印后箱数序号更新
