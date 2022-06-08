@@ -231,9 +231,9 @@
 <!--											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'+',$event)">+</div>-->
 <!--										</div>-->
 <!--									</div>-->
-									<div class="orderDetail orderItemBox" @click="gotoPickItem(item)">
+									<div class="orderDetail orderItemBox">
 										<div class="flexbox1 pa5 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
-											<div class="flexbox2">
+											<div class="flexbox2" @click="gotoPickItem(item)">
 												<div class="col666 F20" style="width: 95px;">{{item.menu_id}}</div>
 												<div class="col666 menuWidth">{{item.menu_en_name}} {{item.guige_name}}</div>
 											</div>

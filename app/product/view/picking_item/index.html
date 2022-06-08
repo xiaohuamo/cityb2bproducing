@@ -194,9 +194,9 @@
 									<div class="log" @click="log(item,index)">
 										<img src="__STATIC__/product/img/log.png">
 									</div>
-									<div class="orderDetail orderItemBox" @click="gotoOrderPick(item)">
+									<div class="orderDetail orderItemBox">
 										<div class="flexbox1 pa5 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
-											<div class="flexbox2">
+											<div class="flexbox2" @click="gotoOrderPick(item)">
 												<div class="col666 F20" style="width: 50px;">{{item.logistic_sequence_No}}</div>
 												<div class="col666 menuWidth">{{item.nickname}}</div>
 											</div>
