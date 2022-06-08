@@ -1972,6 +1972,26 @@
 				},
 				//切换日期
 				choseDay(item,index){
+					//获取当天凌晨的时间戳
+					let timeStamp = new Date(new Date().setHours(0, 0, 0, 0)) / 1000;
+					if(item.logistic_delivery_date<timeStamp){
+						swal({
+							title: 'You are selecting the old date,do you want to continue?',
+							icon: "warning",
+							buttons: true,
+							dangerMode: true,
+						}).then((willContinue) => {
+							if (!willContinue) {
+								return
+							}else{
+								this.choseDayFun(item,index)
+							}
+						});
+					}else{
+						this.choseDayFun(item,index)
+					}
+				},
+				choseDayFun(item,index){
 					this.choseDate1=item
 					this.currentDay=index
 					this.whichPopShow=-1
