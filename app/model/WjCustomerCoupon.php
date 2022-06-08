@@ -719,7 +719,7 @@ class WjCustomerCoupon extends Model
         //1.判断是否需要总箱数,一旦起始标签数<=1,则修改数量时会判断是否修改订单明细对应的箱数和总箱数
         if($wcc_info['boxesNumberSortId'] <= 1){
             $BoxNumber = new BoxNumber();
-            $orderBoxNumber = $BoxNumber->getOrderBoxes($wcc_info['order_id']);
+            $orderBoxNumber = $BoxNumber->getOrderBoxes($wcc_info['order_id'],$wcc_info['business_userId']);
             //1-1.判断总箱数是否变化，变化则更新总箱数
             if($orderBoxNumber['orderboxnumber'] != $wcc_info['boxesNumber']){
                 Order::getUpdate(['orderId'=>$wcc_info['order_id']],['boxesNumber'=>$orderBoxNumber['orderboxnumber']]);

@@ -1,6 +1,7 @@
 <?php
 namespace app\product\service;
 
+use app\model\Supplier;
 use think\facade\Db;
 
 class BoxNumber
@@ -8,17 +9,20 @@ class BoxNumber
     /**
      * 获取订单需要的总箱数
      * @param $orderId 订单id
+     * @param $business_userId 商家id
      */
-    public function getOrderBoxes($orderId)
+    public function getOrderBoxes($orderId,$business_userId)
     {
         $where = [
             ['o.orderId', '=', $orderId],
             ['wcc.customer_buying_quantity', '>', 0]
         ];
+        //查询该商家的拼箱模式 1-按大类拼箱 2-按照产品的类型（生产，非生产）排序
+        $mixboxType = Supplier::getVal(['userId'=>$business_userId],'mixboxType');
         //1.获取该订单所有的加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.menu_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.unitQtyPerBox,rm.overflowRate,rm.restaurant_category_id cate_id')
+            ->field('wcc.id,wcc.menu_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.unitQtyPerBox,rm.overflowRate,rm.restaurant_category_id cate_id,rm.proucing_item')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->where($where)
@@ -35,7 +39,7 @@ class BoxNumber
             $v = array_merge($v,$productBoxNumber);
         }
 //        dump($order);
-        $boxesNumber = $this->orderBoxNumber($order);
+        $boxesNumber = $this->orderBoxNumber($order,$mixboxType);
         return $boxesNumber;
     }
 
@@ -44,7 +48,7 @@ class BoxNumber
      * @param Array $order 订单数据
      * @return Array
      */
-    public function orderBoxNumber($order)
+    public function orderBoxNumber($order,$mixboxType)
     {
         $orderboxnumber = 0;//订单总箱数
         $splicingboxnumber_arr = [];//存储待拼箱的数据
@@ -57,7 +61,7 @@ class BoxNumber
         }
         //如果有需要拼箱的数据，则计算拼箱的最优方案
         if($splicingboxnumber_arr){
-            $splicing_index_arr = $this->permutations($splicingboxnumber_arr);
+            $splicing_index_arr = $this->permutations($splicingboxnumber_arr,$mixboxType);
         }else{
             $splicing_index_arr = [];
         }
@@ -144,7 +148,7 @@ class BoxNumber
      * 获取所有的最有组合
      * @param $splicingboxnumber_arr 需要排列的数组
      */
-    public function permutations($splicingboxnumber_arr)
+    public function permutations($splicingboxnumber_arr,$mixboxType)
     {
         $result = array();//存储所有的组合方案
         if(empty($splicingboxnumber_arr)) {
@@ -170,7 +174,7 @@ class BoxNumber
         asort($d);
         //查找出最优的方案，如果差值相同的，则按照分类是一组的优先
         $all_combination = array_keys($d);//所有组合的键值
-        $result = $this->combinationResult($a,$d,$splicingboxnumber_arr);
+        $result = $this->combinationResult($a,$d,$splicingboxnumber_arr,[],$mixboxType);
         return $result;
     }
 
@@ -181,7 +185,7 @@ class BoxNumber
      * @param $splicingboxnumber_arr 需要拼箱的数组
      * @return mixed
      */
-    public function combinationResult($a,$d,$splicingboxnumber_arr,$result = array())
+    public function combinationResult($a,$d,$splicingboxnumber_arr,$result = array(),$mixboxType)
     {
         $cb_data = [];//当前获取的组合数据
         if(empty($a)){
@@ -202,7 +206,13 @@ class BoxNumber
             foreach($same_sort as $ssk=>$ssv){
                 $ssv_arr = explode(',',$ssv);
                 foreach ($ssv_arr as $sav){
-                    $cate_id_arr[$ssk][] = $splicingboxnumber_arr[$sav]['cate_id'];
+                    if($mixboxType == 1){
+                        $cate_id_arr[$ssk][] = $splicingboxnumber_arr[$sav]['cate_id'];
+                    }else{
+                        if($splicingboxnumber_arr[$sav]['proucing_item'] == 1){
+                            $cate_id_arr[$ssk][] = $splicingboxnumber_arr[$sav]['proucing_item'];
+                        }
+                    }
                 }
                 $same_cate_count[$ssk][] = array_count_values($cate_id_arr[$ssk]);
                 $max_cate_count[$ssk][] = max($same_cate_count[$ssk]);
@@ -226,7 +236,7 @@ class BoxNumber
                     $new_d[$dk] = $dv;
                 }
             }
-            return $this->combinationResult($new_a,$new_d,$splicingboxnumber_arr,$result);
+            return $this->combinationResult($new_a,$new_d,$splicingboxnumber_arr,$result,$mixboxType);
         }else{
             return $result;
         }

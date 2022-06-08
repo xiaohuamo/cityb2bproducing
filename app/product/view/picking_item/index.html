@@ -194,7 +194,7 @@
 									<div class="log" @click="log(item,index)">
 										<img src="__STATIC__/product/img/log.png">
 									</div>
-									<div class="orderDetail orderItemBox">
+									<div class="orderDetail orderItemBox" @click="gotoOrderPick(item)">
 										<div class="flexbox1 pa5 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 											<div class="flexbox2">
 												<div class="col666 F20" style="width: 50px;">{{item.logistic_sequence_No}}</div>
@@ -424,8 +424,8 @@
 				choseDate3: '',
 				logistic_delivery_date: localStorage.logistic_delivery_date,//筛选日期
 				logistic_truck_No: '',//当前选择司机
-				product_id: 0,//当前选择的产品id
-				guige1_id: '',//当前选择的规格id
+				product_id: localStorage.getItem('product_id') != null ? localStorage.getItem('product_id') : 0,//当前选择的产品id
+				guige1_id: localStorage.getItem('guige1_id') != null ? localStorage.getItem('guige1_id') : '',//当前选择的规格id
 				list: [],
 				list2: [{"id": "", "name": "All customers"}],
 				list3: [{"logistic_truck_No": "", "name": "All Drivers&Truck", "truck_name": "", "plate_number": ""}],
@@ -509,7 +509,7 @@
 				quantityType: 1,//显示数量类型 1-订单明细数量修改 2-订单明细打印数量修改(开始值) 3-订单明细打印数量修改(结束值)
 				currentPage2OneCateIndex: -1,//Picking&Sum页面右侧导航的分类数据的索引值
 				currentPage2TwoCateIndex: -1,//Picking&Sum页面右侧选中的产品数据的索引值
-				one_cate_id: 0,//当前选中的一级类目id,0-全部
+				one_cate_id: localStorage.getItem('one_cate_id') != null ? localStorage.getItem('one_cate_id') : 0,//当前选中的一级类目id,0-全部
 				two_cate_id: 0,//当前选中的二级类目id,0-全部
 				is_product_permission: 2,//判断是否有生产权限 1-有 2-没有
 				print_type: 2,//打印类型 0-one label 1-Fit print all 2-fit print 3-print order 4-blank label
@@ -619,7 +619,7 @@
 							console.log('刷新后产品数据-----',_this.menudata2Sort);
 						}else{
 							_this.menudata2=_this.menudata2Sort=_this.menudataTwoCate=_this.handleList=_this.handleListSort=[]
-							_this.menudataTwoCateIndex = 0
+							_this.menudataTwoCateIndex = _this.menudataTwoCateSortIndex = 0
 							_this.menudata2 = res.cate
 							_this.menudata2Sort = res.cate
 						}
@@ -637,6 +637,7 @@
 										break;
 									}
 								}
+								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_pick_cate_'+_this.menudata2Sort[_this.menudata2SortIndex].id,1)
 							}
 							// alert(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate);
 							if(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate == 1){
@@ -650,8 +651,6 @@
 										_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
 									})
 								}
-								_this.menudataTwoCate =_this.handleList=_this.handleListSort=[]
-								_this.menudataTwoCateIndex = _this.menudataTwoCateSortIndex = 0
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(type)
 							}
@@ -674,39 +673,48 @@
 						if(type == 'refresh'){
 							//更新数据时，保持原数据位置不变
 							_this.menudataTwoCate=_this.sortAccordingOtherData(res.product,_this.menudataTwoCate,'product_id')
-						}else {
+						}else{
 							_this.menudataTwoCate = _this.handleList = _this.handleListSort = []
 							_this.menudataTwoCateIndex = _this.menudataThreeIndex = 0
 							_this.menudataTwoCate = res.product
 						}
 						console.log('二级类目数据-----',_this.menudataTwoCate)
+						if(_this.menudataTwoCate.length > 0){
+							//获取当前默认选中的产品id和规格id
+							if(item1!=''){
+								_this.product_id = item1.product_id
+							}else{
+								if(!(_this.product_id>0)) {
+									_this.product_id = _this.menudataTwoCate[0].product_id
+								}
+							}
+							for(var i in _this.menudataTwoCate){
+								if(_this.menudataTwoCate[i].product_id == _this.product_id){
+									_this.menudataTwoCateIndex = i
+									break;
+								}
+							}
+							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0){
+								if(!(_this.guige1_id>0)){
+									_this.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][0].guige1_id
+								}else{
+									for(var i in _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate']){
+										if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][i].guige1_id == _this.guige1_id){
+											_this.menudataThreeCateIndex = i
+											break;
+										}
+									}
+								}
+							}
+							//默认加载第一个产品的第一个规格的所有加工明细
+							_this.productOrder(type)
+						}
 						if(_this.currentPage == 1) {
 							//vue获取顶部位置和左侧位置的方法
 							_this.$nextTick(() => {
 								var order_top = $('.J_main_order').offset().top + 'px'
 								_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
 							})
-						}
-						if(_this.menudataTwoCate.length > 0){
-							//获取当前默认选中的产品id和规格id
-							if(!(_this.product_id>0)){
-								if(item1==''){
-									_this.product_id = _this.menudataTwoCate[0].product_id
-								}else{
-									for(var i in _this.menudataTwoCate){
-										if(_this.menudataTwoCate[i].product_id == item1.product_id){
-											_this.menudataTwoCateIndex = i
-											_this.product_id = _this.menudataTwoCate[i].product_id
-											break;
-										}
-									}
-								}
-							}
-							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0 && !(_this.guige1_id>0)){
-								_this.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][0].guige1_id
-							}
-							//默认加载第一个产品的第一个规格的所有加工明细
-							_this.productOrder(type)
 						}
 					});
 				},
@@ -2141,6 +2149,7 @@
 								}
 							}
 							var obj = '.J_left_menu_1'
+							var top_h = 350
 							break;
 						case 2:
 							this.currentPage=1
@@ -2148,18 +2157,22 @@
 							this.isHandle=2
 							this.inidata()
 							var obj = '.J_left_menu_1'
+							var top_h = 350
 							break;
 						case 3:
 							var obj = '.J_left_menu_2'
+							var top_h = 90
 							break;
 						case 4:
 							this.currentMenu=index
 							var obj = '.J_right_menu_2'
+							var top_h = 90
 							break;
 						case 5:
 							this.currentPage3LeftIndex=index
 								this.twoCate('allDriverOrder')
 							var obj = '.J_right_menu_3'
+							var top_h = 90
 							break;
 							//picking&sum页面单击产品跳转到item pick页面对应的产品
 						case 6:
@@ -2167,6 +2180,7 @@
 							var obj = '.J_left_menu_1'
 							var index = $(selector).index()
 							this.clickOneCate(this.menudata2Sort[index],index,item)
+							var top_h = 90
 							break;
 					}
 					this.$nextTick(()=> {
@@ -2175,7 +2189,7 @@
 						} else {
 							//网页被卷去的高度
 							var scroll_top = $(obj).scrollTop()
-							var h = $(obj).find(selector).offset().top-90+scroll_top
+							var h = $(obj).find(selector).offset().top - top_h+scroll_top
 							console.log('计算出滚动的高度---',$(obj).find(selector).offset().top,$(obj).scrollTop())
 						}
 						$(obj).animate({scrollTop:h},500)
@@ -2904,6 +2918,13 @@
 					}
 					// 改变当前全屏状态
 					this.fullscreen = !this.fullscreen;
+				},
+				//点击订单明细跳转到订单拣货对应的order
+				gotoOrderPick(item){
+					localStorage.currentPage=1
+					localStorage.orderId=item.orderId
+					localStorage.logistic_truck_No=item.logistic_truck_No
+					window.location.href = "{:url('/product/pickingOrder')}"
 				}
 			},
 			created(){

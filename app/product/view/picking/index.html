@@ -231,7 +231,7 @@
 <!--											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'+',$event)">+</div>-->
 <!--										</div>-->
 <!--									</div>-->
-									<div class="orderDetail orderItemBox">
+									<div class="orderDetail orderItemBox" @click="gotoPickItem(item)">
 										<div class="flexbox1 pa5 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 											<div class="flexbox2">
 												<div class="col666 F20" style="width: 95px;">{{item.menu_id}}</div>
@@ -466,10 +466,10 @@
 				choseDate3:'',
 				logistic_delivery_date:'',//筛选日期
 				choose_logistic_truck_No:'',//筛选司机
-				logistic_truck_No:'',//当前选择司机
+				logistic_truck_No:localStorage.getItem('logistic_truck_No') != null ? localStorage.getItem('logistic_truck_No') : 0,//当前选择司机
 				product_id:0,//当前选择的产品id
 				guige1_id:'',//当前选择的规格id
-				orderId:'',//当前选择的订单id
+				orderId:localStorage.getItem('orderId') != null ? localStorage.getItem('orderId') : '',//当前选择的订单id
 				list:[],
 				list2:[{"id":"","name":"All customers"}],
 				list3:[{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
@@ -680,6 +680,18 @@
 									}
 								}
 							}
+							//如果存在orderId，则跳转到对应的位置
+							if(_this.orderId!=''){
+								for(let i in _this.menudata2Sort){
+									if(_this.menudata2Sort[i]['logistic_truck_No']==_this.logistic_truck_No){
+										_this.currentContent=i
+										_this.menudata2SortIndex=i
+										break;
+									}
+								}
+								console.log('11111---',_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,);
+								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_left_cate_'+_this.logistic_truck_No,1)
+							}
 							// alert(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate);
 							if(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate == 1){
 								//获取默认显示的二级类目
@@ -766,26 +778,27 @@
 							}
 							//driver&order页面的跳转判断，如果有二级类目数据，需要选中对应的二级类目
 							if(item1 != ''){
-								if(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId != item1.orderId){
-									for(var i in _this.menudataTwoCateSort){
-										if(_this.menudataTwoCateSort[i].orderId == item1.orderId){
-											_this.menudataTwoCateSortIndex = i
-											break;
-										}
-									}
-									for(var i in _this.menudataTwoCate){
-										if(_this.menudataTwoCate[i].orderId == item1.orderId){
-											_this.menudataTwoCateIndex = i
-											break;
-										}
-									}
-								}
 								_this.orderId = item1.orderId
 							}
 							if(_this.menudataTwoCateSort.length > 0){
 								//获取当前默认选中的订单id
 								if(_this.orderId==''){
 									_this.orderId = _this.menudataTwoCateSort[0].orderId
+								}else{
+									if(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId != _this.orderId){
+										for(var i in _this.menudataTwoCateSort){
+											if(_this.menudataTwoCateSort[i].orderId == _this.orderId){
+												_this.menudataTwoCateSortIndex = i
+												break;
+											}
+										}
+										for(var i in _this.menudataTwoCate){
+											if(_this.menudataTwoCate[i].orderId == _this.orderId){
+												_this.menudataTwoCateIndex = i
+												break;
+											}
+										}
+									}
 								}
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(type)
@@ -1304,6 +1317,7 @@
 				clickOneCate(item,index,item1=''){
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
+						console.log('tttt----',item);
 						this.isLoading=true
 						this.logistic_truck_No = item.logistic_truck_No
 						this.orderId = ''
@@ -2062,6 +2076,7 @@
 								}
 							}
 							var obj = '.J_left_menu_1'
+							var top_h = 350
 							break;
 						case 2:
 							this.currentPage=1
@@ -2069,18 +2084,22 @@
 							this.isHandle=2
 							this.inidata()
 							var obj = '.J_left_menu_1'
+							var top_h = 350
 							break;
 						case 3:
 							var obj = '.J_left_menu_2'
+							var top_h = 90
 							break;
 						case 4:
 							this.currentMenu=index
 							var obj = '.J_right_menu_2'
+							var top_h = 90
 							break;
 						case 5:
 							this.currentPage3LeftIndex=index
 								this.twoCate('allDriverOrder')
 							var obj = '.J_right_menu_3'
+							var top_h = 90
 							break;
 					}
 					this.$nextTick(()=> {
@@ -2089,7 +2108,7 @@
 						} else {
 							//网页被卷去的高度
 							var scroll_top = $(obj).scrollTop()
-							var h = $(obj).find(selector).offset().top-90+scroll_top
+							var h = $(obj).find(selector).offset().top-top_h+scroll_top
 							console.log('计算出滚动的高度---',$(obj).find(selector).offset().top,$(obj).scrollTop())
 						}
 						$(obj).animate({scrollTop:h},500)
@@ -2816,6 +2835,14 @@
 					}
 					// 改变当前全屏状态
 					this.fullscreen = !this.fullscreen;
+				},
+				//点击订单明细跳转到产品拣货对应的页面
+				gotoPickItem(item){
+					localStorage.currentPage=1
+					localStorage.one_cate_id=item.cate_id
+					localStorage.product_id=item.product_id
+					localStorage.guige1_id=item.guige1_id
+					window.location.href = "{:url('/product/picking')}"
 				}
 			},
 			created(){

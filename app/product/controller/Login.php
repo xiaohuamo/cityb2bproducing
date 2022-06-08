@@ -181,9 +181,9 @@ class Login extends Base
 
 
     public function test(){
-        $param = $this->request->only(['orderId']);
+        $param = $this->request->only(['orderId','business_userId']);
         $BoxNumber = new BoxNumber();
-        $order = $BoxNumber->getOrderBoxes($param['orderId']);
+        $order = $BoxNumber->getOrderBoxes($param['orderId'],$param['business_userId']);
         halt($order);
     }
 }
