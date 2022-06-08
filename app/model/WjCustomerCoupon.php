@@ -207,7 +207,7 @@ class WjCustomerCoupon extends Model
                     'menu_en_name' => $v['menu_en_name'],
                     'unit_en' => $v['unit_en'],
                     'proucing_item' => $v['proucing_item'],
-                    'sum_quantities' => sprintf("%01.2f",$v['customer_buying_quantity']),
+                    'sum_quantities' => floatval($v['customer_buying_quantity']),
                     'status' => $v['status'],
                     'operator_user' => $v['operator_user'],
                     'assign' => -1,
@@ -215,7 +215,7 @@ class WjCustomerCoupon extends Model
                     'producing_quantity' => -1,
                 ];
             } else {
-                $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] += $v['customer_buying_quantity'];
+                $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] = floatval(($list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
             }
             if($v['guige1_id'] > 0){
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 1;
@@ -223,7 +223,7 @@ class WjCustomerCoupon extends Model
                     $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']] = [
                         'guige1_id' => $v['guige1_id'],
                         'guige_name' => $v['guige_name'],
-                        'customer_buying_quantity' => $v['customer_buying_quantity'],
+                        'customer_buying_quantity' => floatval($v['customer_buying_quantity']),
                         'assign' => -1,
                         'left_stock' => -1,
                         'producing_quantity' => -1,
@@ -238,11 +238,11 @@ class WjCustomerCoupon extends Model
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] = $producing_quantity;
                     }
                 } else {
-                    $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'] += $v['customer_buying_quantity'];
+                    $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'] = floatval(($list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity']*100+$v['customer_buying_quantity']*100)/100);
                 }
             } else {
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 2;
-                $list[$v['cate_id']]['product'][$v['product_id']]['customer_buying_quantity'] = $v['customer_buying_quantity'];
+                $list[$v['cate_id']]['product'][$v['product_id']]['customer_buying_quantity'] = floatval($v['customer_buying_quantity']);
                 //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
                 if($v['proucing_item'] == 1){
                     $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
@@ -531,9 +531,9 @@ class WjCustomerCoupon extends Model
                 ];
             }else{
                 $product[$v['product_id']]['box_number'] += $boxs;
-                $product[$v['product_id']]['sum_quantities'] += $v['customer_buying_quantity'];
+                $product[$v['product_id']]['sum_quantities'] = floatval(($product[$v['product_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
                 if($v['dispatching_is_producing_done'] == 1){
-                    $product[$v['product_id']]['finish_quantities'] += floatval($v['customer_buying_quantity']);
+                    $product[$v['product_id']]['finish_quantities'] = floatval(($product[$v['product_id']]['finish_quantities']*100+$v['customer_buying_quantity']*100)/100);
                 }
             }
             $product[$v['product_id']]['done_info'][] = [
@@ -556,9 +556,9 @@ class WjCustomerCoupon extends Model
                     ];
                 }else{
                     $product[$v['product_id']]['two_cate'][$v['guige1_id']]['box_number'] += $boxs;
-                    $product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities'] += floatval($v['customer_buying_quantity']);
+                    $product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities'] = floatval(($product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
                     if($v['dispatching_is_producing_done'] == 1){
-                        $product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'] += floatval($v['customer_buying_quantity']);
+                        $product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'] += floatval(($product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities']*100+$v['customer_buying_quantity']*100)/100);
                     }
                 }
                 $product[$v['product_id']]['two_cate'][$v['guige1_id']]['done_info'][] = [

@@ -688,20 +688,18 @@
 						}
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id和规格id
-							if(item1!=''){
-								_this.product_id = item1.product_id
-							}else{
-								if(!(_this.product_id>0)) {
-									_this.product_id = _this.menudataTwoCate[0].product_id
+							if(item1!=''||_this.product_id>0){
+								if(item1!=''){
+									_this.product_id = item1.product_id
 								}
-							}
-							if(_this.product_id>0){
 								for(var i in _this.menudataTwoCate){
 									if(_this.menudataTwoCate[i].product_id == _this.product_id){
 										_this.menudataTwoCateIndex = i
 										break;
 									}
 								}
+							}else{
+								_this.product_id = _this.menudataTwoCate[0].product_id
 							}
 							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0){
 								if(!(_this.guige1_id>0)){
