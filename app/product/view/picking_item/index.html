@@ -679,6 +679,13 @@
 							_this.menudataTwoCate = res.product
 						}
 						console.log('二级类目数据-----',_this.menudataTwoCate)
+						if(_this.currentPage == 1) {
+							//vue获取顶部位置和左侧位置的方法
+							_this.$nextTick(() => {
+								var order_top = $('.J_main_order').offset().top + 'px'
+								_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
+							})
+						}
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id和规格id
 							if(item1!=''){
@@ -688,10 +695,12 @@
 									_this.product_id = _this.menudataTwoCate[0].product_id
 								}
 							}
-							for(var i in _this.menudataTwoCate){
-								if(_this.menudataTwoCate[i].product_id == _this.product_id){
-									_this.menudataTwoCateIndex = i
-									break;
+							if(_this.product_id>0){
+								for(var i in _this.menudataTwoCate){
+									if(_this.menudataTwoCate[i].product_id == _this.product_id){
+										_this.menudataTwoCateIndex = i
+										break;
+									}
 								}
 							}
 							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0){
@@ -708,13 +717,6 @@
 							}
 							//默认加载第一个产品的第一个规格的所有加工明细
 							_this.productOrder(type)
-						}
-						if(_this.currentPage == 1) {
-							//vue获取顶部位置和左侧位置的方法
-							_this.$nextTick(() => {
-								var order_top = $('.J_main_order').offset().top + 'px'
-								_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
-							})
 						}
 					});
 				},
