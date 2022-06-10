@@ -131,8 +131,8 @@
 								</div>
 							</div>
 						</div>
-						<div class="flexbox2 mb10 rsection1Box F18 J_product_cate" ref="element">
-							<div :class="{'arrow_box':menudataTwoCateSortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn6 relative mb10" v-for="(item,index) in menudataTwoCateSort"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
+						<div class="flexbox2 mb10 rsection1Box F18 J_order_cate" ref="element">
+							<div :class="['J_cate_orderId_'+item.orderId,{'arrow_box':menudataTwoCateSortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}]" class="colfff rbtn6 relative mb10" v-for="(item,index) in menudataTwoCateSort"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div style="text-align:left;"><span class="num">{{item.logistic_sequence_No}}</span>{{item.finish_quantities}}/{{item.sum_quantities}}</div>
 									<div :class="item.name_length>12?'F13 maT5':'F18'">{{item.nickname}}</div>
@@ -557,6 +557,7 @@
 				var _this = this
 				_this.isLoading=true
 				getData("{:url('/product/loginInfo')}", '', function (res) {
+					console.log('用户信息----',res);
 					_this.isLoading=false
 					//获取登录信息
 					if (res.result.user_name) {
@@ -793,8 +794,9 @@
 										_this.menudataTwoCateSortIndex = _this.menudataTwoCateIndex = 0
 									}
 								}
-								// alert(_this.menudataTwoCateSortIndex)
 								_this.orderId = localStorage.orderId = _this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId
+								//将订单定位到对应的位置
+								_this.goto(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex],_this.menudataTwoCateSortIndex,'.J_cate_orderId_'+_this.orderId,7)
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(type)
 							}
@@ -2116,6 +2118,12 @@
 							this.twoCate('allDriverOrder')
 							var obj = '.J_right_menu_3'
 							var top_h = 90
+							break;
+							//当订单多时，将订单滑到对应的位置
+						case 7:
+							var obj = '.J_order_cate'
+							var top_h = 142
+							break;
 							break;
 					}
 					localStorage.currentPage = this.currentPage

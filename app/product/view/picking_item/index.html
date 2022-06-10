@@ -114,7 +114,7 @@
 							</div>
 						</div>
 						<div class="flexbox2 mb10 rsection2Box F18 J_product_cate" ref="element">
-							<div :class="{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn7 relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
+							<div :class="['J_cate_product_id_'+item.product_id,{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}]" class="colfff rbtn7 relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div style="text-align:left;"><span class="num">{{item.box_number}}bxs</span><span class="F20 w600">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</span></div>
 									<div class="w600" :class="item.menu_en_name.length>15?'F20':'F22'">{{item.menu_en_name}}</div>
@@ -124,7 +124,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element" v-if="menudataTwoCate.length>0&&menudataTwoCate[menudataTwoCateIndex].two_cate.length>0">
+						<div class="flexbox2 rsection1 F20 J_product_guige_cate" ref="element" v-if="menudataTwoCate.length>0&&menudataTwoCate[menudataTwoCateIndex].two_cate.length>0">
 							<div :class="{'arrow_box':menudataThreeIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn relative mb10"  v-for="(item,index) in menudataTwoCate[menudataTwoCateIndex].two_cate"  @click="clickThreeCate(item,index);"  @dblclick="gtouchstart(item,index,3)">
 								<div :class="item.status==1||item.status==2?'blink':''">
 									<div class="F22 w600">{{item.guige_name}}</div>
@@ -680,6 +680,9 @@
 								}
 							}
 							_this.product_id = localStorage.product_id = _this.menudataTwoCate[_this.menudataTwoCateIndex].product_id
+							//将产品滑动到对应的位置
+							_this.goto(_this.menudataTwoCate[_this.menudataTwoCateIndex],_this.menudataTwoCateIndex,'.J_cate_product_id_'+_this.product_id,7)
+							//将该产品滑到对应的高度
 							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0){
 								if(!(_this.guige1_id>0)){
 									_this.menudataThreeCateIndex = 0
@@ -2162,7 +2165,12 @@
 									}
 									this.clickOneCate(this.menudata2Sort[index],index)
 								}
-								var top_h = 90
+								var top_h = 350
+								break;
+								//滑动产品到对应的位置
+							case 7:
+								var obj = '.J_product_cate'
+								var top_h = 144
 								break;
 						}
 						localStorage.currentPage = this.currentPage
