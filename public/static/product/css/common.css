@@ -536,7 +536,8 @@ a{
 	overflow: auto;
 }
 .rsection2Box{
-	max-height: 258px;
+	/*max-height: 258px;*/
+	max-height: 400px;
 	overflow: auto;
 }
 .m0-5{
@@ -746,7 +747,6 @@ a{
 	position: fixed;
 	left: 50%;
 	top: 50%;
-	margin-top:-4.125rem;
 	transform: translate(-50%,-50%);
 	padding: 1rem;
 }
