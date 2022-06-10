@@ -151,6 +151,7 @@ class OrderProductPlaning extends Model
                     $v['lock_type'] = $user_id == $v['operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
                 }
             }
+            $v['printBg'] = '';//打印样式
         }
         return $order;
     }

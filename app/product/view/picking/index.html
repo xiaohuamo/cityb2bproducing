@@ -795,8 +795,10 @@
 									}
 								}
 								_this.orderId = localStorage.orderId = _this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId
-								//将订单定位到对应的位置
-								_this.goto(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex],_this.menudataTwoCateSortIndex,'.J_cate_orderId_'+_this.orderId,7)
+								if(type != 'refresh') {
+									//将订单定位到对应的位置
+									_this.goto(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex], _this.menudataTwoCateSortIndex, '.J_cate_orderId_' + _this.orderId, 7)
+								}
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(type)
 							}
@@ -1315,7 +1317,7 @@
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
 						this.isLoading=true
-						this.logistic_truck_No = item.logistic_truck_No
+						this.logistic_truck_No = localStorage.logistic_truck_No = item.logistic_truck_No
 						this.menudata2SortIndex=index
 						// this.orderId = ''
 						// this.menudataTwoCateSortIndex = 0
@@ -1346,7 +1348,7 @@
 						this.isLoading=true
 						//记录当前点击的产品键值
 						this.menudataTwoCateSortIndex=index
-						this.orderId = item.orderId
+						this.orderId = localStorage.orderId = item.orderId
 						//重置加工明细排序信息-start
 						this.wccSort=0
 						this.wccSortType=1
@@ -2080,54 +2082,53 @@
 				//selector 选中对象
 				//item1 选中的二级类目数据
 				goto(item,index,selector,type=1,item1=''){
-					switch(type){
-						case 1:
-							this.currentPage=1
-							//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
-							var index = $(selector).index()
-							//将司机id和订单id存入缓存
-							this.logistic_truck_No = localStorage.logistic_truck_No = item.logistic_truck_No
-							if(item1 != '') {
-								this.orderId = localStorage.orderId = item1.orderId
-							}
-							if(index>0){
-								this.clickOneCate(this.menudata2Sort[index],index)
-							}
-							var obj = '.J_left_menu_1'
-							var top_h = 350
-							break;
-						case 2:
-							this.currentPage=1
-							// alert(selector)
-							this.isHandle=2
-							this.inidata()
-							var obj = '.J_left_menu_1'
-							var top_h = 350
-							break;
-						case 3:
-							var obj = '.J_left_menu_2'
-							var top_h = 90
-							break;
-						case 4:
-							this.currentMenu=index
-							var obj = '.J_right_menu_2'
-							var top_h = 90
-							break;
-						case 5:
-							this.currentPage3LeftIndex=index
-							this.twoCate('allDriverOrder')
-							var obj = '.J_right_menu_3'
-							var top_h = 90
-							break;
-							//当订单多时，将订单滑到对应的位置
-						case 7:
-							var obj = '.J_order_cate'
-							var top_h = 142
-							break;
-							break;
-					}
-					localStorage.currentPage = this.currentPage
 					this.$nextTick(()=> {
+						switch(type){
+							case 1:
+								this.currentPage=1
+								//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
+								var index = $(selector).index()
+								//将司机id和订单id存入缓存
+								this.logistic_truck_No = localStorage.logistic_truck_No = item.logistic_truck_No
+								if(item1 != '') {
+									this.orderId = localStorage.orderId = item1.orderId
+								}
+								if(index>=0){
+									this.clickOneCate(this.menudata2Sort[index],index)
+								}
+								var obj = '.J_left_menu_1'
+								var top_h = 350
+								break;
+							case 2:
+								this.currentPage=1
+								// alert(selector)
+								this.isHandle=2
+								this.inidata()
+								var obj = '.J_left_menu_1'
+								var top_h = 350
+								break;
+							case 3:
+								var obj = '.J_left_menu_2'
+								var top_h = 90
+								break;
+							case 4:
+								this.currentMenu=index
+								var obj = '.J_right_menu_2'
+								var top_h = 90
+								break;
+							case 5:
+								this.currentPage3LeftIndex=index
+								this.twoCate('allDriverOrder')
+								var obj = '.J_right_menu_3'
+								var top_h = 90
+								break;
+								//当订单多时，将订单滑到对应的位置
+							case 7:
+								var obj = '.J_order_cate'
+								var top_h = 142
+								break;
+						}
+						localStorage.currentPage = this.currentPage
 						if(selector == '.J_pick_cate_-1'){
 							var h = 0
 						} else {

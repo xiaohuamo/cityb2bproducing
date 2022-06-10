@@ -279,6 +279,7 @@ class Order extends Model
 //            $v['subtitle'] = $customer_delivery_option.'&nbsp;<strong  style=\"width: 80%;font-weight:bolder\" >'. $name."</strong>" ;
             //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
             $v = $this->getOrderItemBoxSortId($v);
+            $v['printBg'] = '';//打印样式
         }
         return $order;
     }
@@ -539,6 +540,7 @@ class Order extends Model
             $v['name'] = $name;
 //            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
             $v = $this->getOrderItemBoxSortId($v);
+            $v['printBg'] = '';//打印样式
         }
         return $order;
     }
@@ -850,6 +852,7 @@ class Order extends Model
 //            $v['subtitle'] = $customer_delivery_option."  CustId:".$v['userId']." <br>" .'CustName:<strong  style=\"width: 80%;font-size:16px;font-weight:bolder\" >'. $name."</strong>" ;
             //获取该产品的所有打印标签记录-（如果有记录则显示最后一个打印标签，如果没有记录，则显示当前订单的总序号）
             $v = $this->getOrderItemBoxSortId($v);
+            $v['printBg'] = '';//打印样式
         }
         if($picking_user_id>0 && !empty($no_picking_id_arr)){
             WjCustomerCoupon::getUpdate(['id'=>$no_picking_id_arr],['dispatching_item_operator_user_id'=>$picking_user_id]);
