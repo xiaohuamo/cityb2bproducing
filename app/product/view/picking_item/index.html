@@ -89,18 +89,6 @@
 						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
 					</div>
 				</div>
-				<div v-show="currentPage==3" class="leftMenu2">
-					<div :class="[{'bgFFF7F3 col5e5656':item.status==0,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2" @click="goto(item,index,'.J_right_cate_'+item.logistic_truck_No,5);">
-						<div :class="item.status==1||item.status==2?'blink':''">
-							<div v-if="item.logistic_truck_No!=0">{{item.truck_name}}-{{item.plate_number}}</div>
-							<div>{{item.name}}</div>
-							<!--						<div>Dep:{{item.schedule_time}}</div>-->
-							<!--						<div>{{item.remain_time}}</div>-->
-							<img v-if="item.status==1&&item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
-							<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentPage3LeftIndex==index"/>
-						</div>
-					</div>
-				</div>
 
 				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
 					<div :class="['J_page1_pick_cate_'+item.id,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);">
@@ -262,7 +250,7 @@
 						<div class="flexbox2">
 							<div v-for="(item1,index1) in item['product']">
 <!--								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status==3&&item1.proucing_item!=1&&showReprocess(item,index,item1,index1)">-->
-								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status!=1&&goto(item1,index1,'.J_page1_pick_cate_'+item.cate_id,6,item)">
+								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status!=1&&goto(item,index,'.J_page1_pick_cate_'+item.cate_id,6,item1)">
 									<img v-if="item1.proucing_item==1" class="productImg" src="__STATIC__/product/img/product.png">
 									<div :class="{'blink':item1.status==1||item1.status==2}">
 										<div>{{item1.menu_en_name}}</div>
@@ -293,22 +281,6 @@
 <!--									<img src="__STATIC__/product/img/log.png" class="pslogbottom"/>-->
 <!--									log-->
 <!--								</div>-->
-							</div>
-						</div>
-					</div>
-				</div>
-				<div v-if="currentPage==3" class="rightCateMenu J_right_menu_3">
-					<div v-for="(item,index) in allDriverOrder" :class="index>0?'maT30':''">
-						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)" v-if="item.logistic_truck_No!=0">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time}}</div>
-						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)" v-else>{{item.name}}</div>
-						<div class="flexbox2">
-							<div v-for="(item1,index1) in item.order" :class="{'arrow_box':currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1,'bgFFF7F3 col5e5656':item1.status==0,'bgOrange':item1.status==1,'bgGreen':item1.status==3,'bgGrey':item1.status==2}" class="colfff rbtn6 relative mb10">
-								<div :class="item1.status==1||item1.status==2?'blink':''" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1,item1)">
-									<div style="text-align:left;"><span class="num">{{item1.logistic_sequence_No}}</span>{{item1.finish_quantities}}/{{item1.sum_quantities}}</div>
-									<div :class="item1.name_length>12?'F13 maT5':'F18'">{{item1.nickname}}</div>
-									<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
-									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1"/>
-								</div>
 							</div>
 						</div>
 					</div>
@@ -637,29 +609,33 @@
 										break;
 									}
 								}
-								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_pick_cate_'+_this.menudata2Sort[_this.menudata2SortIndex].id,1)
 							}
-							// alert(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate);
-							if(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate == 1){
-								//获取默认显示的二级类目
-								_this.twoCate(type)
-							}else{
-								if(_this.currentPage == 1){
-									//vue获取顶部位置方法
-									_this.$nextTick(()=> {
-										var order_top = $('.J_main_order').offset().top+'px'
-										_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
-									})
+							localStorage.product_id = _this.product_id
+							let is_goto = 0;//是否需要滑动 1-是 0-否
+							if(type != 'refresh'){
+								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_pick_cate_'+_this.menudata2Sort[_this.menudata2SortIndex].id,6)
+							}
+							if(is_goto == 0){
+								if(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate == 1){
+									//获取默认显示的二级类目
+									_this.twoCate(type)
+								}else{
+									if(_this.currentPage == 1){
+										//vue获取顶部位置方法
+										_this.$nextTick(()=> {
+											var order_top = $('.J_main_order').offset().top+'px'
+											_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
+										})
+									}
+									//默认加载第一个产品的第一个规格的所有加工明细
+									_this.productOrder(type)
 								}
-								//默认加载第一个产品的第一个规格的所有加工明细
-								_this.productOrder(type)
 							}
 						}
 					});
 				},
 				//获取二级类目 type=refresh:定时刷新数据
-				//item1 当前选中的二级类目数据
-				twoCate(type='',item1=''){
+				twoCate(type=''){
 					var _this = this
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
@@ -688,30 +664,41 @@
 						}
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id和规格id
-							if(item1!=''||_this.product_id>0){
-								if(item1!=''){
-									_this.product_id = item1.product_id
-								}
+							if(_this.product_id==0){
+								_this.menudataTwoCateIndex = 0
+							}else{
+								let is_has_product_id=0;//是否存在该产品id
 								for(var i in _this.menudataTwoCate){
 									if(_this.menudataTwoCate[i].product_id == _this.product_id){
 										_this.menudataTwoCateIndex = i
+										is_has_product_id = 1
 										break;
 									}
 								}
-							}else{
-								_this.product_id = _this.menudataTwoCate[0].product_id
+								if(is_has_product_id == 0){
+									_this.menudataTwoCateIndex = 0
+								}
 							}
+							_this.product_id = localStorage.product_id = _this.menudataTwoCate[_this.menudataTwoCateIndex].product_id
 							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0){
 								if(!(_this.guige1_id>0)){
-									_this.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][0].guige1_id
+									_this.menudataThreeCateIndex = 0
 								}else{
+									let is_has_guige_id=0;//是否存在该产品规格id
 									for(var i in _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate']){
 										if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][i].guige1_id == _this.guige1_id){
 											_this.menudataThreeCateIndex = i
+											is_has_guige_id=1
 											break;
 										}
 									}
+									if(is_has_guige_id == 0){
+										_this.menudataThreeCateIndex = 0
+									}
 								}
+								_this.guige1_id = localStorage.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][_this.menudataThreeCateIndex].guige1_id
+							}else{
+								_this.guige1_id = localStorage.guige1_id = 0
 							}
 							//默认加载第一个产品的第一个规格的所有加工明细
 							_this.productOrder(type)
@@ -1344,27 +1331,25 @@
 					}
 				},
 				//切换一级类目
-				clickOneCate(item,index,item1=''){
+				clickOneCate(item,index){
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
 						this.isLoading=true
-						// if(item.id != this.one_cate_id){
-							this.twoCateTitleIndex = -1
-							this.two_cate_id = 0
-							this.menudataTwoCateIndex = 0
-							this.menudataThreeIndex = 0
-							this.one_cate_id = item.id
-							this.menudata2SortIndex=index
-							this.product_id=this.guige1_id=''
-							//通排序基本数据同步索引
-							this.menudata2Sync(1)
-							//重置加工明细排序信息-start
-							this.wccSort=0
-							this.wccSortType=1
-							//重置加工明细排序信息-end
-							//获取二级类目
-							this.twoCate('',item1)
-						// }
+						this.twoCateTitleIndex = -1
+						this.two_cate_id = 0
+						this.one_cate_id = item.id
+						this.menudata2SortIndex=index
+						// this.menudataTwoCateIndex = 0
+						// this.menudataThreeIndex = 0
+						// this.product_id=this.guige1_id=''
+						//通排序基本数据同步索引
+						this.menudata2Sync(1)
+						//重置加工明细排序信息-start
+						this.wccSort=0
+						this.wccSortType=1
+						//重置加工明细排序信息-end
+						//获取二级类目
+						this.twoCate()
 					}, 300);   //大概时间300ms
 				},
 				//切换二级类目，获取对应的产品信息
@@ -2151,59 +2136,36 @@
 						_this.goods = res.result
 					});
 				},
-				//类目页面跳转到加工页面对应的产品位置  type-1:当前备货页面点击跳转+定位 2：返回此分类点击跳转+定位 3:拣货员当前备货页面分类定位
+				//类目页面跳转到加工页面对应的产品位置  type-4:picking&sum页面点击分类+定位 6:（1）picking&sum页面点击产品跳转到产品拣货页面并定位，（2）产品拣货页面默认定位
 				//index 选中的索引值id
 				//selector 选中对象
 				//item1 选中的二级类目数据
 				goto(item,index,selector,type=1,item1=''){
-					switch(type){
-						case 1:
-							this.currentPage=1
-							//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
-							var index = $(selector).index()
-							if(this.menudata2SortIndex != index){
-								this.clickOneCate(this.menudata2Sort[index],index,item1)
-							} else {
-								if(item1 != ''){
-									this.twoCate('',item1)
-								}
-							}
-							var obj = '.J_left_menu_1'
-							var top_h = 350
-							break;
-						case 2:
-							this.currentPage=1
-							// alert(selector)
-							this.isHandle=2
-							this.inidata()
-							var obj = '.J_left_menu_1'
-							var top_h = 350
-							break;
-						case 3:
-							var obj = '.J_left_menu_2'
-							var top_h = 90
-							break;
-						case 4:
-							this.currentMenu=index
-							var obj = '.J_right_menu_2'
-							var top_h = 90
-							break;
-						case 5:
-							this.currentPage3LeftIndex=index
-								this.twoCate('allDriverOrder')
-							var obj = '.J_right_menu_3'
-							var top_h = 90
-							break;
-							//picking&sum页面单击产品跳转到item pick页面对应的产品
-						case 6:
-							this.currentPage=1
-							var obj = '.J_left_menu_1'
-							var index = $(selector).index()
-							this.clickOneCate(this.menudata2Sort[index],index,item)
-							var top_h = 90
-							break;
-					}
 					this.$nextTick(()=> {
+						switch(type){
+							case 4:
+								this.currentMenu=index
+								var obj = '.J_right_menu_2'
+								var top_h = 90
+								break;
+								//picking&sum页面单击产品跳转到item pick页面对应的产品
+							case 6:
+								this.currentPage=1
+								var obj = '.J_left_menu_1'
+								var index = $(selector).index()
+								//将点击的产品信息存入缓存
+								if(index>=0){
+									//将点击的产品信息存入缓存
+									this.one_cate_id = localStorage.one_cate_id=item.cate_id
+									if(item1!=''){
+										this.product_id = localStorage.product_id=item1.product_id
+									}
+									this.clickOneCate(this.menudata2Sort[index],index)
+								}
+								var top_h = 90
+								break;
+						}
+						localStorage.currentPage = this.currentPage
 						if(selector == '.J_pick_cate_-1'){
 							var h = 0
 						} else {

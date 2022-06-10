@@ -668,19 +668,22 @@
 									}
 								}
 							}
-							//如果存在orderId，则跳转到对应的位置
-							if(_this.orderId!=''){
+							//如果存在司机信息，则跳转到对应的位置
+							if(_this.logistic_truck_No!=''){
+								let is_has_logistic_truck_No = 0;//缓存的司机id是否存在 1-是 0-否
 								for(let i in _this.menudata2Sort){
 									if(_this.menudata2Sort[i]['logistic_truck_No']==_this.logistic_truck_No){
 										_this.currentContent=i
 										_this.menudata2SortIndex=i
+										is_has_logistic_truck_No = 1;
 										break;
 									}
 								}
-								console.log('11111---',_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,);
-								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_left_cate_'+_this.logistic_truck_No,1)
+								if(is_has_logistic_truck_No == 0){
+									_this.currentContent=_this.menudata2SortIndex=0
+								}
 							}
-							// alert(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate);
+							localStorage.logistic_truck_No = _this.logistic_truck_No
 							if(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate == 1){
 								//获取默认显示的二级类目
 								_this.twoCate(type)
@@ -697,6 +700,10 @@
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(type)
 							}
+							if(type != 'refresh'){
+								//如果有缓存的产品id,则划到对应的位置
+								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_left_cate_'+_this.logistic_truck_No,1)
+							}
 						}
 						if(_this.currentPage == 3) {
 							_this.twoCate('allDriverOrder')
@@ -705,8 +712,7 @@
 					});
 				},
 				//获取二级类目 type=allDriverOrder：获取driver&orders页面的数据 refresh:定时刷新数据
-				//item1 当前选中的二级类目数据
-				twoCate(type='',item1=''){
+				twoCate(type=''){
 					var _this = this
 					if(type == 'allDriverOrder'){
 						var data = {
@@ -763,30 +769,32 @@
 									_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
 								})
 							}
-							//driver&order页面的跳转判断，如果有二级类目数据，需要选中对应的二级类目
-							if(item1 != ''){
-								_this.orderId = item1.orderId
-							}
 							if(_this.menudataTwoCateSort.length > 0){
 								//获取当前默认选中的订单id
 								if(_this.orderId==''){
-									_this.orderId = _this.menudataTwoCateSort[0].orderId
+									_this.menudataTwoCateSortIndex = _this.menudataTwoCateIndex = 0
 								}else{
-									if(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId != _this.orderId){
-										for(var i in _this.menudataTwoCateSort){
-											if(_this.menudataTwoCateSort[i].orderId == _this.orderId){
-												_this.menudataTwoCateSortIndex = i
-												break;
-											}
+									let is_has_orderId = 0;//是否存在订单id 1-是 0-否
+									for(var i in _this.menudataTwoCateSort){
+										if(_this.menudataTwoCateSort[i].orderId == _this.orderId){
+											_this.menudataTwoCateSortIndex = i
+											is_has_orderId = 1;
+											break;
 										}
+									}
+									if(is_has_orderId == 1){
 										for(var i in _this.menudataTwoCate){
 											if(_this.menudataTwoCate[i].orderId == _this.orderId){
 												_this.menudataTwoCateIndex = i
 												break;
 											}
 										}
+									}else{
+										_this.menudataTwoCateSortIndex = _this.menudataTwoCateIndex = 0
 									}
 								}
+								// alert(_this.menudataTwoCateSortIndex)
+								_this.orderId = localStorage.orderId = _this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(type)
 							}
@@ -1301,15 +1309,14 @@
 					}
 				},
 				//切换一级类目
-				clickOneCate(item,index,item1=''){
+				clickOneCate(item,index){
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
-						console.log('tttt----',item);
 						this.isLoading=true
 						this.logistic_truck_No = item.logistic_truck_No
-						this.orderId = ''
 						this.menudata2SortIndex=index
-						this.menudataTwoCateSortIndex = 0
+						// this.orderId = ''
+						// this.menudataTwoCateSortIndex = 0
 						//通排序基本数据同步索引
 						this.menudata2Sync(1)
 						//重置二级类目排序信息-start
@@ -1320,12 +1327,13 @@
 						this.wccSort=0
 						this.wccSortType=1
 						//重置加工明细排序信息-end
-						//获取二级类目
-						this.twoCate('',item1)
 						//如果没有二级类目，则直接获取订单
 						if(item.is_has_two_cate == 2){
 							//获取一级类目对应的订单
 							this.productOrder()
+						}else{
+							//获取二级类目
+							this.twoCate()
 						}
 					}, 300);   //大概时间300ms
 				},
@@ -2075,12 +2083,13 @@
 							this.currentPage=1
 							//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
 							var index = $(selector).index()
-							if(this.menudata2SortIndex != index){
-								this.clickOneCate(this.menudata2Sort[index],index,item1)
-							} else {
-								if(item1 != ''){
-									this.twoCate('',item1)
-								}
+							//将司机id和订单id存入缓存
+							this.logistic_truck_No = localStorage.logistic_truck_No = item.logistic_truck_No
+							if(item1 != '') {
+								this.orderId = localStorage.orderId = item1.orderId
+							}
+							if(index>0){
+								this.clickOneCate(this.menudata2Sort[index],index)
 							}
 							var obj = '.J_left_menu_1'
 							var top_h = 350
@@ -2104,11 +2113,12 @@
 							break;
 						case 5:
 							this.currentPage3LeftIndex=index
-								this.twoCate('allDriverOrder')
+							this.twoCate('allDriverOrder')
 							var obj = '.J_right_menu_3'
 							var top_h = 90
 							break;
 					}
+					localStorage.currentPage = this.currentPage
 					this.$nextTick(()=> {
 						if(selector == '.J_pick_cate_-1'){
 							var h = 0
