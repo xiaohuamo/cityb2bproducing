@@ -422,7 +422,7 @@ class Order extends Model
      * @param $orderId  订单id
      * @return array
      */
-    public function getProductOrderDetailList($businessId,$user_id,$orderId,$wcc_sort=0,$wcc_sort_type=1)
+    public function getProductOrderDetailList($businessId,$user_id,$orderId,$wcc_sort=0,$wcc_sort_type=1,$type=1)
     {
         $where = [
             ['wcc.order_id', '=', $orderId],
@@ -460,16 +460,16 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_stop_No,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.mix_box_group,wcc.assign_stock,rm.restaurant_category_id cate_id')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_stop_No,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.mix_box_group,wcc.assign_stock,rm.restaurant_category_id cate_id,pps.operator_user_id pps_operator_user_id,pps.isDone pps_isDone')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
             ->leftJoin('dispatching_progress_summery dps',"dps.delivery_date = o.logistic_delivery_date and dps.business_id=$businessId and dps.orderId=o.orderId and dps.isdeleted=0")
+            ->leftJoin('producing_progress_summery pps',"pps.delivery_date = o.logistic_delivery_date and pps.business_userId=$businessId and pps.product_id=wcc.restaurant_menu_id and pps.guige1_id=wcc.guige1_id and pps.isdeleted=0")
             ->where($where)
             ->order($order_by)
             ->select()->toArray();
-//        halt($order);
         //获取所有的司机信息
         $logistic_truck_No_arr = array_filter(array_unique(array_column($order,'logistic_truck_No')));
         $truck_data_arr = [];//存储司机的信息
@@ -491,30 +491,39 @@ class Order extends Model
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;
-            if($v['operator_user_id'] > 0){
-                if($v['isDone'] == 0){
-                    $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
-                    //如果是生产未分配的产品，锁定类型由当前锁定员确定，优先级高于按产品拣货锁定的级别
-                    if($v['proucing_item'] == 1 && $v['assign_stock'] == 0){
-                        $v['lock_type'] = $user_id == $v['operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
-                    }else{
-                        //产品锁定的优先级高于订单锁定，因此，当产品被锁定时，判断当前锁定类型
-                        if($v['dispatching_item_operator_user_id']>0) {
-                            $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
-                        }else{
+            if($type == 1||$type==2&&$v['proucing_item']==0){
+                if($v['operator_user_id'] > 0){
+                    if($v['isDone'] == 0){
+                        $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                        //如果是生产未分配的产品，锁定类型由当前锁定员确定，优先级高于按产品拣货锁定的级别
+                        if($v['proucing_item'] == 1 && $v['assign_stock'] == 0){
                             $v['lock_type'] = $user_id == $v['operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                        }else{
+                            //产品锁定的优先级高于订单锁定，因此，当产品被锁定时，判断当前锁定类型
+                            if($v['dispatching_item_operator_user_id']>0) {
+                                $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                            }else{
+                                $v['lock_type'] = $user_id == $v['operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                            }
+                        }
+                    }
+                }else{
+                    if($v['proucing_item'] == 1 && $v['assign_stock'] == 0){
+                        $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                        $v['lock_type'] = 2;//1-被自己锁定 2-被他人锁定
+                    }else{
+                        //如果该明细当前被产品拣货锁定时，则此条明细的锁定状态为锁定
+                        if ($v['dispatching_item_operator_user_id'] > 0) {
+                            $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
+                            $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
                         }
                     }
                 }
             }else{
-                if($v['proucing_item'] == 1 && $v['assign_stock'] == 0){
-                    $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
-                    $v['lock_type'] = 2;//1-被自己锁定 2-被他人锁定
-                }else{
-                    //如果该明细当前被产品拣货锁定时，则此条明细的锁定状态为锁定
-                    if ($v['dispatching_item_operator_user_id'] > 0) {
+                if($v['pps_operator_user_id'] > 0){
+                    if($v['pps_isDone'] == 0){
                         $v['is_lock'] = 1;//是否被锁定，1锁定 2未锁定
-                        $v['lock_type'] = $user_id == $v['dispatching_item_operator_user_id'] ? 1 : 2;//1-被自己锁定 2-被他人锁定
+                        $v['lock_type'] = $user_id == $v['pps_operator_user_id']?1:2;//1-被自己锁定 2-被他人锁定
                     }
                 }
             }
@@ -712,7 +721,7 @@ class Order extends Model
         $order = Db::name('order')
             ->alias('o')
             ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxs,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name')
-            ->leftJoin('user_factory uf','uf.user_id = o.userId')
+            ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
             ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)
             ->where($map)

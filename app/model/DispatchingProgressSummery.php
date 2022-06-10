@@ -314,7 +314,7 @@ class DispatchingProgressSummery extends Model
             ->alias('dps')
             ->field('dps.orderId,dps.truck_no logistic_truck_No,o.logistic_sequence_No,dps.sum_quantities,dps.finish_quantities,dps.operator_user_id,dps.isDone,o.userId,uf.nickname,t.truck_name,t.plate_number,o.logisitic_schedule_time,u.contactPersonFirstname,u.contactPersonLastname')
             ->leftJoin('order o','o.orderId = dps.orderId')
-            ->leftJoin('user_factory uf','uf.user_id = o.userId')
+            ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
             ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
             ->leftJoin('user u','u.id=t.current_driver')
             ->where($where)

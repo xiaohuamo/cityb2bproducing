@@ -111,9 +111,10 @@ class Picking extends AuthBase
     public function productOrderDetailList()
     {
         //接收参数
-        $param = $this->request->only(['orderId','wcc_sort','wcc_sort_type']);
+        $param = $this->request->only(['orderId','wcc_sort','wcc_sort_type','type']);
         $param['wcc_sort'] = $param['wcc_sort']??0;//排序字段
         $param['wcc_sort_type'] = $param['wcc_sort_type']??1;//1-正向排序 2-反向排序
+        $param['type'] = $param['type']??1;//1-拣货端 2-生产端
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();//当前操作用户
@@ -121,7 +122,7 @@ class Picking extends AuthBase
         $Order = new Order();
 
         //获取对应日期的加工订单
-        $order = $Order->getProductOrderDetailList($businessId,$user_id,$param['orderId'],$param['wcc_sort'],$param['wcc_sort_type']);
+        $order = $Order->getProductOrderDetailList($businessId,$user_id,$param['orderId'],$param['wcc_sort'],$param['wcc_sort_type'],$param['type']);
         $data = [
             'order' => $order,
             'message' => Order::getVal(['orderId' => $param['orderId']],'message_to_business'),//订单备注信息

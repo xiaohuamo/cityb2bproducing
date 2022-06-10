@@ -155,7 +155,7 @@
 									</div>
 									<div class="w70">
 										<div class="flexbox1 pa5-10" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
-											<div class="flexbox2">
+											<div class="flexbox2" @click="showOrderDetail(item)">
 												<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
 												<div class="col666 menuWidth">{{item.nickname}}</div>
 											</div>
@@ -258,7 +258,7 @@
 							<div v-for="(item,index) in goods" :class="['J_product_cate_'+item.cate_id,{'maT30':index>0}]">
 								<div class="F20 hand cater mb10 bgFD6921 colfff" @click="goto(item,index,'.J_cate_'+item['cate_id'],2)">{{item['category_en_name']}}</div>
 								<div class="flexbox2">
-									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn3 cateWH relative pdbtn" @click="goto(item,index,'#anchor-'+item1.product_id)">
+									<div v-for="(item1,index1) in item['data']" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" class="lbtn3 cateWH relative pdbtn" @click="goto(item1,index1,'#anchor-'+item1.product_id)">
 										<div :class="{'blink':item1.status==1||item1.status==2}">
 											<div class="fsz">{{item1.menu_en_name}}</div>
 											<div class="fsz">{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</div>
@@ -364,6 +364,82 @@
 <!--				</div>-->
 			</div>
 		</div>
+		<!-- 显示订单信息-->
+		<div class="mask" v-show="isShowOrderDetail">
+			<div class="popOrderDetail">
+				<div class="orderTitle">
+					<span class="col666 F36" style="margin-right: 15px;">{{orderItem.logistic_sequence_No}}</span>{{orderItem.nickname}}
+				</div>
+				<div class="chaClose" @click="closeBox">×</div>
+				<div class="orderDetailBox">
+					<div class="flexbox5 mb10 orderItem J_order_detail" v-for="(item,index) in orderDetails">
+					<div class="orderDetailPop orderItemBox">
+						<div class="flexbox1 pa5 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+							<div class="flexbox2" @click="item.proucing_item==1&&goto(item,index,'#anchor-'+item.product_id)">
+								<div class="col666 F20" style="width: 95px;">{{item.menu_id}}</div>
+								<div class="menuWidth" :class="{'col000':item.proucing_item==1,'col666':item.proucing_item!=1}">{{item.menu_en_name}} {{item.guige_name}}</div>
+							</div>
+							<div class="flexbox2">
+								<div class="inputW F18 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||(item.proucing_item==1&&item.assign_stock==0)}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666 w32">{{item.unit_en}}</span>&nbsp;&nbsp;
+							</div>
+						</div>
+						<div class="remarkBox orderDetail pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
+					</div>
+					<div class="flexbox1 pa5 F18 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+						<div class="flexbox2">
+							<div class="col666 F20" style="width: 35px;" v-if="item.mix_box_group>0">M{{item.mix_box_group}}</div>
+							<div class="col666 F20" style="width: 35px;" v-else></div>
+						</div>
+					</div>
+					<template v-if="item.proucing_item==1">
+						<template v-if="item.is_producing_done==1">
+							<div class="rbtn3 F20 bg34C079 colfff relative">
+								<template v-if="item.assign_stock==1">stock</template>
+								<template v-else>
+									processed
+								</template>
+							</div>
+						</template>
+						<template v-else-if="item.is_producing_done==3">
+							<div class="rbtn3 F20 bgGrey colfff blink">
+								assigning
+							</div>
+						</template>
+						<template v-else-if="item.is_producing_done==5">
+							<div class="rbtn3 F20 bgGrey colfff blink">
+								stocking
+							</div>
+						</template>
+						<template v-else>
+							<div v-if="item.is_lock==0" class="rbtn3 F20 bgFFF7F3 col5e5656">
+								waitting lock
+							</div>
+							<div v-else class="rbtn3 F20 colfff" :class="{'bgFD6921':item.lock_type==1,'bgGrey':item.lock_type==2}">
+								<span v-if="item.is_producing_done==0">waitting process</span>
+								<span v-else class="blink">processing</span>
+							</div>
+						</template>
+					</template>
+					<template v-else>
+						<template v-if="item.dispatching_is_producing_done==1">
+							<div class="rbtn3 F18 bg34C079 colfff relative">
+								picked
+							</div>
+						</template>
+						<template v-else>
+							<div v-if="item.is_lock==0" class="rbtn3 F22 bgFFF7F3 col5e5656">
+								waitting lock
+							</div>
+							<div v-else class="rbtn3 F22 colfff" :class="{'bgFD6921':item.lock_type==1,'bgGrey':item.lock_type==2}">
+								<span v-if="item.dispatching_is_producing_done==0">waitting pick</span>
+								<span v-else class="blink">picking</span>
+							</div>
+						</template>
+					</template>
+				</div>
+				</div>
+			</div>
+		</div>
 	</div>
 	</body>
 	<script>
@@ -386,8 +462,8 @@
 				choseDate3:'',
 				logistic_delivery_date:'',//筛选日期
 				logistic_truck_No:'',//筛选司机
-				product_id:0,//当前选择的产品id
-				guige1_id:'',//当前选择的规格id
+				product_id:localStorage.getItem('product_id') != null ? localStorage.getItem('product_id') : 0,//当前选择的产品id
+				guige1_id:localStorage.getItem('guige1_id') != null ? localStorage.getItem('guige1_id') : '',//当前选择的规格id
 				list:[],
 				list2:[{"id":"","name":"All customers"}],
 				list3:[{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
@@ -465,7 +541,10 @@
 				print_type: 0,//打印类型 0-one label 1-Fit print all 2-fit print 3-print order 4-blank label
 				orderItemOtherData:[],//订单明细的其他数据
 				setup_info:'',//供应商设置信息
-				fullscreen: false  // 是否全屏
+				fullscreen: false,  // 是否全屏
+				isShowOrderDetail: false,//是否显示订单明细信息
+				orderDetails:[],//订单明细数据
+				orderItem:'',//订单明细
 			},
 			mounted: function () {
 				//获取pincode显示得到样式
@@ -577,10 +656,12 @@
 									}
 								}
 							}
+							localStorage.product_id = _this.product_id
 							if(_this.menudata2[_this.currentContent].is_has_two_cate == 1){
 								//获取默认显示的二级类目
 								_this.twoCateGoods(_this.product_id,type)
 							}else{
+								localStorage.guige1_id = 0
 								//vue获取顶部位置方法
 								_this.$nextTick(()=> {
 									var order_top = $('.J_main_order').offset().top+'px'
@@ -589,6 +670,10 @@
 								_this.menudataTwoCate = []
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(_this.product_id,'',type)
+							}
+							if(type != 'refresh'){
+								//如果有缓存的产品id,则划到对应的位置
+								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'#anchor-'+_this.product_id)
 							}
 						}
 					});
@@ -618,8 +703,21 @@
 						})
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id
-							if(_this.guige1_id==''){
-								_this.guige1_id = _this.menudataTwoCate[0].guige1_id
+							if(_this.guige1_id>0){
+								let is_has_guige_id = 0;//缓存的规格id是否存在 1-是 0-否
+								for(var i in _this.menudataTwoCate){
+									if(_this.menudataTwoCate[i]['guige1_id']==_this.guige1_id){
+										_this.menudataTwoCateIndex=i
+										is_has_guige_id = 1
+										break;
+									}
+								}
+								if(is_has_guige_id == 0){
+									_this.menudataTwoCateIndex=0
+								}
+								_this.guige1_id = localStorage.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex].guige1_id
+							}else{
+								_this.guige1_id = localStorage.guige1_id = _this.menudataTwoCate[0].guige1_id
 							}
 							//默认加载第一个产品的第一个规格的所有加工明细
 							_this.productOrder(product_id,_this.guige1_id,type)
@@ -1144,23 +1242,24 @@
 				clickGoods(item,index){
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
-						this.isLoading=true
-						this.product_id = item.product_id
-						this.guige1_id = ''
-						this.menudata2SortIndex=index
-						this.menudataTwoCateIndex = 0
+						this.isLoading = true
+						this.product_id = localStorage.product_id = item.product_id
+						this.menudata2SortIndex = index
+						// this.guige1_id = ''
+						// this.menudataTwoCateIndex = 0
+						//重置加工明细排序信息-start
+						this.wccSort = 0
+						this.wccSortType = 1
+						//重置加工明细排序信息-end
 						//通排序基本数据同步索引
 						this.menudata2Sync(1)
-						//重置加工明细排序信息-start
-						this.wccSort=0
-						this.wccSortType=1
-						//重置加工明细排序信息-end
-						//获取二级类目
-						this.twoCateGoods(item.product_id)
 						//如果没有二级类目，则直接获取订单
-						if(item.is_has_two_cate == 2){
+						if (item.is_has_two_cate == 2) {
 							//获取一级类目对应的订单
 							this.productOrder(item.product_id)
+						}else{
+							//获取二级类目
+							this.twoCateGoods(item.product_id)
 						}
 					}, 300);   //大概时间300ms
 				},
@@ -1875,12 +1974,19 @@
 				},
 				//类目页面跳转到加工页面对应的产品位置  type-1:当前备货页面点击跳转+定位 2：返回此分类点击跳转+定位
 				goto(item,index,selector,type=1){
+					this.closeBox()
+					if(!jQuery.hasOwnProperty('item.product_id')) {
+						this.product_id = localStorage.product_id = item.product_id
+					}
+					if(!jQuery.hasOwnProperty('item.guige1_id')){
+						this.guige1_id = localStorage.guige1_id = item.guige1_id
+					}
 					switch(type) {
 						case 1:
 							this.currentPage = 1
 							//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
 							var index = $(selector).index()
-							if (this.menudata2SortIndex != index) {
+							if (index>=0) {
 								this.clickGoods(this.menudata2Sort[index], index)
 							}
 							var obj = '.J_left_menu_1'
@@ -2485,7 +2591,32 @@
 					}
 					// 改变当前全屏状态
 					this.fullscreen = !this.fullscreen;
-				}
+				},
+				//展示订单明细信息
+				showOrderDetail(item){
+					this.isShowOrderDetail=true
+					this.orderItem=item
+					var _this = this
+					var data = {
+						"logistic_delivery_date":_this.logistic_delivery_date,
+						"orderId":item.orderId,
+						"wcc_sort":3,
+						"wcc_sort_type":2,
+						"type":2,
+					}
+					console.log('获取产品加工明细单参数-----',data)
+					getData("{:url('/product/productOrderDetailList')}", data, function (res) {
+						_this.isLoading=false
+						res = res.result
+						_this.orderDetails = res.order
+						console.log('获取产品加工明细单2222-----',res)
+					});
+				},
+				//关闭弹窗
+				closeBox(){
+					this.isShowOrderDetail=false
+					this.orderItem=''
+				},
 			},
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间

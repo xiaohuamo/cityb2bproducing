@@ -219,18 +219,6 @@
 									<div class="log" @click="log(item,index)">
 										<img src="__STATIC__/product/img/log.png">
 									</div>
-<!--									<div class="flexbox1 pa18-0 orderDetail" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">-->
-<!--										<div class="flexbox2">-->
-<!--											<div class="col666 F20" style="width: 80px;">{{item.menu_id}}</div>-->
-<!--											<div class="col666" style="width: 130px;">{{item.menu_en_name}} {{item.guige_name}}</div>-->
-<!--										</div>-->
-<!--										<div class="flexbox2">-->
-<!--											<div class="outStock" :class="item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'outstock',$event)">out stock</div>-->
-<!--											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'-',$event)"><span class="numiconSub"></span></div>-->
-<!--											<input class="inputW F18 J_edit_quantity" v-model="item.new_customer_buying_quantity" type="text" :disabled="item.is_lock!=1||item.lock_type!=1||item.dispatching_is_producing_done==1||item.proucing_item==1" @focus="focusEvent($event)" @keyup="handleInput2" @keypress.enter="editQuantity(item,index,'enter',$event)"/><span class="col666">kg</span>&nbsp;&nbsp;-->
-<!--											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.proucing_item==1?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'+',$event)">+</div>-->
-<!--										</div>-->
-<!--									</div>-->
 									<div class="orderDetail orderItemBox">
 										<div class="flexbox1 pa5 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 											<div class="flexbox2" @click="gotoPickItem(item)">

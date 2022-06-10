@@ -737,6 +737,19 @@ a{
 	font-weight:500;
 	padding: 45px 20px 15px;
 }
+.popOrderDetail{
+	width: 60rem;
+	background: #FFFFFF;
+	border-radius: 15px;
+	color: #333;
+	font-size:1.34rem;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	margin-top:-4.125rem;
+	transform: translate(-50%,-50%);
+	padding: 1rem;
+}
 .inputW2{
 	width: 195px;
 	height: 36px;
@@ -1046,7 +1059,8 @@ a{
 	max-height: 310px;
 	overflow-y: auto;
 }
-.logContent tbody::-webkit-scrollbar{/* 滚动条样式*/
+.logContent tbody::-webkit-scrollbar,
+.orderDetailBox::-webkit-scrollbar {/* 滚动条样式*/
 	width: 10px;
 	background-color: #B5B5B5;
 }
@@ -1073,7 +1087,8 @@ a{
 	background-color: #F5F5F5;
 }
 .rsection1Box::-webkit-scrollbar-thumb,
-.rsection2Box::-webkit-scrollbar-thumb {
+.rsection2Box::-webkit-scrollbar-thumb,
+.orderDetailBox::-webkit-scrollbar-thumb{
 	border-radius: 10px;
 	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
 	background-color: #555;
@@ -1260,4 +1275,19 @@ tbody tr td{
 }
 .w600{
 	font-weight: 600;
+}
+.menuWidthPop {
+	width: 215px;
+}
+.orderDetailPop {
+	width: 70%;
+}
+.orderTitle{
+	padding: 5px;
+	text-align: center;
+	font-size: 24px;
+}
+.orderDetailBox{
+	max-height: 43rem;
+	overflow: auto;
 }
