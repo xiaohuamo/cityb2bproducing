@@ -558,7 +558,7 @@ class WjCustomerCoupon extends Model
                     $product[$v['product_id']]['two_cate'][$v['guige1_id']]['box_number'] += $boxs;
                     $product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities'] = floatval(($product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
                     if($v['dispatching_is_producing_done'] == 1){
-                        $product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'] += floatval(($product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities']*100+$v['customer_buying_quantity']*100)/100);
+                        $product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'] = floatval(($product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities']*100+$v['customer_buying_quantity']*100)/100);
                     }
                 }
                 $product[$v['product_id']]['two_cate'][$v['guige1_id']]['done_info'][] = [
