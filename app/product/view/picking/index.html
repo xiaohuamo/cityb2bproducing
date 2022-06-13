@@ -307,7 +307,7 @@
 							<div v-for="(item1,index1) in item.order" :class="{'arrow_box':currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1,'bgFFF7F3 col5e5656':item1.status==0,'bgOrange':item1.status==1,'bgGreen':item1.status==3,'bgGrey':item1.status==2}" class="colfff rbtn6 relative mb10">
 								<div :class="item1.status==1||item1.status==2?'blink':''" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1,item1)">
 									<div style="text-align:left;"><span class="num">{{item1.logistic_sequence_No}}</span>{{item1.finish_quantities}}/{{item1.sum_quantities}}</div>
-									<div :class="item1.name_length>12?'F13 maT5':'F18'">{{item1.nickname}}</div>
+									<div :class="item1.order_name&&item1.order_name.length>12?'F13 maT5':'F18'">{{item1.order_name}}</div>
 									<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-if="currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1"/>
 								</div>
