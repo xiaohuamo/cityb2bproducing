@@ -12,7 +12,7 @@
 		<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	</head>
 	<body onselectstart="return false">
-	<div id="main" v-cloak @click="closePop();isDo()">
+	<div class="outer flexbox7" id="main" v-cloak @click="closePop();isDo()">
 		<div class="bgfff H120 head flexbox1 F26">
 			<div class="flexbox2">
 				<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>&nbsp;
@@ -24,27 +24,27 @@
 			<div class="flexbox2 relative hand" v-if="setup_info&&setup_info.company_type==3" @click.stop="chose(0)">
 				<span>{{productType[currentProductTypeIndex]}}</span>
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
-				<div class="choseCustomerBox w200" v-show="whichPopShow==0">
+				<div class="choseCustomerBox w200" v-if="whichPopShow==0">
 					<div class="mb10 F20" v-for="(item ,index) in productType" :class="currentProductTypeIndex==index?'colFD6921':''" @click.stop="choseProductType(item,index)">{{item}}</div>
 				</div>
 			</div>
 		    <div class="relative hand" @click.stop="chose(1)">
 				<span class="blink1">{{list.length>0?choseDate1.date+' '+choseDate1.date_day:''}}</span>
-				<div class="choseCustomerBox datePop" v-show="whichPopShow==1">
+				<div class="choseCustomerBox datePop" v-if="whichPopShow==1">
 					<div class="mb10 F20" v-for="(item ,index) in list" :class="currentDay==index?'colFD6921':''" @click.stop="choseDay(item,index)">{{item.date}} {{item.date_day}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(2)">
 				{{choseDate2?choseDate2:list2[0].name}}
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
-				<div class="choseCustomerBox" v-show="whichPopShow==2">
+				<div class="choseCustomerBox" v-if="whichPopShow==2">
 					<div class="mb10 F20" v-for="(item,index) in list2" :class="current2==index?'colFD6921':''" @click.stop="choseCus(item,index)">{{item.name}}</div>
 				</div>
 			</div>
 			<div class="flexbox2 relative hand" @click.stop="chose(3)">
 				{{choseDate3?choseDate3:list3[0].name}}
 				<img src="__STATIC__/product/img/updown.png" class="updown"/>
-				<div class="choseCustomerBox" v-show="whichPopShow==3">
+				<div class="choseCustomerBox" v-if="whichPopShow==3">
 					<div class="mb10 F20" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">
 						<span v-if="index == 0">{{item.name}}</span>
 						<span v-else>{{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
@@ -60,32 +60,32 @@
 			</div>
 		</div>
 
-		<div class="flexbox3" style="min-height:100%;">
-			<div class="left1 bgfff">
-				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-show="currentPage==1">
+		<div class="content flexbox3">
+			<div class="left1 flexbox7 bgfff">
+				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(2)" v-if="currentPage==1">
 					<img src="__STATIC__/product/img/goodsIcon.png" class="goodsIcon"/>
 					Product List
 					<img src="__STATIC__/product/img/arrow.png" class="arrIcon"/>
 				</div>
-				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-show="currentPage==2">
+				<div class="colfff F20 jbBG flexbox2 goodsMenu hand" @click="returnPage(1)" v-if="currentPage==2">
 					<img src="__STATIC__/product/img/return.png" class="returnIcon"/>
 					Return
 				</div>
-				<div class="F20 bgF1F1F1 lbtn hand" v-show="currentPage==1" @click="clickHandle">
+				<div class="F20 bgF1F1F1 lbtn hand" v-if="currentPage==1" @click="clickHandle">
 					<span class="colFD6921" v-if="isHandle==0">Processing</span>
 					<span class="col34C079" v-else-if="isHandle==1">Processed</span>
 					<span class="col000" v-else>Code</span>
 					<img src="__STATIC__/product/img/updown.png" class="updown"/>
 				</div>
-				<div v-show="currentPage==2" class="leftMenu2">
+				<div v-if="currentPage==2" class="leftMenu2">
 <!--					@click="clickMenu(item,index)-->
 					<div v-for="(item,index) in menudata" :class="['J_product_cate_'+item.id,{'bgFD6921 colfff':currentMenu==index,'bgF1F1F1 col000':currentMenu!=index}]" class="F20 lbtn relative hand" @click="goto(item,index,'.J_product_cate_'+item['id'],4)">
 						{{item.category_en_name}}
-						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="currentMenu==index"/>
+						<img src="__STATIC__/product/img/menusj.png" class="menusj" v-if="currentMenu==index"/>
 					</div>
 				</div>
 
-				<div v-show="currentPage==1" class="hand leftMenu J_left_menu_1">
+				<div v-if="currentPage==1" class="hand leftMenu J_left_menu_1">
 					<div :class="['J_cate_'+item.cate_id,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F20 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickGoods(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.product_id">
 						<div :class="item.status==1||item.status==2?'blink':''">
 							<div class="fsz">{{item.menu_en_name}}</div>
@@ -93,135 +93,133 @@
 							<div>{{item.menu_id}}</div>
 							<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">S.L.&nbsp;&nbsp;{{item.left_stock}}{{item.unit_en}}</div>
 							<img v-if="item.is_has_two_cate==2&&item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
-							<img src="__STATIC__/product/img/menusj.png" class="menusj" v-show="menudata2SortIndex==index"/>
+							<img src="__STATIC__/product/img/menusj.png" class="menusj" v-if="menudata2SortIndex==index"/>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="right pa26">
-				<div v-show="currentPage==1">
-					<div>
-						<div class="flexbox2 rsection1 F20 J_product_cate" ref="element">
-							<div :class="{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn1 relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
-								<div :class="item.status==1||item.status==2?'blink':''">
-									<div class="fsz">{{item.guige_name}}</div>
-									<div class="fsz">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
-									<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">S.L.&nbsp;&nbsp;{{item.left_stock}}{{item.unit_en}}</div>
-									<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
-									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-show="menudataTwoCateIndex==index"/>
-								</div>
+			<div class="right flexbox7 pa26 pabt0">
+				<template v-if="currentPage==1">
+					<div class="flexbox2 rsection1 F20 J_product_cate" ref="element">
+						<div :class="{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}" class="colfff rbtn1 relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickGoodsTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
+							<div :class="item.status==1||item.status==2?'blink':''">
+								<div class="fsz">{{item.guige_name}}</div>
+								<div class="fsz">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</div>
+								<div v-if="item.left_stock!=-1" class="fwb" :class="item.status==0?'blink1':'blink'">S.L.&nbsp;&nbsp;{{item.left_stock}}{{item.unit_en}}</div>
+								<img v-if="item.is_lock==1" src="__STATIC__/product/img/suo.png" class="suo"/>
+								<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-if="menudataTwoCateIndex==index"/>
 							</div>
 						</div>
-						<!-- 下面开始 -->
-						<div class="rsection3 bgfff F20 J_main_order" style="display: flex;flex-direction: column;" :style="mainOrderHeight">
-							<!-- 头部 -->
-							<div class="flexbox1 pa20">
-								<div class="flexbox2">
-									<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==0}" @click.stop="tab(0)">
-										SEQ No<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
-									</div>
-									<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==1}" @click.stop="tab(1)">
-										Processing<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
-									</div>
-									<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==2}" @click.stop="tab(2)">
-										Processed<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
-									</div>
-								</div>
-								<div class="flexbox2 relative hand">
-									<div class="flexbox1 xxBox" v-if="setup_info&&setup_info.company_type==3">
-										<input class="inputBox J_one_check" type="radio"  name="printType" value=0 v-model="print_type">
-										one label
-									</div>
-									<div class="flexbox1 xxBox" v-if="setup_info&&setup_info.company_type==3">
-										<input class="inputBox J_fit_print" type="radio"  name="printType" value=2 v-model="print_type">
-										fit print
-									</div>
-									<div class="flexbox1 xxBox" v-if="setup_info&&setup_info.company_type==3">
-										<input class="inputBox J_blank_lable" type="radio"  name="printType" value=4 v-model="print_type">
-										blank label
-									</div>
-									<span @click="popKeyboard">
-										<span v-if="userName">i am {{userName}}</span>&nbsp;&nbsp;
-										<img src="__STATIC__/product/img/suo2.png" class="suo2"/>
-									</span>
-									<span class="colFD6921" v-if="isShowLoginOut" @click="LogOut" style="margin-left:25px;">&nbspLogout</span>
-								</div>
-							</div>
-							<!-- 主体部分 -->
-							<div class="mainBox J_main_box F20" style="flex: auto;">
-								<div class="flexbox5 mb15" v-for="(item,index) in handleListSort">
-									<div class="log1" @click="log(item,index)">
-										<img src="__STATIC__/product/img/log.png">
-									</div>
-									<div class="w70">
-										<div class="flexbox1 pa5-10" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
-											<div class="flexbox2" @click="showOrderDetail(item)">
-												<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
-												<div class="col666 menuWidth">{{item.nickname}}</div>
-											</div>
-											<div class="flexbox2">
-												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
-												<div class="inputW F20 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;
-												<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'+')">+</div>
-											</div>
-										</div>
-										<div class="remarkBox w70 pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
-									</div>
-									<div class="flexbox1 pa18-0 F20" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
-										<div class="flexbox2" v-if="setup_info&&setup_info.company_type==3">
-											<div class="inputW4 F18" :class="{'col666':item.is_lock!=1||item.lock_type!=1}" @click="showKeyBoxQuantity(item,index,2)">{{item.current_box_sort_id}}</div>
-											<span class="pa5-10">of</span>
-											<div class="inputW4 F18" :class="{'col666':item.is_lock!=1||item.lock_type!=1}" @click="showKeyBoxQuantity(item,index,3)">{{item.boxesNumber}}</div>
-										</div>
-										<div class="flexbox2" v-else>
-											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-','',$event)"><span class="numiconSub"></span></div>
-											<div class="inputW F20 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1}" @click="showKeyBoxQuantity(item,index,2)">{{item.num1}}</div>
-											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="printLable(item,index,'+','',$event)">+</div>
-										</div>
-<!--										<div class="printBg echo" @click="print(item,index,$event)"></div>-->
-										<div class="echo echoMl" :class="orderItemOtherData[index].printBg" @click="print(item,index,$event)"></div>
-									</div>
-									<template v-if="item.is_producing_done==1">
-										<div class="rbtn3 F20 bg34C079 colfff relative" @click="handle(index)">
-											<template v-if="item.assign_stock==1">stock</template>
-											<template v-else>
-												processed
-												<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-show="currentHandlePop==index">
-													<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>
-													<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
-												</div>
-											</template>
-										</div>
-									</template>
-									<template v-else-if="item.is_producing_done==3">
-										<div class="rbtn3 F20 bgGrey colfff blink" @click="changeStatus(item,index)">
-											assigning
-										</div>
-									</template>
-									<template v-else-if="item.is_producing_done==5">
-										<div class="rbtn3 F20 bgGrey colfff blink" @click="changeStatus(item,index)">
-											stocking
-										</div>
-									</template>
-									<template v-else>
-										<div v-if="item.is_lock==0" class="rbtn3 F20 bgFFF7F3 col5e5656" @click="changeStatus(item,index)">
-											waitting lock
-										</div>
-										<div v-else class="rbtn3 F20 colfff" :class="{'bgFD6921':item.lock_type==1,'bgGrey':item.lock_type==2}" @click="changeStatus(item,index)">
-											<span v-if="item.is_producing_done==0">waitting process</span>
-											<span v-else class="blink">processing</span>
-										</div>
-									</template>
-								</div>
-							</div>
-						</div>
-						<!-- 下面结束 -->
 					</div>
-				</div>
-				<div v-show="currentPage==2" class="rightCateMenu J_right_menu_2 F20">
+					<!-- 下面开始 -->
+					<div class="mainContent flexbox7 bgfff F20 J_main_order">
+						<!-- 头部 -->
+						<div class="flexbox1 pa20">
+							<div class="flexbox2">
+								<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==0}" @click.stop="tab(0)">
+									SEQ No<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+								</div>
+								<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==1}" @click.stop="tab(1)">
+									Processing<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+								</div>
+								<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':wccSort==2}" @click.stop="tab(2)">
+									Processed<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+								</div>
+							</div>
+							<div class="flexbox2 relative hand">
+								<div class="flexbox1 xxBox" v-if="setup_info&&setup_info.company_type==3">
+									<input class="inputBox J_one_check" type="radio"  name="printType" value=0 v-model="print_type">
+									one label
+								</div>
+								<div class="flexbox1 xxBox" v-if="setup_info&&setup_info.company_type==3">
+									<input class="inputBox J_fit_print" type="radio"  name="printType" value=2 v-model="print_type">
+									fit print
+								</div>
+								<div class="flexbox1 xxBox" v-if="setup_info&&setup_info.company_type==3">
+									<input class="inputBox J_blank_lable" type="radio"  name="printType" value=4 v-model="print_type">
+									blank label
+								</div>
+								<span @click="popKeyboard">
+									<span v-if="userName">i am {{userName}}</span>&nbsp;&nbsp;
+									<img src="__STATIC__/product/img/suo2.png" class="suo2"/>
+								</span>
+								<span class="colFD6921" v-if="isShowLoginOut" @click="LogOut" style="margin-left:25px;">&nbspLogout</span>
+							</div>
+						</div>
+						<!-- 主体部分 -->
+						<div class="mainBox J_main_box F20">
+							<div class="flexbox5 mb15" v-for="(item,index) in handleListSort">
+								<div class="log1" @click="log(item,index)">
+									<img src="__STATIC__/product/img/log.png">
+								</div>
+								<div class="w70">
+									<div class="flexbox1 pa5-10" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+										<div class="flexbox2" @click="showOrderDetail(item)">
+											<div class="col666 F36" style="width: 50px;">{{item.logistic_sequence_No}}</div>
+											<div class="col666 menuWidth">{{item.nickname}}</div>
+										</div>
+										<div class="flexbox2">
+											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'-')"><span class="numiconSub"></span></div>
+											<div class="inputW F20 J_edit_quantity" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5}" @click="showKeyBoxQuantity(item,index)">{{item.new_customer_buying_quantity}}</div><span class="col666">{{item.unit_en}}</span>&nbsp;&nbsp;
+											<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="editQuantity(item,index,'+')">+</div>
+										</div>
+									</div>
+									<div class="remarkBox w70 pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
+								</div>
+								<div class="flexbox1 pa18-0 F20" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+									<div class="flexbox2" v-if="setup_info&&setup_info.company_type==3">
+										<div class="inputW4 F18" :class="{'col666':item.is_lock!=1||item.lock_type!=1}" @click="showKeyBoxQuantity(item,index,2)">{{item.current_box_sort_id}}</div>
+										<span class="pa5-10">of</span>
+										<div class="inputW4 F18" :class="{'col666':item.is_lock!=1||item.lock_type!=1}" @click="showKeyBoxQuantity(item,index,3)">{{item.boxesNumber}}</div>
+									</div>
+									<div class="flexbox2" v-else>
+										<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="printLable(item,index,'-','',$event)"><span class="numiconSub"></span></div>
+										<div class="inputW F20 J_edit_lable" :class="{'col666':item.is_lock!=1||item.lock_type!=1||item.is_producing_done==1}" @click="showKeyBoxQuantity(item,index,2)">{{item.num1}}</div>
+										<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="printLable(item,index,'+','',$event)">+</div>
+									</div>
+<!--										<div class="printBg echo" @click="print(item,index,$event)"></div>-->
+									<div class="echo echoMl" :class="orderItemOtherData[index].printBg" @click="print(item,index,$event)"></div>
+								</div>
+								<template v-if="item.is_producing_done==1">
+									<div class="rbtn3 F20 bg34C079 colfff relative" @click="handle(index)">
+										<template v-if="item.assign_stock==1">stock</template>
+										<template v-else>
+											processed
+											<div class="choseCustomerBox" style="width:160px;left:-3%;padding:10px 0;" v-if="currentHandlePop==index">
+												<div class="actionHeight colFD6921" style="border-bottom: 1px solid #D0D0D0" @click.stop="changeStatus(item,index)">ReProcess</div>
+												<div class="actionHeight col000" @click.stop="Popreturn">Return</div>
+											</div>
+										</template>
+									</div>
+								</template>
+								<template v-else-if="item.is_producing_done==3">
+									<div class="rbtn3 F20 bgGrey colfff blink" @click="changeStatus(item,index)">
+										assigning
+									</div>
+								</template>
+								<template v-else-if="item.is_producing_done==5">
+									<div class="rbtn3 F20 bgGrey colfff blink" @click="changeStatus(item,index)">
+										stocking
+									</div>
+								</template>
+								<template v-else>
+									<div v-if="item.is_lock==0" class="rbtn3 F20 bgFFF7F3 col5e5656" @click="changeStatus(item,index)">
+										waitting lock
+									</div>
+									<div v-else class="rbtn3 F20 colfff" :class="{'bgFD6921':item.lock_type==1,'bgGrey':item.lock_type==2}" @click="changeStatus(item,index)">
+										<span v-if="item.is_producing_done==0">waitting process</span>
+										<span v-else class="blink">processing</span>
+									</div>
+								</template>
+							</div>
+						</div>
+					</div>
+					<!-- 下面结束 -->
+				</template>
+				<div v-if="currentPage==2" class="rightCateMenu J_right_menu_2 F20">
 <!--					<div class="F20">-->
 <!--						<div v-if="currentMenu>1">-->
-<!--							<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter F26 colFD6921 relative hand" v-show="isHasCateData" @click="goto([],0,'.J_cate_'+menudata[currentMenu]['id'],2)">-->
+<!--							<div style="padding:15px 0;font-weight:bold;" class="bgfff mb15 textCenter F26 colFD6921 relative hand" v-if="isHasCateData" @click="goto([],0,'.J_cate_'+menudata[currentMenu]['id'],2)">-->
 <!--								<img src="__STATIC__/product/img/return2.png" style="width:11px;position:absolute;left:15px;"/>-->
 <!--								Back to this category-->
 <!--							</div>-->
@@ -280,7 +278,7 @@
 
 		<div class="mask" v-if="iskeyboardShow" @click="closeKeyboard">
 			<div class="keyboardBox">
-				<div class="tips" v-show="isPsdCorrect">{{message}}</div>
+				<div class="tips" v-if="isPsdCorrect">{{message}}</div>
 				<div v-if="isShowTypePincode1">
 					<div class="keyboard input J_pincode" :class="{'keyboardBorder':focusDatype==10}" tabindex="0" :placeholder="placeholderPincode" @focus="focusData($event,10,1)">{{psd2}}</div>
 				</div>
@@ -309,13 +307,13 @@
 		</div>
 		<img v-if="isLoading" src="__STATIC__/product/img/loading.gif" class="loading"/>
 		<!-- 公用弹出框 -->
-		<div class="mask J_pop_message zi2" v-show="isShowMessage">
+		<div class="mask J_pop_message zi2" v-if="isShowMessage">
 			<div class="popMessage">
 				{{popMessage}}
 			</div>
 		</div>
 		<!-- 日志记录-->
-		<div class="mask" v-show="isShowLog">
+		<div class="mask" v-if="isShowLog">
 			<div class="logContent F20">
 				<div class="chaClose" @click="closeLog">×</div>
 				<table>
@@ -358,14 +356,14 @@
 						<div class="textCenter enterNumber" @click.stop="editKeyBoardQuantity(handleItem,handleIndex,'enter')"><div class="enterNumberH"><p>Enter</p><img src="__STATIC__/product/img/enter.png" class="delete"></div></div>
 					</div>
 				</div>
-<!--				<div class="tips" v-show="isPsdCorrect">{{message}}</div>-->
+<!--				<div class="tips" v-if="isPsdCorrect">{{message}}</div>-->
 <!--				<div v-if="isShowTypePincode1">-->
 <!--					<div class="keyboard input J_pincode" :class="{'keyboardBorder':focusDatype==10}" tabindex="0" :placeholder="placeholderPincode" @focus="focusData($event,10,1)">{{psd2}}</div>-->
 <!--				</div>-->
 			</div>
 		</div>
 		<!-- 显示订单信息-->
-		<div class="mask" v-show="isShowOrderDetail">
+		<div class="mask" v-if="isShowOrderDetail">
 			<div class="popOrderDetail">
 				<div class="orderTitle">
 					<span class="col666 F36" style="margin-right: 15px;">{{orderItem.logistic_sequence_No}}</span>{{orderItem.nickname}}
@@ -524,7 +522,6 @@
 				timeOutLock:null,//获取锁定结果
 				lockData:[],//锁定参数
 				lockReturnData:null,//上锁参数
-				mainOrderHeight:'',
 				clickTimer:null,//定时器
 				isHasCateData:false,//分类页，Back to this category,判断当前加工产品是否有该类产品
 				currentInterTime:null,//获取锁定结果的开始时间
@@ -662,11 +659,6 @@
 								_this.twoCateGoods(_this.product_id,type)
 							}else{
 								localStorage.guige1_id = 0
-								//vue获取顶部位置方法
-								_this.$nextTick(()=> {
-									var order_top = $('.J_main_order').offset().top+'px'
-									_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
-								})
 								_this.menudataTwoCate = []
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(_this.product_id,'',type)
@@ -696,11 +688,6 @@
 							_this.menudataTwoCate = res.goods_two_cate
 						}
 						console.log('二级类目产品数据-----',_this.menudataTwoCate)
-						//vue获取顶部位置和左侧位置的方法
-						_this.$nextTick(()=> {
-							var order_top = $('.J_main_order').offset().top+'px'
-							_this.mainOrderHeight = `height: calc(100vh - ${order_top});`
-						})
 						if(_this.menudataTwoCate.length > 0){
 							//获取当前默认选中的产品id
 							if(_this.guige1_id>0){
@@ -1925,15 +1912,21 @@
 					this.currentPage=index
 					//返回首页时，将默认获取第一个分类的信息
 					this.currentMenu=0
+					localStorage.currentPage=index
 					//获取大类
 					var _this=this
-					getData("{:url('/product/category')}", '', function (res) {
-						// res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
-						_this.menudata = res.result
-						console.log('获取产品大类目---',_this.menudata)
-						//获取默认的展示产品
-						_this.cetegoryProduct();
-					});
+					if(_this.currentPage == 1){
+						_this.dataRefreh();
+					}
+					if(_this.currentPage == 2) {
+						getData("{:url('/product/category')}", '', function (res) {
+							// res.result.unshift({"id":-1,"category_en_name":"Current Stock"},{"id":0,"category_en_name":"Top"})
+							_this.menudata = res.result
+							console.log('获取产品大类目---', _this.menudata)
+							//获取默认的展示产品
+							_this.cetegoryProduct();
+						});
+					}
 				},
 				//切换分类
 				clickMenu(item,index){
@@ -1975,19 +1968,15 @@
 				//类目页面跳转到加工页面对应的产品位置  type-1:当前备货页面点击跳转+定位 2：返回此分类点击跳转+定位
 				goto(item,index,selector,type=1){
 					this.closeBox()
-					if(!jQuery.hasOwnProperty('item.product_id')) {
-						this.product_id = localStorage.product_id = item.product_id
-					}
-					if(!jQuery.hasOwnProperty('item.guige1_id')){
-						this.guige1_id = localStorage.guige1_id = item.guige1_id
-					}
 					switch(type) {
 						case 1:
 							this.currentPage = 1
-							//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
-							var index = $(selector).index()
-							if (index>=0) {
-								this.clickGoods(this.menudata2Sort[index], index)
+							//将产品和规格id存入缓存
+							if (!jQuery.hasOwnProperty('item.product_id')) {
+								this.product_id = localStorage.product_id = item.product_id
+							}
+							if (!jQuery.hasOwnProperty('item.guige1_id')) {
+								this.guige1_id = localStorage.guige1_id = item.guige1_id
 							}
 							var obj = '.J_left_menu_1'
 							var top_h = 235
@@ -2001,12 +1990,23 @@
 							var top_h = 235
 							break;
 						case 4:
+							//product list页面点击分类定位到对应的分类位置
 							this.currentMenu = index
 							var obj = '.J_right_menu_2'
 							var top_h = 106
 							break;
 					}
+					localStorage.currentPage = this.currentPage
 					this.$nextTick(()=> {
+						switch(type) {
+							case 1:
+								//并将该产品改为选中状态,获取该产品的索引值,如果当前选中产品不一致，则修改选中产品
+								var index = $(selector).index()
+								if (index>=0) {
+									this.clickGoods(this.menudata2Sort[index], index)
+								}
+								break;
+						}
 						if(selector == '.J_product_cate_-1'){
 							var h = 0
 							$(obj).animate({scrollTop:h},500)

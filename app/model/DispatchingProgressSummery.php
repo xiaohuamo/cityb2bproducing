@@ -320,10 +320,10 @@ class DispatchingProgressSummery extends Model
             ->where($where)
             ->order($order_by)
             ->select()->toArray();
+        $Order = new Order();
         foreach($order_list as &$v){
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['status'] = $this->getProcessStatus($v,$userId,2);
-            $v['name_length'] = $v['nickname'] ? strlen($v['nickname']) : 0;
             if($v['logistic_truck_No'] == 0){
                 $v['name'] = 'waiting assigned';//无-待分配司机
             }else {
@@ -331,6 +331,7 @@ class DispatchingProgressSummery extends Model
             }
             $v['schedule_time'] = $v['logisitic_schedule_time'] > 0 ? date('h:ia',$v['logisitic_schedule_time']) : '';//发车时间
             $v['remain_time'] = '';//$v['logisitic_schedule_time'] > 0 ? 0 : 0;//距离发车剩余时间
+            $v['order_name'] = $Order->getCustomerName($v);
         }
         if ($type == 'allDriverOrder') {
             $list = [];

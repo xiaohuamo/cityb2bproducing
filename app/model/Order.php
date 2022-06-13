@@ -926,21 +926,21 @@ class Order extends Model
         //第一优先级 客户简码;
         // 如果有客户填写的客户名，同时附上
         if (!empty($order['nickname'])&&trim($order['nickname'])) {
-            if(trim($order['displayName'])){
+            return trim($order['nickname']);
+//            if(trim($order['displayName'])){
 //                return trim($order['nickname']).'('. trim(trim($order['displayName'])).')';
-                return trim($order['nickname']);
-            }else{
-                return trim($order['nickname']);
-            }
+//            }else{
+//                return trim($order['nickname']);
+//            }
         }
         //如果没有客户简码，则客户提交订单时的 客户名 为第二优先级 ，如果客户同时填写了姓名，附上姓名；
         if(!empty($order['displayName'])&&trim($order['displayName'])){
-            if(trim($order['first_name']) || trim($order['last_name']) ) {
+            return trim($order['displayName']);
+//            if(trim($order['first_name']) || trim($order['last_name']) ) {
 //                return trim($order['displayName']).'('. trim($order['first_name']).' '.trim($order['last_name']).')';
-                return trim($order['displayName']);
-            }else{
-                return trim($order['displayName']);
-            }
+//            }else{
+//                return trim($order['displayName']);
+//            }
         }
         //  如果客户无简码，并且提交订单时未填写客户户名，则，客户填写的 姓 ，名 做为第三优先级 ；
         if((!empty($order['first_name'])&&trim($order['first_name'])) || (!empty($order['last_name'])&&trim($order['last_name'])) ) {
