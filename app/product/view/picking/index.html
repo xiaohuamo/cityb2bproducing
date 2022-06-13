@@ -134,7 +134,7 @@
 						<div :class="['J_cate_orderId_'+item.orderId,{'arrow_box':menudataTwoCateSortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}]" class="colfff rbtn6 relative mb10" v-for="(item,index) in menudataTwoCateSort"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
 							<div :class="item.status==1||item.status==2?'blink':''">
 								<div style="text-align:left;"><span class="num">{{item.logistic_sequence_No}}</span>{{item.finish_quantities}}/{{item.sum_quantities}}</div>
-								<div :class="item.order_name.length>12?'F13 maT5':'F18'">{{item.order_name}}</div>
+								<div :class="item.order_name&&item.order_name.length>12?'F13 maT5':'F18'">{{item.order_name}}</div>
 								<img v-if="item.status==1||item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 								<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-if="menudataTwoCateSortIndex==index"/>
 							</div>
