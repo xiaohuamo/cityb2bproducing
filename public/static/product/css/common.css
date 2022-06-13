@@ -547,10 +547,12 @@ a{
 	/*max-height: 348px;*/
 	max-height: 270px;
 	overflow: auto;
+	overflow-x: hidden;
 }
 .rsection2Box{
 	max-height: 258px;
 	overflow: auto;
+	overflow-x: hidden;
 }
 .m0-5{
 	margin: 0 5px;
