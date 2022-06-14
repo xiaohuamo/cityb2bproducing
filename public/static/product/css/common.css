@@ -540,6 +540,12 @@ a{
 	font-size: 28px;
 	color: #000;
 }
+.num1{
+	float: right;
+	margin-top: 8px;
+	font-size: 20px;
+	color: #000;
+}
 
 .rsection1{
 	margin-bottom: 20px;
