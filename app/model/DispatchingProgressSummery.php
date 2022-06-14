@@ -223,7 +223,7 @@ class DispatchingProgressSummery extends Model
             ->group('dps.truck_No')
             ->order($order_by)
 //            ->select()->toArray();
-            ->column('dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,o.logisitic_schedule_time','dps.truck_no');
+            ->column('dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,o.logisitic_schedule_time,count(o.orderId) all_order_num,sum(o.boxesNumber) all_bxs_num','dps.truck_no');
         if(isset($data[0])){
             $data_0 = $data[0];
             unset($data[0]);
@@ -312,7 +312,7 @@ class DispatchingProgressSummery extends Model
         }
         $order_list = Db::name('dispatching_progress_summery')
             ->alias('dps')
-            ->field('dps.orderId,dps.truck_no logistic_truck_No,o.logistic_sequence_No,dps.sum_quantities,dps.finish_quantities,dps.operator_user_id,dps.isDone,o.userId,o.displayName,o.first_name,o.last_name,uf.nickname,t.truck_name,t.plate_number,o.logisitic_schedule_time,u.contactPersonFirstname,u.contactPersonLastname')
+            ->field('dps.orderId,dps.truck_no logistic_truck_No,o.logistic_sequence_No,dps.sum_quantities,dps.finish_quantities,dps.operator_user_id,dps.isDone,o.userId,o.displayName,o.first_name,o.last_name,uf.nickname,t.truck_name,t.plate_number,o.logisitic_schedule_time,u.contactPersonFirstname,u.contactPersonLastname,o.boxesNumber')
             ->leftJoin('order o','o.orderId = dps.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
             ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
