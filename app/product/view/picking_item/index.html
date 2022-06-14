@@ -112,7 +112,7 @@
 							<li class="classify" :class="{'bgFD6921 colfff':twoCateTitleIndex==index}" v-for="(item,index) in menudata2Sort[menudata2SortIndex].two_cate" @click.stop="twoCateTitle(item,index)">{{item.category_en_name}}</li>
 						</template>
 					</ul>
-					<div class="flexbox2 mb10 rsection2Box F18 J_product_cate" ref="element">
+					<div class="flexbox2 mb10 F18 J_product_cate relative" ref="element" :class="{'rsection2Box':is_open}">
 						<div :class="['J_cate_product_id_'+item.product_id,{'arrow_box':menudataTwoCateIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgOrange':item.status==1,'bgGreen':item.status==3,'bgGrey':item.status==2}]" class="colfff rbtn7 relative mb10" v-for="(item,index) in menudataTwoCate"  @click="clickTwoCate(item,index);"  @dblclick="gtouchstart(item,index,2)">
 							<div :class="item.status==1||item.status==2?'blink':''">
 								<div style="text-align:left;"><span class="num">{{item.box_number}}bxs</span><span class="F20 w600">{{item.finish_quantities}}/{{item.sum_quantities}}{{item.unit_en}}</span></div>
@@ -132,6 +132,10 @@
 								<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-if="menudataThreeIndex==index"/>
 							</div>
 						</div>
+					</div>
+					<div class="flexbox8">
+						<img v-if="is_open" class="open-close-btn" src="__STATIC__/product/img/open.png" @click="openCloseContent()">
+						<img v-if="is_close" class="open-close-btn" src="__STATIC__/product/img/close.png" @click="openCloseContent()">
 					</div>
 					<!-- 下面开始 -->
 					<div class="mainContent flexbox7 bgfff F18 J_main_order">
@@ -485,7 +489,9 @@
 				is_print_all:2,//是否全部打印 1-是 2-否
 				orderItemOtherData:[],//订单明细的其他数据
 				setup_info:'',//供应商设置信息
-				fullscreen: false  // 是否全屏
+				fullscreen: false,  // 是否全屏
+				is_open: false,//是否显示展开按钮
+				is_close: false,//是否显示折叠按钮
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -659,9 +665,33 @@
 								}
 							}
 							_this.product_id = localStorage.product_id = _this.menudataTwoCate[_this.menudataTwoCateIndex].product_id
-							//将产品滑动到对应的位置
-							_this.goto(_this.menudataTwoCate[_this.menudataTwoCateIndex],_this.menudataTwoCateIndex,'.J_cate_product_id_'+_this.product_id,7)
-							//将该产品滑到对应的高度
+							if(_this.currentPage == 1 && type != 'refresh') {
+								//获取二级分类的最后一个元素距离顶部的距离，大于某个高度则显示折叠按钮
+								_this.$nextTick(() => {
+									let last_product_id = _this.menudataTwoCate[_this.menudataTwoCate.length-1].product_id
+									let cate_top = $('.J_cate_product_id_'+last_product_id).offset().top
+									// console.log('获取高度111---',last_product_id,cate_top);
+									if(cate_top>274){
+										_this.is_open=true
+										_this.is_close=false
+									}else{
+										_this.is_open=false
+										_this.is_close=false
+									}
+									//如果该分类是可展开的，判断当前选中的产品是否在折叠范围内，如果在折叠范围内，默认展开，显示折叠按钮
+									let current_cate_top = $('.J_cate_product_id_'+_this.product_id).offset().top
+									if(_this.is_open){
+										if(current_cate_top>274){
+											_this.is_open=false
+											_this.is_close=true
+										}
+									}
+									//将产品滑动到对应的位置
+									if(current_cate_top>274){
+										_this.goto(_this.menudataTwoCate[_this.menudataTwoCateIndex],_this.menudataTwoCateIndex,'.J_cate_product_id_'+_this.product_id,7)
+									}
+								})
+							}
 							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0){
 								if(!(_this.guige1_id>0)){
 									_this.menudataThreeCateIndex = 0
@@ -2899,6 +2929,18 @@
 					localStorage.orderId=item.orderId
 					localStorage.logistic_truck_No=item.logistic_truck_No
 					window.location.href = "{:url('/product/pickingOrder')}"
+				},
+				//展开折叠按钮
+				openCloseContent(){
+					if(this.is_open){
+						this.is_open=false
+						this.is_close=true
+					}else{
+						if(this.is_close){
+							this.is_open=true
+							this.is_close=false
+						}
+					}
 				}
 			},
 			created(){

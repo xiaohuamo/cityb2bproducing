@@ -71,6 +71,10 @@ a{
 	display: flex;
 	flex-direction: column;
 }
+.flexbox8{
+	display: flex;
+	justify-content: flex-end;
+}
 
 
 
@@ -551,8 +555,9 @@ a{
 }
 .rsection2Box{
 	max-height: 258px;
-	overflow: auto;
-	overflow-x: hidden;
+	overflow: hidden;
+	/*overflow: auto;*/
+	/*overflow-x: hidden;*/
 }
 .m0-5{
 	margin: 0 5px;
@@ -1317,4 +1322,9 @@ tbody tr td{
 .orderDetailBox{
 	max-height: 43rem;
 	overflow: auto;
+}
+.open-close-btn{
+	width: 50px;
+	height: 50px;
+	margin: -14px 10px 5px 0;
 }
