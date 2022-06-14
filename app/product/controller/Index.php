@@ -848,30 +848,33 @@ class Index extends AuthBase
         //1.获取对应日期加工的商品信息
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
-        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],0,'',2);
-        //按顺序获取产品大类
-        $cate = $RestaurantCategory->getCategory($businessId);
-        $cate_sort_arr = array_column($cate->toArray(),'id');
-        $cate_id_arr = array_unique(array_column($goods,'cate_id'));
-        $result = array_intersect($cate_sort_arr,$cate_id_arr);
-        //将产品信息按照分类获取
-        $data = [];
-        foreach($goods as &$v){
-            if(!isset($data[$v['cate_id']])){
-                $data[$v['cate_id']] = [
-                    'cate_id' => $v['cate_id'],
-                    'category_en_name' => $v['category_en_name'],
-                    'data' => []
-                ];
-            }
-            $data[$v['cate_id']]['data'][] = $v;
-        }
-        $new_data = [];
-        foreach($result as $cv){
-            $new_data[$cv] = $data[$cv];
-        }
-        $data = array_values($new_data);
-        $data = array_values($data);
+//        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],0,'',2);
+//        //按顺序获取产品大类
+//        $cate = $RestaurantCategory->getCategory($businessId);
+//        $cate_sort_arr = array_column($cate->toArray(),'id');
+//        $cate_id_arr = array_unique(array_column($goods,'cate_id'));
+//        $result = array_intersect($cate_sort_arr,$cate_id_arr);
+//        //将产品信息按照分类获取
+//        $data = [];
+//        foreach($goods as &$v){
+//            if(!isset($data[$v['cate_id']])){
+//                $data[$v['cate_id']] = [
+//                    'cate_id' => $v['cate_id'],
+//                    'category_en_name' => $v['category_en_name'],
+//                    'data' => []
+//                ];
+//            }
+//            $data[$v['cate_id']]['data'][] = $v;
+//        }
+//        $new_data = [];
+//        foreach($result as $cv){
+//            $new_data[$cv] = $data[$cv];
+//        }
+//        $data = array_values($new_data);
+//        $data = array_values($data);
+
+        $WjCustomerCoupon = new WjCustomerCoupon();
+        $data = $WjCustomerCoupon->getWccList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],'',1);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 

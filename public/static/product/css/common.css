@@ -431,7 +431,8 @@ a{
 	text-align: center;
 	font-weight: normal;
 	margin: 0 6px 10px;
-	min-height: 76px;
+	/*min-height: 76px;*/
+	min-height: 154px;
 	box-sizing: border-box;
 	padding: 5px 0;
 }

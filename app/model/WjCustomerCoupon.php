@@ -140,7 +140,7 @@ class WjCustomerCoupon extends Model
      * @param $id
      * @param $businessId
      */
-    public function getWccList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='')
+    public function getWccList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='',$proucing_item='')
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -155,6 +155,9 @@ class WjCustomerCoupon extends Model
         }
         if(!empty($category_id)){
             $where[] = ['rc.id','=',$category_id];
+        }
+        if(!empty($proucing_item)){
+            $where[] = ['rm.proucing_item','=',$proucing_item];
         }
         $data = WjCustomerCoupon::alias('wcc')
             ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.assign_stock,rm.menu_en_name,rm.unit_en,rm.menu_id,rm.proucing_item,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name,pis.stock_qty')
@@ -193,6 +196,8 @@ class WjCustomerCoupon extends Model
         foreach($data as &$v){
             //查询该产品的加工状态
             $v['status'] = isset($product_status_arr[$v['product_id']]) ? $product_status_arr[$v['product_id']]['status'] : 0;
+            //加工产品的完成数量
+            $v['finish_quantities'] = isset($product_status_arr[$v['product_id']]) ? $product_status_arr[$v['product_id']]['finish_quantities'] : 0;
             $v['operator_user'] = isset($product_status_arr[$v['product_id']]['operator_user']) ? $product_status_arr[$v['product_id']]['operator_user'] : [];
             if(!isset($list[$v['cate_id']])){
                 $list[$v['cate_id']] = [
@@ -208,6 +213,7 @@ class WjCustomerCoupon extends Model
                     'unit_en' => $v['unit_en'],
                     'proucing_item' => $v['proucing_item'],
                     'sum_quantities' => floatval($v['customer_buying_quantity']),
+                    'finish_quantities' => floatval($v['finish_quantities']),
                     'status' => $v['status'],
                     'operator_user' => $v['operator_user'],
                     'assign' => -1,

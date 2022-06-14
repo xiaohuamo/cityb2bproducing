@@ -166,7 +166,7 @@ class ProducingProgressSummery extends Model
             }
             //如果该产品没有二级分类，则展示该产品的库存,不展示用-1判断
             if($v['is_has_two_cate'] == 2){
-                $v['left_stock'] = floatval($v['stock_qty']?:0);
+                $v['left_stock'] = floatval($v['stock_qty']?:0);//剩余库存库存量 -1-不展示 >=0-剩余库存量
             }else{
                 $v['left_stock'] = -1;
             }
@@ -242,6 +242,25 @@ class ProducingProgressSummery extends Model
             $v['is_has_two_cate'] = count($two_cate_done_info)>0 ? 1 : 2;//1-有二级分类 2-没有二级分类
             //判断加工状态 0-未加工 1-自己正在加工 2-其他人正在加工 3-加工完成
             $v['status'] = $this->getProcessStatus($v,$userId,1,$two_cate_done_info);
+            //如果查询的是current Plan的结果，获取该产品当前的所有操作员
+            $v['operator_user'] = [];
+            $ou_where = [
+                ['pps.business_userId', '=', $businessId],
+                ['pps.delivery_date', '=', $logistic_delivery_date],
+                ['pps.product_id', '=', $v['product_id']],
+                ['pps.operator_user_id', '>', 0],
+                ['pps.isdeleted', '=', 0]
+            ];
+            $v['operator_user'] = Db::name('producing_progress_summery')
+                ->alias('pps')
+                ->field('operator_user_id,u.name,u.nickname,u.displayName')
+                ->leftJoin('user u','u.id = pps.operator_user_id')
+                ->where($ou_where)
+                ->group('operator_user_id')
+                ->select()->toArray();
+            foreach ($v['operator_user'] as &$vv){
+                $vv['user_name'] = $vv['nickname'] ?: $vv['name'];
+            }
         }
         return $goods_one_cate;
     }
