@@ -301,14 +301,20 @@ class WjCustomerCoupon extends Model
             $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
         }
         $data = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.operator_user_id,wcc.is_producing_done,o.logistic_truck_No,u.name,u.nickname,u.displayName')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.operator_user_id,wcc.is_producing_done,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,o.logistic_truck_No,u.name,u.nickname,u.displayName')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('user u','u.id = wcc.operator_user_id')
             ->where($where)
             ->select()->toArray();
         $list = [];//按产品id合并数组
         foreach($data as $k=>$v){
+            $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
             $list[$v['product_id']]['product'][] = $v;
+            if(isset($list[$v['product_id']]['finish_quantities'])){
+                $list[$v['product_id']]['finish_quantities']=floatval(($list[$v['product_id']]['finish_quantities']*100+$v['new_customer_buying_quantity']*100)/100);
+            }else{
+                $list[$v['product_id']]['finish_quantities']=floatval($v['customer_buying_quantity']);
+            }
         }
         //通过产品的信息获取该产品当前的状态
         $done = [];
@@ -355,8 +361,9 @@ class WjCustomerCoupon extends Model
                 }
             }
             $done[$k]['operator_user'] = array_values($operator_user);
+            $list[$k] = array_merge($list[$k],$done[$k]);
         }
-        return $done;
+        return $list;
     }
 
     /**

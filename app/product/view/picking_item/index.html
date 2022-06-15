@@ -259,7 +259,7 @@
 										<div class="fwb F22">{{item1.menu_id}}&nbsp;&nbsp;<span class="F22">{{item1.sum_quantities}}{{item1.unit_en}}</span></div>
 										<template v-if="item1.is_has_two_cate==1">
 										<div class="flexbox2 twoCateBox maT-5">
-											<div class="F14" :class="{'par5':index2==0,'pa0-5':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
+											<div class="F18" :class="{'par5':index2==0,'pa0-5':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
 												<p class="fwb">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</p>
 												<p class="fwb" v-if="item2.assign>-1">ass {{item2.assign}} s.l. {{item2.left_stock}} p.d. {{item2.producing_quantity}}</p>
 											</div>
