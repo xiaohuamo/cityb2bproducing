@@ -667,7 +667,7 @@
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(type)
 							}
-							if(type != 'refresh'){
+							if(type != 'refresh'&&_this.currentPage==1){
 								//如果有缓存的产品id,则划到对应的位置
 								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_left_cate_'+_this.logistic_truck_No,1)
 							}
@@ -754,7 +754,7 @@
 									}
 								}
 								_this.orderId = localStorage.orderId = _this.menudataTwoCateSort[_this.menudataTwoCateSortIndex].orderId
-								if(type != 'refresh') {
+								if(type != 'refresh'&&_this.currentPage==1) {
 									//将订单定位到对应的位置
 									_this.goto(_this.menudataTwoCateSort[_this.menudataTwoCateSortIndex], _this.menudataTwoCateSortIndex, '.J_cate_orderId_' + _this.orderId, 7)
 								}
@@ -2006,6 +2006,7 @@
 						_this.dataRefreh();
 					}
 					if(_this.currentPage == 2) {
+						localStorage.currentPage=2
 						//跳转到按产品拣货页面
 						window.location.href = "{:url('/product/picking')}"
 					}
@@ -2014,7 +2015,6 @@
 						_this.dataRefrehPage23();
 					}
 					if(_this.currentPage == 5) {
-						this.currentPage=1
 						localStorage.currentPage=1
 						window.location.href = "{:url('/product/picking')}"
 					}

@@ -671,12 +671,12 @@
 								//获取默认显示的二级类目
 								_this.twoCateGoods(_this.product_id,type)
 							}else{
-								localStorage.guige1_id = 0
+								_this.guige1_id=localStorage.guige1_id = 0
 								_this.menudataTwoCate = []
 								//默认加载第一个产品的第一个规格的所有加工明细
 								_this.productOrder(_this.product_id,'',type)
 							}
-							if(type != 'refresh'){
+							if(type != 'refresh'&&_this.currentPage==1){
 								//如果有缓存的产品id,则划到对应的位置
 								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'#anchor-'+_this.product_id)
 							}

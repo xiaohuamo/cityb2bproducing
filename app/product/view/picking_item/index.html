@@ -613,7 +613,7 @@
 								}
 							}
 							_this.one_cate_id=localStorage.one_cate_id=_this.menudata2Sort[_this.menudata2SortIndex].id
-							if(type != 'refresh'){
+							if(type != 'refresh'&&_this.currentPage==1){
 								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_pick_cate_'+_this.menudata2Sort[_this.menudata2SortIndex].id,6)
 							}
 							if(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate == 1){
@@ -680,14 +680,14 @@
 									}
 									//如果该分类是可展开的，判断当前选中的产品是否在折叠范围内，如果在折叠范围内，默认展开，显示折叠按钮
 									let current_cate_top = $('.J_cate_product_id_'+_this.product_id).offset().top
-									if(_this.is_open){
-										if(current_cate_top>274){
-											_this.is_open=false
-											_this.is_close=true
-										}
-									}
+									// if(_this.is_open){
+									// 	if(current_cate_top>274){
+									// 		_this.is_open=false
+									// 		_this.is_close=true
+									// 	}
+									// }
 									//将产品滑动到对应的位置
-									if(current_cate_top>274){
+									if(current_cate_top>274&&_this.is_open&&_this.currentPage==1){
 										_this.goto(_this.menudataTwoCate[_this.menudataTwoCateIndex],_this.menudataTwoCateIndex,'.J_cate_product_id_'+_this.product_id,7)
 									}
 								})
@@ -2119,14 +2119,14 @@
 							//获取默认的展示产品
 							_this.cetegoryProduct(_this.menudata[0]['id']);
 						});
-						this.dataRefrehPage23();
+						_this.dataRefrehPage23();
 					}
 					if(_this.currentPage == 3) {
+						localStorage.currentPage=3
 						//跳转到按订单拣货页面
 						window.location.href = "{:url('/product/pickingOrder')}"
 					}
 					if(_this.currentPage == 4) {
-						this.currentPage=1
 						localStorage.currentPage=1
 						window.location.href = "{:url('/product/pickingOrder')}"
 					}
@@ -2940,6 +2940,12 @@
 							this.is_open=true
 							this.is_close=false
 						}
+					}
+					//如果该分类是可展开的，判断当前选中的产品是否在折叠范围内，如果在折叠范围内，默认展开，显示折叠按钮
+					let current_cate_top = $('.J_cate_product_id_'+this.product_id).offset().top
+					//将产品滑动到对应的位置
+					if(this.is_open&&this.currentPage==1){
+						this.goto(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,'.J_cate_product_id_'+this.product_id,7)
 					}
 				}
 			},
