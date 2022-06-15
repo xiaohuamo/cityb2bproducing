@@ -262,7 +262,7 @@
 											<div>{{item1.menu_id}}&nbsp;&nbsp;<span class="F22 w600">{{item1.finish_quantities}}/{{item1.sum_quantities}}{{item1.unit_en}}</span></div>
 											<template v-if="item1.is_has_two_cate==1">
 												<div class="flexbox9 productItemBox pa4-0">
-													<div class="F22 itemSumBox" :class="{'par10':index2==0,'pa0-10':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
+													<div class="F20 itemSumBox" :class="{'par10':index2==0,'pa0-10':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
 														<p>{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</p>
 														<p v-if="item2.assign>-1"> <span v-if="item2.producing_quantity>0" class="w600" :class="item1.status==0?'blink1':'blink'">p.d. {{item2.producing_quantity}}</span> <span v-if="item2.assign>0">ass {{item2.assign}}</span> <span v-if="item2.left_stock>0">s.l. {{item2.left_stock}}</span></p>
 													</div>
