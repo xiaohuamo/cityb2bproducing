@@ -255,20 +255,20 @@
 								<div class="lbtn4 relative" :class="{'bgFFF7F3 col5e5656':item1.status==0,'bgFFF7F3 col5e5656':item1.status==0,'bgFD6921':item1.status==1,'bgGrey':item1.status==2,'bg34C079 colfff':item1.status==3}" @dblclick="gtouchstartPs(item1,index1);" @click="item1.status==1&&changeStatusPs(item1,index1);item1.status!=1&&goto(item,index,'.J_page1_pick_cate_'+item.cate_id,6,item1)">
 									<img v-if="item1.proucing_item==1" class="productImg" src="__STATIC__/product/img/product.png">
 									<div :class="{'blink':item1.status==1||item1.status==2}">
-										<div>{{item1.menu_en_name}}</div>
-										<div class="fwb F22">{{item1.menu_id}}&nbsp;&nbsp;<span class="F22">{{item1.sum_quantities}}{{item1.unit_en}}</span></div>
+										<div class="F22 w600">{{item1.menu_en_name}}</div>
+										<div>{{item1.menu_id}}&nbsp;&nbsp;<span class="F22 w600">{{item1.sum_quantities}}{{item1.unit_en}}</span></div>
 										<template v-if="item1.is_has_two_cate==1">
-										<div class="flexbox2 twoCateBox">
-											<div class="F22" style="text-align: left;" :class="{'par10':index2==0,'pa0-10':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
-												<p class="w600 pa4-0">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</p>
-												<p class="w600" v-if="item2.assign>-1">ass {{item2.assign}} s.l. {{item2.left_stock}} p.d. {{item2.producing_quantity}}</p>
+										<div class="flexbox9 productItemBox pa4-0">
+											<div class="F20 pa4-0" :class="{'par10':index2==0,'pa0-10':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
+												<p>{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</p>
+												<p v-if="item2.assign>-1">ass {{item2.assign}} s.l. {{item2.left_stock}} p.d. {{item2.producing_quantity}}</p>
 											</div>
 										</div>
 										</template>
 										<template v-else>
-											<div style="text-align: left;" v-if="item1.assign>-1" class="F22 w600 pa4-0">ass {{item1.assign}} s.l. {{item1.left_stock}} p.d. {{item1.producing_quantity}}</div>
+											<div v-if="item1.assign>-1" class="F20 pa4-0 itemSumBox">ass {{item1.assign}} s.l. {{item1.left_stock}} p.d. {{item1.producing_quantity}}</div>
 										</template>
-										<div class="userBox1">
+										<div :class="item1.proucing_item==1?'userBox1':'userBox2'">
 											<span class="F14" v-for="(item2,index2) in item1.operator_user">{{item2.user_name}}</span>
 										</div>
 										<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>

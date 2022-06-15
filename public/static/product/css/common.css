@@ -438,17 +438,19 @@ a{
 	font-weight: normal;
 	margin: 0 6px 10px;
 	/*min-height: 76px;*/
-	min-height: 148px;
+	height: 148px;
 	box-sizing: border-box;
 	padding: 5px;
 }
 
 .lbtn4{
+	text-align: center;
 	margin: 0 6px 10px;
 	box-sizing: border-box;
 	padding: 5px;
 	min-width: 220px;
-	height: 125px;
+	height: 135px;
+	border: 1px solid #d9d9d9;
 	/*height: 140px;*/
 }
 
@@ -1045,7 +1047,12 @@ a{
 	bottom: 0;
 	text-align: left;
 }
-.userBox>span, .userBox1>span, .twoCateBox>span{
+.userBox2 {
+	position: absolute;
+	bottom: 15px;
+	text-align: left;
+}
+.userBox>span, .userBox1>span, .userBox2>span, .twoCateBox>span{
 	margin-right: 10px;
 }
 .cater {
