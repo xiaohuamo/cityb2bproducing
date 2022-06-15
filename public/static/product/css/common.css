@@ -75,6 +75,12 @@ a{
 	display: flex;
 	justify-content: flex-end;
 }
+.flexbox9{
+	display: flex;
+	justify-content: flex-start;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
 
 
 
@@ -432,7 +438,7 @@ a{
 	font-weight: normal;
 	margin: 0 6px 10px;
 	/*min-height: 76px;*/
-	min-height: 145px;
+	min-height: 151px;
 	box-sizing: border-box;
 	padding: 5px;
 }
@@ -1034,6 +1040,8 @@ a{
 	padding: 0 5px;
 }
 .userBox1 {
+	position: absolute;
+	bottom: 0;
 	text-align: left;
 }
 .userBox>span, .userBox1>span, .twoCateBox>span{
@@ -1343,4 +1351,11 @@ tbody tr td{
 	width: 50px;
 	height: 50px;
 	margin: -14px 10px 5px 0;
+}
+.productItemBox{
+	max-height: 57.78px;
+}
+.itemSumBox{
+	height: 100%;
+	text-align: left;
 }
