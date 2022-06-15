@@ -269,7 +269,7 @@
 												</div>
 											</template>
 											<template v-else>
-												<div v-if="item1.assign>-1" class="F20 itemSumBox"> <span class="w600" :class="item1.status==0?'blink1':'blink'">p.d. {{item1.producing_quantity}}</span> <span v-if="item1.assign>0">ass {{item1.assign}}</span> <span v-if="item1.left_stock>0">s.l. {{item1.left_stock}}</span></div>
+												<div v-if="item1.assign>-1" class="F20 pa4-0 itemSumBox"> <span class="w600" :class="item1.status==0?'blink1':'blink'">p.d. {{item1.producing_quantity}}</span> <span v-if="item1.assign>0">ass {{item1.assign}}</span> <span v-if="item1.left_stock>0">s.l. {{item1.left_stock}}</span></div>
 											</template>
 											<div class="userBox1">
 												<span class="F14" v-for="(item2,index2) in item1.operator_user">{{item2.user_name}}</span>
