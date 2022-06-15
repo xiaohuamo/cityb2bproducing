@@ -665,7 +665,7 @@
 								}
 							}
 							_this.product_id = localStorage.product_id = _this.menudataTwoCate[_this.menudataTwoCateIndex].product_id
-							if(_this.currentPage == 1) {
+							if(_this.currentPage == 1&&type!='refresh') {
 								//获取二级分类的最后一个元素距离顶部的距离，大于某个高度则显示折叠按钮
 								_this.$nextTick(() => {
 									let last_product_id = _this.menudataTwoCate[_this.menudataTwoCate.length-1].product_id
@@ -687,7 +687,7 @@
 									// 	}
 									// }
 									//将产品滑动到对应的位置
-									if(current_cate_top>274&&_this.is_open&&type!='refresh'){
+									if(current_cate_top>274&&_this.is_open){
 										_this.goto(_this.menudataTwoCate[_this.menudataTwoCateIndex],_this.menudataTwoCateIndex,'.J_cate_product_id_'+_this.product_id,7)
 									}
 								})
@@ -2171,14 +2171,13 @@
 							var top_h = 144
 							break;
 					}
-					localStorage.currentPage = this.currentPage
 					this.$nextTick(()=> {
 						switch(type){
 								//picking&sum页面单击产品跳转到item pick页面对应的产品
 							case 6:
 								var index = $(selector).index()
 								//将点击的产品信息存入缓存
-								if(index>=0){
+								if(index>=0&&localStorage.currentPage!=1){
 									//将点击的产品信息存入缓存
 									this.one_cate_id = localStorage.one_cate_id=item.cate_id
 									if(item1!=''){
@@ -2188,6 +2187,7 @@
 								}
 								break;
 						}
+						localStorage.currentPage = this.currentPage
 						if(selector == '.J_pick_cate_-1'){
 							var h = 0
 						} else {
