@@ -432,9 +432,9 @@ a{
 	font-weight: normal;
 	margin: 0 6px 10px;
 	/*min-height: 76px;*/
-	min-height: 154px;
+	min-height: 145px;
 	box-sizing: border-box;
-	padding: 5px 0;
+	padding: 5px;
 }
 
 .lbtn4{
@@ -442,7 +442,7 @@ a{
 	box-sizing: border-box;
 	padding: 5px;
 	min-width: 220px;
-	height: 100px;
+	height: 125px;
 	/*height: 140px;*/
 }
 
@@ -616,6 +616,9 @@ a{
 }
 .pa26{
 	padding:26px;
+}
+.pa4-0{
+	padding: 4px 0;
 }
 .pa0-5{
 	padding: 0 5px;

@@ -258,17 +258,17 @@
 										<div>{{item1.menu_en_name}}</div>
 										<div class="fwb F22">{{item1.menu_id}}&nbsp;&nbsp;<span class="F22">{{item1.sum_quantities}}{{item1.unit_en}}</span></div>
 										<template v-if="item1.is_has_two_cate==1">
-										<div class="flexbox2 twoCateBox maT-5">
-											<div class="F18" :class="{'par5':index2==0,'pa0-5':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
-												<p class="fwb">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</p>
-												<p class="fwb" v-if="item2.assign>-1">ass {{item2.assign}} s.l. {{item2.left_stock}} p.d. {{item2.producing_quantity}}</p>
+										<div class="flexbox2 twoCateBox">
+											<div class="F22" style="text-align: left;" :class="{'par5':index2==0,'pa0-5':index2>0,'br':index2<item1.two_cate.length-1}" v-for="(item2,index2) in item1.two_cate">
+												<p class="w600 pa4-0">{{item2.guige_name}}:{{item2.customer_buying_quantity}}{{item1.unit_en}}</p>
+												<p class="w600" v-if="item2.assign>-1">ass {{item2.assign}} s.l. {{item2.left_stock}} p.d. {{item2.producing_quantity}}</p>
 											</div>
 										</div>
 										</template>
 										<template v-else>
-											<div v-if="item1.assign>-1" class="fwb">ass {{item1.assign}} s.l. {{item1.left_stock}} p.d. {{item1.producing_quantity}}</div>
+											<div style="text-align: left;" v-if="item1.assign>-1" class="F22 w600 pa4-0">ass {{item1.assign}} s.l. {{item1.left_stock}} p.d. {{item1.producing_quantity}}</div>
 										</template>
-										<div class="userBox1 maT-5">
+										<div class="userBox1">
 											<span class="F14" v-for="(item2,index2) in item1.operator_user">{{item2.user_name}}</span>
 										</div>
 										<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
