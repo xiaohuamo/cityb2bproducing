@@ -1030,6 +1030,7 @@ a{
 .cateWH {
 	min-width: 220px;
 	height: 135px;
+	border: 1px solid #d9d9d9;
 }
 .actionHeight {
 	height: 50px;
