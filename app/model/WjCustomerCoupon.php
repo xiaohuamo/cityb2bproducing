@@ -160,7 +160,7 @@ class WjCustomerCoupon extends Model
             $where[] = ['rm.proucing_item','=',$proucing_item];
         }
         $data = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.assign_stock,rm.menu_en_name,rm.unit_en,rm.menu_id,rm.proucing_item,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name,pis.stock_qty')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.assign_stock,wcc.is_producing_done,rm.menu_en_name,rm.unit_en,rm.menu_id,rm.proucing_item,rmo.menu_en_name guige_name,rc.id cate_id,rc.category_en_name,pis.stock_qty')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','wcc.restaurant_menu_id = rm.id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
@@ -220,11 +220,34 @@ class WjCustomerCoupon extends Model
                     'left_stock' => -1,
                     'producing_quantity' => -1,
                 ];
+                if(!($v['guige1_id'] > 0)){
+                    //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
+                    if($v['proucing_item'] == 1){
+                        $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
+                        $left_stock = floatval($v['stock_qty']?:0);
+                        $producing_quantity = $v['is_producing_done'] == 1?0:floatval($v['new_customer_buying_quantity']-$assign_stock);
+                        $list[$v['cate_id']]['product'][$v['product_id']]['assign'] = $assign_stock;
+                        $list[$v['cate_id']]['product'][$v['product_id']]['left_stock'] = $left_stock;
+                        $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] = $producing_quantity;
+                    }
+                }
             } else {
                 $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] = floatval(($list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
+                if(!($v['guige1_id'] > 0)){
+                    //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
+                    if($v['proucing_item'] == 1){
+                        $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
+                        $producing_quantity = $v['is_producing_done'] == 1?0:floatval($v['new_customer_buying_quantity']-$assign_stock);
+                        $list[$v['cate_id']]['product'][$v['product_id']]['assign'] += $assign_stock;
+                        $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] += $producing_quantity;
+                    }
+                }
             }
             if($v['guige1_id'] > 0){
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 1;
+                $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);//分配库存的数量
+                $left_stock = floatval($v['stock_qty']?:0);//剩余库存的数量
+                $producing_quantity =  $v['is_producing_done'] == 1?0:floatval($v['new_customer_buying_quantity']-$assign_stock);//需要加工的数量
                 if(!isset($list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']])) {
                     $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']] = [
                         'guige1_id' => $v['guige1_id'],
@@ -236,28 +259,21 @@ class WjCustomerCoupon extends Model
                     ];
                     //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
                     if($v['proucing_item'] == 1){
-                        $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
-                        $left_stock = floatval($v['stock_qty']?:0);
-                        $producing_quantity = floatval($v['new_customer_buying_quantity']-$assign_stock);
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['assign'] = $assign_stock;
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['left_stock'] = $left_stock;
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] = $producing_quantity;
                     }
                 } else {
                     $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'] = floatval(($list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity']*100+$v['customer_buying_quantity']*100)/100);
+                    //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
+                    if($v['proucing_item'] == 1){
+                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['assign'] += $assign_stock;
+                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] += $producing_quantity;
+                    }
                 }
             } else {
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 2;
                 $list[$v['cate_id']]['product'][$v['product_id']]['customer_buying_quantity'] = floatval($v['customer_buying_quantity']);
-                //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
-                if($v['proucing_item'] == 1){
-                    $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
-                    $left_stock = floatval($v['stock_qty']?:0);
-                    $producing_quantity = floatval($v['new_customer_buying_quantity']-$assign_stock);
-                    $list[$v['cate_id']]['product'][$v['product_id']]['assign'] = $assign_stock;
-                    $list[$v['cate_id']]['product'][$v['product_id']]['left_stock'] = $left_stock;
-                    $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] = $producing_quantity;
-                }
             }
         }
         $list = array_values($list);
