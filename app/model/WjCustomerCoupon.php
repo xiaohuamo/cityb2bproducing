@@ -225,21 +225,21 @@ class WjCustomerCoupon extends Model
                     if($v['proucing_item'] == 1){
                         $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
                         $left_stock = floatval($v['stock_qty']?:0);
-                        $producing_quantity = $v['is_producing_done'] == 1?0:floatval($v['new_customer_buying_quantity']-$assign_stock);
+                        $producing_quantity = $v['is_producing_done'] == 1?0:floatval(bcsub((string)$v['new_customer_buying_quantity'],(string)$assign_stock,2));
                         $list[$v['cate_id']]['product'][$v['product_id']]['assign'] = $assign_stock;
                         $list[$v['cate_id']]['product'][$v['product_id']]['left_stock'] = $left_stock;
                         $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] = $producing_quantity;
                     }
                 }
             } else {
-                $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] = floatval(($list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
+                $list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'] = floatval(bcadd((string)$list[$v['cate_id']]['product'][$v['product_id']]['sum_quantities'],(string)$v['customer_buying_quantity'],2));
                 if(!($v['guige1_id'] > 0)){
                     //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
                     if($v['proucing_item'] == 1){
                         $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);
-                        $producing_quantity = $v['is_producing_done'] == 1?0:floatval($v['new_customer_buying_quantity']-$assign_stock);
-                        $list[$v['cate_id']]['product'][$v['product_id']]['assign'] += $assign_stock;
-                        $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] += $producing_quantity;
+                        $producing_quantity = $v['is_producing_done'] == 1?0:floatval(bcsub((string)$v['new_customer_buying_quantity'],(string)$assign_stock,2));
+                        $list[$v['cate_id']]['product'][$v['product_id']]['assign'] = floatval(bcadd((string)$list[$v['cate_id']]['product'][$v['product_id']]['assign'],(string)$assign_stock,2));
+                        $list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'] = floatval(bcadd((string)$list[$v['cate_id']]['product'][$v['product_id']]['producing_quantity'],(string)$producing_quantity,2));
                     }
                 }
             }
@@ -247,7 +247,7 @@ class WjCustomerCoupon extends Model
                 $list[$v['cate_id']]['product'][$v['product_id']]['is_has_two_cate'] = 1;
                 $assign_stock = floatval($v['assign_stock']==1?$v['new_customer_buying_quantity']:0);//分配库存的数量
                 $left_stock = floatval($v['stock_qty']?:0);//剩余库存的数量
-                $producing_quantity =  $v['is_producing_done'] == 1?0:floatval($v['new_customer_buying_quantity']-$assign_stock);//需要加工的数量
+                $producing_quantity =  $v['is_producing_done'] == 1?0:floatval(bcsub((string)$v['new_customer_buying_quantity'],(string)$assign_stock,2));//需要加工的数量
                 if(!isset($list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']])) {
                     $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']] = [
                         'guige1_id' => $v['guige1_id'],
@@ -264,11 +264,11 @@ class WjCustomerCoupon extends Model
                         $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] = $producing_quantity;
                     }
                 } else {
-                    $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'] = floatval(($list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity']*100+$v['customer_buying_quantity']*100)/100);
+                    $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'] = floatval(bcadd((string)$list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['customer_buying_quantity'],(string)$v['customer_buying_quantity'],2));
                     //如果是生产产品，可以查看已分配库存，库存剩余，需要生产量
                     if($v['proucing_item'] == 1){
-                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['assign'] += $assign_stock;
-                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] += $producing_quantity;
+                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['assign'] = floatval(bcadd((string)$list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['assign'],(string)$assign_stock,2));
+                        $list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'] = floatval(bcadd((string)$list[$v['cate_id']]['product'][$v['product_id']]['two_cate'][$v['guige1_id']]['producing_quantity'],(string)$producing_quantity,2));
                     }
                 }
             } else {
@@ -560,9 +560,9 @@ class WjCustomerCoupon extends Model
                 ];
             }else{
                 $product[$v['product_id']]['box_number'] += $boxs;
-                $product[$v['product_id']]['sum_quantities'] = floatval(($product[$v['product_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
+                $product[$v['product_id']]['sum_quantities'] = floatval(bcadd((string)$product[$v['product_id']]['sum_quantities'],(string)$v['customer_buying_quantity'],2));
                 if($v['dispatching_is_producing_done'] == 1){
-                    $product[$v['product_id']]['finish_quantities'] = floatval(($product[$v['product_id']]['finish_quantities']*100+$v['customer_buying_quantity']*100)/100);
+                    $product[$v['product_id']]['finish_quantities'] = floatval(bcadd((string)$product[$v['product_id']]['finish_quantities'],(string)$v['customer_buying_quantity'],2));
                 }
             }
             $product[$v['product_id']]['done_info'][] = [
@@ -585,9 +585,9 @@ class WjCustomerCoupon extends Model
                     ];
                 }else{
                     $product[$v['product_id']]['two_cate'][$v['guige1_id']]['box_number'] += $boxs;
-                    $product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities'] = floatval(($product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities']*100+$v['customer_buying_quantity']*100)/100);
+                    $product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities'] = floatval(bcadd((string)$product[$v['product_id']]['two_cate'][$v['guige1_id']]['sum_quantities'],(string)$v['customer_buying_quantity'],2));
                     if($v['dispatching_is_producing_done'] == 1){
-                        $product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'] = floatval(($product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities']*100+$v['customer_buying_quantity']*100)/100);
+                        $product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'] = floatval(bcadd((string)$product[$v['product_id']]['two_cate'][$v['guige1_id']]['finish_quantities'],(string)$v['customer_buying_quantity'],2));
                     }
                 }
                 $product[$v['product_id']]['two_cate'][$v['guige1_id']]['done_info'][] = [

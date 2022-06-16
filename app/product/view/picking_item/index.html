@@ -694,21 +694,21 @@
 							}
 							if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'].length>0){
 								if(!(_this.guige1_id>0)){
-									_this.menudataThreeCateIndex = 0
+									_this.menudataThreeIndex = 0
 								}else{
 									let is_has_guige_id=0;//是否存在该产品规格id
 									for(var i in _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate']){
 										if(_this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][i].guige1_id == _this.guige1_id){
-											_this.menudataThreeCateIndex = i
+											_this.menudataThreeIndex = i
 											is_has_guige_id=1
 											break;
 										}
 									}
 									if(is_has_guige_id == 0){
-										_this.menudataThreeCateIndex = 0
+										_this.menudataThreeIndex = 0
 									}
 								}
-								_this.guige1_id = localStorage.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][_this.menudataThreeCateIndex].guige1_id
+								_this.guige1_id = localStorage.guige1_id = _this.menudataTwoCate[_this.menudataTwoCateIndex]['two_cate'][_this.menudataThreeIndex].guige1_id
 							}else{
 								_this.guige1_id = localStorage.guige1_id = 0
 							}
@@ -1393,14 +1393,27 @@
 						//记录当前点击的产品键值
 						if(item.product_id != this.product_id){
 							if(item.two_cate.length>0){
-								this.guige1_id = item.two_cate[0].guige1_id
+								this.guige1_id = localStorage.guige1_id = item.two_cate[0].guige1_id
 							}else{
-								this.guige1_id = ''
+								this.guige1_id = localStorage.guige1_id = 0
 							}
 						}
 						this.menudataTwoCateIndex=index
-						this.product_id = item.product_id
+						this.product_id = localStorage.product_id =  item.product_id
 						this.menudataThreeIndex=0
+						//切换产品时，如果是当前是展开状态，将自动折叠
+						if(this.is_close){
+							this.$nextTick(() => {
+								this.is_open=true
+								this.is_close=false
+								//如果该分类是可展开的，判断当前选中的产品是否在折叠范围内，如果在折叠范围内，默认展开，显示折叠按钮
+								let current_cate_top = $('.J_cate_product_id_'+this.product_id).offset().top
+								//将产品滑动到对应的位置
+								if(current_cate_top>274){
+									this.goto(this.menudataTwoCate[this.menudataTwoCateIndex],this.menudataTwoCateIndex,'.J_cate_product_id_'+this.product_id,7)
+								}
+							})
+						}
 						//重置加工明细排序信息-start
 						this.wccSort=0
 						this.wccSortType=1
@@ -1418,7 +1431,7 @@
 						//记录当前点击的产品键值
 						if(item.guige1_id != this.guige1_id){
 							this.menudataThreeIndex=index
-							this.guige1_id = item.guige1_id
+							this.guige1_id = localStorage.guige1_id = item.guige1_id
 							//重置加工明细排序信息-start
 							this.wccSort=0
 							this.wccSortType=1
@@ -2104,7 +2117,7 @@
 					var _this=this
 					localStorage.currentPage=index
 					if(_this.currentPage == 1){
-						_this.inidata();
+						_this.dataRefreh();
 					}
 					if(_this.currentPage == 2){
 						var data = {

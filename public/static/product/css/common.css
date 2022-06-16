@@ -570,9 +570,9 @@ a{
 }
 .rsection2Box{
 	max-height: 258px;
-	overflow: hidden;
-	/*overflow: auto;*/
-	/*overflow-x: hidden;*/
+	/*overflow: hidden;*/
+	overflow: auto;
+	overflow-x: hidden;
 }
 .m0-5{
 	margin: 0 5px;
@@ -1358,7 +1358,8 @@ tbody tr td{
 .open-close-btn{
 	width: 50px;
 	height: 50px;
-	margin: -14px 10px 5px 0;
+	margin: -71px 10px 5px 0;
+	z-index: 2;
 }
 .productItemBox{
 	max-height: 57.78px;
