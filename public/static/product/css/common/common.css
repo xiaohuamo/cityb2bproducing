@@ -4,6 +4,7 @@
 }
 
 a{
+  color: #000000;
   text-decoration:none;
 }
 
@@ -312,6 +313,12 @@ body{
 .ma10{
 	margin:10px;
 }
+.mat15{
+	margin-top:15px;
+}
+.mar10{
+	margin-right:10px;
+}
 .mb10{
 	margin-bottom:10px;
 }
@@ -329,6 +336,9 @@ body{
 }
 .pa10{
 	padding:0 10px;
+}
+.pa10-10{
+	padding:10px 10px;
 }
 .pa15-10{
 	padding:15px 10px;
@@ -412,7 +422,7 @@ body{
 	border-radius: 12px;
 	color: #fff;
 	text-align: center;
-	font-size: 0.78rem;
+	/*font-size: 0.78rem;*/
 }
 
 
@@ -870,6 +880,151 @@ body{
 	text-align: center;
 	margin-left: 10px;
 }
+.uploadImage{
+	opacity: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+.jobCheck{
+	width: 100%;
+	height: 8rem;
+	border: 1px solid #ECEDEE;
+}
+.boxWidth{
+	width: 90%;
+}
+.boxWidth50{
+	width: 50%;
+}
+.boxWidth30{
+	width: 30%;
+}
+.btn-switch {
+	cursor: pointer;
+	width: 52px;
+	height: 31px;
+	position: relative;
+	border: 1px solid #dfdfdf;
+	background-color: #fdfdfd;
+	box-shadow: #dfdfdf 0 0 0 0 inset;
+	border-radius: 20px;
+	background-clip: content-box;
+	display: inline-block;
+	-webkit-appearance: none;
+	user-select: none;
+	outline: none !important;
+}
+
+.btn-switch.large {
+	width: 70px;
+	height: 30px;
+	border-radius: 30px;
+}
+
+.btn-switch.large:before {
+	content: '';
+	width: 28px;
+	height: 28px;
+	border-radius: 30px;
+}
+
+.btn-switch.large:after {
+	content: '';
+	color: #999;
+	left: 30px;
+	position: absolute;
+	line-height: 30px;
+	font-size: 14px;
+}
+
+.btn-switch.large:checked:after {
+	content: '';
+	color: #fff;
+	left: 10px;
+	position: absolute;
+	line-height: 30px;
+	font-size: 14px;
+}
+
+.btn-switch.large:checked:before {
+	left: 40px;
+}
+
+.btn-switch:before {
+	content: '';
+	width: 29px;
+	height: 29px;
+	position: absolute;
+	top: 0px;
+	left: 0;
+	border-radius: 20px;
+	background-color: #fff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.btn-switch:checked {
+	border-color: #FD5506;
+	box-shadow: #FD5506 0 0 0 16px inset;
+	background-color: #FD5506;
+}
+
+.btn-switch:checked:before {
+	left: 21px;
+}
+
+.btn-switch.btn-switch-animbg {
+	transition: background-color ease 0.4s;
+}
+
+.btn-switch.btn-switch-animbg:before {
+	transition: left 0.3s;
+}
+
+.btn-switch.btn-switch-animbg:checked {
+	box-shadow: #dfdfdf 0 0 0 0 inset;
+	background-color: #FD5506;
+	transition: border-color 0.4s, background-color ease 0.4s;
+}
+
+.btn-switch.btn-switch-animbg:checked:before {
+	transition: left 0.3s;
+}
+
+.btn-switch.btn-switch-anim {
+	transition: border cubic-bezier(0, 0, 0, 1) 0.4s, box-shadow cubic-bezier(0, 0, 0, 1) 0.4s;
+}
+
+.btn-switch.btn-switch-anim:before {
+	transition: left 0.3s;
+}
+
+.btn-switch.btn-switch-anim:checked {
+	box-shadow: #FD5506 0 0 0 16px inset;
+	background-color: #FD5506;
+	transition: border ease 0.4s, box-shadow ease 0.4s, background-color ease 1.2s;
+}
+
+.btn-switch.btn-switch-anim:checked:before {
+	transition: left 0.3s;
+}
+
+input[type=checkbox]:checked::before {
+	font: normal normal normal 14px/2 FontAwesome;
+}
+.inputBox{
+	width: 6.125rem;
+	height: 1.75rem;
+	line-height: 1.56px;
+	background-color: #F7F8FC;
+	border-radius: 3px;
+	border: none;
+	outline: none;
+	text-align: center;
+}
+
 
 
 

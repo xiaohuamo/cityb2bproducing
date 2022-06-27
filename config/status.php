@@ -186,5 +186,17 @@ return [
             'code' => 142,
             'msg' => 'You do not have permission to pick'
         ],
+        'upload_error' => [
+            'code' => 143,
+            'msg' => 'Image upload failed'
+        ],
+        'token_error' => [
+            'code' => 144,
+            'msg' => 'token error'
+        ],
+        'order_return_approved' => [
+            'code' => 145,
+            'msg' => 'The return of the order has been completed, please do not apply again'
+        ],
     ]
 ];

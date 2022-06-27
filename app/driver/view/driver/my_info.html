@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Driver Management</title>
+  <link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+  <link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
+  <script src="__STATIC__/product/js/vue.min.js"></script>
+  <script src="__STATIC__/product/js/axios.min.js"></script>
+  <script src="__STATIC__/product/js/jquery-3.3.1.min.js"></script>
+  <script src="__STATIC__/product/js/driver_common.js"></script>
+  <script src="__STATIC__/dist/index.js"></script>
+  <style>
+    .dome {
+      display: flex;
+      justify-content: space-between;
+      padding-left: 22px;
+    }
+    /*h5cropper样式问题，部分浏览器底部导航会挡住确定和取消按钮*/
+     .btndiv {
+       position: fixed;
+       bottom: 15vh;
+       width: 80%;
+       left: 50%;
+       transform: translateX(-50%);
+     }
+    .cropper {
+      width: 2.9rem;
+      height:2.9rem;
+      line-height: 2.9rem;
+      /* 切记position: relative一点要有 */
+      position: relative;
+      border-radius: 2.9rem;
+      overflow: hidden;
+      text-align: center;
+      margin-left: 15px;
+      margin-top: 15px;
+    }
+    .img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+    }
+    .info {
+      font-size: 18px;
+      height: 40px;
+      line-height: 40px;
+      margin-left: 30px;
+      flex: 1;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+<div id="app">
+  <div class="head bgfff center">
+    <img src="__STATIC__/product/img/return0.png" class="return" @click="returnPage"/>
+    <span>Avatar</span>
+  </div>
+  <div style="height:3.5rem;"></div>
+  <div class="flexBox1 pa15 cropper">
+    <img :src="avatar" class="portrait img" />
+    <!-- option是配置，格式是对象，getbase64Data是组件的一个方法获取裁剪完的头像 -->
+    <h5-cropper @getbase64="getbase64Data" @getblob="getBlob" @get-file="getFile"></h5-cropper>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: function() {
+      return {
+        avatar:'__STATIC__/product/img/portrait.png',//头像地址
+      }
+    },
+    mounted:function(){
+      this.driverInfo();
+    },
+    methods: {
+      returnPage:function(){
+        window.history.go(-1)
+      },
+      //获取司机信息
+      driverInfo(){
+        let _this = this
+        getData("{:url('/driver/driverLoginInfo')}", '', function (res) {
+          console.log('获取登录信息---',res);
+          if(res.status == 144){
+            //清空本地存储信息，并跳转到登录页面
+            localStorage.clear();
+            window.location.href = "{:url('/driver/login')}"
+          }else{
+            _this.nickname =  res.result.name
+            if(res.result.avatar){
+              _this.avatar = res.result.avatar
+            }
+          }
+        })
+      },
+      getbase64Data(data) {
+        this.avatar = data;
+        let param = {
+          "file":this.avatar
+        }
+        let _this = this
+        getData("{:url('/driver/uploadBase64Picture')}", param, function (res) {
+          console.log(res);
+          if(res.status != 200){
+            alert(res.message);
+          }
+        });
+      },
+      getBlob(blob){
+        console.log(blob)
+      },
+      getFile(file){
+        console.log(file)
+      }
+    }
+  })
+</script>
+</body>
+</html>

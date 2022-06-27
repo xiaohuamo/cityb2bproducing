@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+	<title>Driver Management</title>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/orderGoods.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/placeOrder.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/cart.css"/>
+	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="__STATIC__/product/js/vue.min.js"></script>
+	<script src="__STATIC__/product/js/axios.min.js"></script>
+	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<!--引入公共组件-->
+	<script src="__STATIC__/product/js/driver_footer.js"></script>
+</head>
+<body class="bgF2F2F2">
+<div id="photo" v-cloak>
+	<div class="head bgfff mb10">
+		<img src="__STATIC__/product/img/return0.png" class="return" @click="returnPage"/>
+		<div class="f38 col333 f500 bold center">Photograph</div>
+	</div><div style="height:3.5rem;"></div>
+	<!-- 主体部分开始 -->
+	<div class="ma15 borR7 bgfff">
+		<div class="flexBox2 pa15 bold">{{orderInfo.name}}</div>
+		<div class="flexBox2 pa0-15 pmb10">
+			<a class="col000" :href="'tel:'+orderInfo.phone"><img src="__STATIC__/product/img/service3.png" class="location2"/>
+				{{orderInfo.phone}}</a>
+		</div>
+		<div class="flexBox2 pa0-15 pmb10" @click="googleMap(orderInfo.address)">
+			<img src="__STATIC__/product/img/location2.png" class="location2"/>{{orderInfo.address}}
+		</div>
+		<div class="pa0-15">
+			<img src="__STATIC__/product/img/big.png" class="w100"/>
+		</div>
+		<div style="height: 200px;" class="pa0-15">
+			<iframe width="100%" height="100%" style="border:0" loading="lazy" allowfullscreen :src="`https://www.google.com/maps/embed/v1/place?q=${orderInfo.address}&key=AIzaSyCQwFD7_LcudCO4jzxq-BZ6cyPMFmenVmI`"></iframe>
+		</div>
+	</div>
+
+	<div class="ma15 pa15 borR7 bgfff">
+		<div class="photoBox borR7 relative">
+			<template v-if="orderInfo.receipt_picture">
+				<img style="width: 100%;height: 100%;" :src="receipt_picture"/>
+			</template>
+			<template v-else>
+				<img src="__STATIC__/product/img/photo.png"/>
+				<div class="f35 col0F0F0F bold">Please upload a picture</div>
+			</template>
+			<input v-if="orderInfo.coupon_status!='b01'" class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile">
+		</div>
+	</div>
+	<div class="ma0-15 pa0-15 bold pmb15" v-if="orderInfo.coupon_status!='b01'">
+		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>
+	</div>
+	<!--自定义的组件使用-->
+	<common-footer current-menu="3"></common-footer>
+</div>
+</body>
+</html>
+<script>
+	new Vue({
+		el:"#photo",
+		data:{
+			orderId:localStorage.getItem('orderId'),//订单id
+			orderInfo:[],//订单详情
+			isLoading: false,//是否显示加载图标
+			receipt_picture:'__STATIC__/product/img/photo.png',//完成上传的图片
+		},
+		mounted:function(){
+			this.orderDetial();
+		},
+		methods:{
+			returnPage:function(){
+				window.history.go(-1)
+			},
+			//获取订单详情
+			orderDetial(){
+				//获取订单详情
+				var _this = this
+				_this.isLoading=true
+				var param = {
+					'orderId':_this.orderId
+				}
+				getData("{:url('/driver/driverOrderDetail')}", param, function (res) {
+					console.log('获取订单详情结果---',res);
+					_this.orderInfo = res.result
+					if(_this.orderInfo.receipt_picture){
+						_this.receipt_picture = _this.orderInfo.receipt_picture
+					}
+				});
+			},
+			//打开谷歌地图，并定位
+			googleMap(address){
+				window.open("https://www.google.com/maps/search/?api=1&query="+address)
+			},
+			getFile(e) {
+				let formData = new FormData();
+				let file = e.target.files[0];
+				formData.append("image", file);
+				formData.append("orderId", this.orderId);
+				let _this = this
+				getFormData("{:url('/driver/uploadImage')}", formData, function (res) {
+					console.log(res);
+					if(res.status == 200){
+						_this.receipt_picture = res.result
+						_this.updateOrderRceiptPicture()
+					}else{
+						alert(res.message);
+					}
+				});
+			},
+			//更新图片
+			updateOrderRceiptPicture(){
+				let param = {
+					'orderId': this.orderId,
+					'receipt_picture': this.receipt_picture
+				}
+				console.log('更新图片参数---',param);
+				let _this = this
+				getData("{:url('/driver/updateOrderRceiptPicture')}", param, function (res) {
+					console.log('更新图片结果---',res);
+					if(res.status != 200){
+						alert(res.message);
+					}
+				});
+			},
+			//确定成功
+			sure(){
+				let param = {
+					'orderId': this.orderId,
+				}
+				let _this = this
+				getData("{:url('/driver/confirmOrderFinish')}", param, function (res) {
+					console.log(res);
+					if(res.status == 200){
+						_this.orderInfo.coupon_status='b01'
+					}
+					alert(res.message);
+				});
+			}
+		}
+	})
+</script>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+	<title>Driver Management</title>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/placeOrder.css"></script>
+	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="__STATIC__/product/js/jquery.base64.js"></script>
+	<script src="__STATIC__/product/js/vue.min.js"></script>
+	<script src="__STATIC__/product/js/axios.min.js"></script>
+	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<!--引入公共组件-->
+	<script src="__STATIC__/product/js/driver_footer.js"></script>
+</head>
+<body class="bgF2F2F2">
+<div id="me" v-cloak>
+	<div class="head bgfff mb10">
+		<div class="relative center">
+			<img src="__STATIC__/product/img/headIcon.png" class="headIcon"/>
+			<div class="f38 col333 f500 bold">Driver Management</div>
+		</div>
+	</div><div style="height:3.5rem;"></div>
+	<!-- 头像部分 -->
+	<div class="flexBox1 personInfoBox" @click="editPersonInfo">
+		<div class="flexBox2">
+			<img :src="avatar" class="portrait"/>
+			<span class="f35 bold">{{nickname}}</span>
+		</div>
+		<img src="__STATIC__/product/img/arrow2.png" class="Me_arrow" />
+	</div>
+
+	<div class="maT15 infoSetting">
+		<div class="flexBox1 settingBox" current-menu=1 @click="changeMenu(1)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/storeMe2.png" class="icon"/>
+				<span class="col1C1C1C f30">Start Job</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+		<div class="flexBox1 settingBox" current-menu=2 @click="changeMenu(2)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/driverMe2.png" class="icon"/>
+				<span class="col1C1C1C f30">Receive</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+		<div class="flexBox1 settingBox" @click="changeMenu(3)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/driverMe1.png" class="icon"/>
+				<span class="col1C1C1C f30">Navigation</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+		<div class="flexBox1 settingBox" @click="changeMenu(4)">
+			<div class="flexBox1">
+				<img src="__STATIC__/product/img/wancheng.png" class="icon"/>
+				<span class="col1C1C1C f30">Job Done</span>
+			</div>
+			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+		</div>
+	</div>
+	<div class="signOut f35 col1C1C1C" v-if="isLogin==1"  @click="LogOut">Logout</div>
+	<div class="signOut f35 col1C1C1C" v-else  @click="LogIn">Login</div>
+	<!--自定义的组件使用-->
+	<common-footer current-menu="5"></common-footer>
+</div>
+</body>
+</html>
+<script>
+	new Vue({
+		el:"#me",
+		data:{
+			avatar:'__STATIC__/product/img/portrait.png',//头像地址
+			nickname:'Nick name',
+			isLogin: 2,//是否登录 1登录 2未登录
+		},
+		mounted:function(){
+			this.isLogin = localStorage.getItem('token') != null ? 1 : 2
+			if(this.isLogin == 1){
+				this.driverInfo();
+			}
+		},
+		methods:{
+			//获取司机信息
+			driverInfo(){
+				let _this = this
+				getData("{:url('/driver/driverLoginInfo')}", '', function (res) {
+					console.log('获取登录信息---',res);
+					_this.nickname =  res.result.name
+					if(res.result.avatar) {
+						_this.avatar = res.result.avatar
+					}
+				})
+			},
+			//跳转到修改用户信息页面
+			editPersonInfo(){
+				window.location.href = "{:url('/driver/myInfo')}"
+			},
+			changeMenu:function(index){
+				if(this.isLogin == 1){
+					switch(index){
+						case 1://登记
+							window.location.href=common.driverWebUrl+'driver/startJob'
+							break;
+						case 2://收货
+							window.location.href=common.driverWebUrl+'driver/order'
+							break;
+						case 3://导航
+							window.location.href=common.driverWebUrl+'driver/customerSearch'
+							break;
+						case 4://收工
+							window.location.href=common.driverWebUrl+'driver/jobDone'
+							break;
+						default:
+					}
+				}else{
+					this.LogIn();
+				}
+			},
+			//退出登录
+			LogOut(){
+				if (this.isDisable) {
+					return
+				}
+				this.isDisable = true
+				//清空本地存储信息，并跳转到登录页面
+				localStorage.clear();
+				this.avatar = '__STATIC__/product/img/portrait.png'
+				this.nickname = 'Nick name'
+				this.isLogin = 2
+				// window.location.href = "{:url('/driver/login')}"
+			},
+			//登录
+			LogIn(){
+				window.location.href = "{:url('/driver/login')}"
+			},
+		}
+	})
+</script>

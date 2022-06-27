@@ -95,4 +95,14 @@ trait modelTrait
     {
         return self::where($where)->update($data);
     }
+
+    /**
+     * 如果要返回完整数据，并且添加一个索引值的话，可以使用
+     * @param array|int $where 查询条件
+     * @return static
+     */
+    static public function getColumn($where=[], $field='*', $key)
+    {
+        return self::where($where)->column($field,$key);
+    }
 }

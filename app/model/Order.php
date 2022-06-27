@@ -552,7 +552,7 @@ class Order extends Model
     {
         $date_arr = Db::name('order')->where([
             ['business_userId', '=', $businessId],
-            ['logistic_delivery_date', '>', time() - 3600 * 24 * 30],
+            ['logistic_delivery_date', '>', time()],
             ['logistic_truck_No', '=', $logistic_truck_No]
         ])->field("logistic_delivery_date,FROM_UNIXTIME(logistic_delivery_date,'%Y-%m-%d') date,2 as is_default")->group('logistic_delivery_date')->order('logistic_delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
@@ -631,7 +631,7 @@ class Order extends Model
         if($type == 2){
             $order_count = $sql_model->count();
         } else {
-            $order_count = $sql_model->sum('boxs');
+            $order_count = $sql_model->sum('boxesNumber');
         }
         //获取已加工的订单总数
         $where[] = ['o.driver_receipt_status', '=', 1];
@@ -642,7 +642,7 @@ class Order extends Model
         if($type == 2){
             $order_done_count = $sql_model1->count();
         } else {
-            $order_done_count = $sql_model1->sum('boxs');
+            $order_done_count = $sql_model1->sum('boxesNumber');
         }
         return [
             'order_done_count' => $order_done_count,
@@ -670,14 +670,14 @@ class Order extends Model
             ->alias('o')
             ->where($where)
             ->where($map)
-            ->sum('boxs');
+            ->sum('boxesNumber');
         //获取已加工的订单总数
         $where[] = ['o.driver_receipt_status', '=', 1];
         $order_done_count = Db::name('order')
             ->alias('o')
             ->where($where)
             ->where($map)
-            ->sum('boxs');
+            ->sum('boxesNumber');
         return [
             'order_done_count' => $order_done_count,
             'order_count' => $order_count
@@ -688,7 +688,7 @@ class Order extends Model
      * 获取司机订单明细信息
      * @return array
      */
-    public function getDriverOrderList($logistic_delivery_date,$businessId,$logistic_truck_No,$o_sort=0,$o_sort_type=1)
+    public function getDriverOrderList($logistic_delivery_date,$businessId,$logistic_truck_No,$o_sort=0,$o_sort_type=1,$search='')
     {
         //获取当前用户对应的司机编号
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
@@ -697,6 +697,9 @@ class Order extends Model
             ['o.business_userId', '=', $businessId],
             ['o.logistic_truck_No', '=', $logistic_truck_No],
         ];
+        if($search != ''){
+          $map .= " and (o.displayName like '%$search%' or o.first_name  like '%$search%' or o.last_name like '%$search%' or uf.nickname like '%$search%' or o.phone like '%$search%')";
+        }
         switch ($o_sort){
             case 1://Name排序
                 if($o_sort_type == 1) {
@@ -722,7 +725,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxs,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name')
+            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxesNumber,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
             ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)
@@ -960,5 +963,29 @@ class Order extends Model
             }
             return trim($user['name']);
         }
+    }
+
+    /**
+     * 获取订单信息
+     * @param $orderId  订单id
+     * @return array
+     */
+    public function getOrderInfo($orderId)
+    {
+        $where = [
+            ['o.orderId', '=', $orderId],
+        ];
+        //获取加工明细单数据
+        $order = Db::name('order')
+            ->alias('o')
+            ->field('o.orderId,o.coupon_status,o.displayName,o.first_name,o.last_name,o.address,o.receipt_picture,o.phone,o.xero_invoice_id,o.xero_id,userId,uf.nickname')
+            ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id=o.business_userId')
+            ->where($where)
+            ->find();
+        if($order){
+            $name = $this->getCustomerName($order);
+            $order['name'] = $name;
+        }
+        return $order;
     }
 }

@@ -17,7 +17,7 @@ class Truck extends Model
     public function getTruckInfo($businessId,$user_id)
     {
         $info = Truck::alias('t')
-            ->field('t.business_id,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
+            ->field('t.id truck_id,t.business_id,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.avatar,u.contactPersonFirstname,u.contactPersonLastname')
             ->leftjoin('user u','u.id=t.current_driver')
             ->where([
                 ['t.business_id','=',$businessId],

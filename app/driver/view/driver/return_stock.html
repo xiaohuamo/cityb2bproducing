@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+	<title>Driver Management</title>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/placeOrder.css">
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/orderGoods.css"/>
+	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="__STATIC__/product/js/vue.min.js"></script>
+	<script src="__STATIC__/product/js/axios.min.js"></script>
+	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<!--引入公共组件-->
+	<script src="__STATIC__/product/js/driver_footer.js"></script>
+</head>
+<body class="bgF2F2F2">
+<div id="returnStock" v-cloak>
+	<div class="head bgfff center">
+		<img src="__STATIC__/product/img/return0.png" class="return" @click="returnPage"/>
+		Return Stock
+	</div>
+	<div style="height:3.5rem;"></div>
+	<!-- 主体部分开始 -->
+	<div class="ma15 borR7 bgfff f30 pa15 col1C1C1C">
+		<div class="flexBox2 pmb10">
+			<span class="boxWidth50">Invoice.No</span>
+			<span v-if="orderInfo.order_info">{{orderInfo.order_info.xero_invoice_id}}</span>
+		</div>
+		<div class="flexBox2 pmb10">
+			<span class="boxWidth50">Ref Id</span>
+			<span v-if="orderInfo.order_info">23222</span>
+		</div>
+		<div class="flexBox2 pmb10">
+			<span class="boxWidth50">CustomerID</span>
+			<span v-if="orderInfo.order_info">{{orderInfo.order_info.userId}}</span>
+		</div>
+		<div class="flexBox2">
+			<span class="boxWidth50">Customer Name</span>
+			<span v-if="orderInfo.order_info">{{orderInfo.order_info.name}}</span>
+		</div>
+	</div>
+
+	<div class="bgfff ma15 borR7 f30 col1C1C1C" v-if="orderInfo.item_detail" v-for="(item,index) in orderInfo.item_detail">
+		<div class="flexBox1 wldate pa15 col000 f30 f500">
+			<span class="col000 f40">{{item.menu_en_name}} {{item.guige_name}}</span>
+		</div>
+		<div class="pa15">
+			<div class="flexBox2 pmb10">
+				<div class="bold boxWidth30">Reasons</div>
+				<div class="selectBtn pa0-15 flexBox1 relative" @click="showReason(item,index)">
+					{{item.reason}}
+					<img src="__STATIC__/product/img/down_white.png" />
+					<div class="pullBox2 col1C1C1C" v-show="item.is_show_reason">
+						<div v-for="(item1,index1) in reasonData" @click.stop="chooseReason(item1,index1,item,index)">{{item1}}</div>
+					</div>
+				</div>
+			</div>
+			<div class="flexBox2 pmb10">
+				<span class="bold boxWidth30">Ord.qty</span>
+				<span>{{item.new_customer_buying_quantity}} kg</span>
+			</div>
+			<div class="flexBox2 pmb10">
+				<span class="bold boxWidth30">Ret.qty</span>
+				<span><input class="inputBox f30 w40" type="text" ref="return_qty" v-model="item.return_qty" :computeDelQty="computeDelQty(item,index)" @input="handleInput(item)" :disabled="orderInfo.order_return_info&&orderInfo.order_return_info.is_approved==1"> kg</span>
+			</div>
+			<div class="flexBox2">
+				<span class="bold boxWidth30">Del.qty</span>
+				<span>{{item.del_quantity}} kg</span>
+			</div>
+		</div>
+	</div>
+	<div class="ma0-15 pa0-15 bold pmb15">
+		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>
+	</div>
+</div>
+</body>
+</html>
+<script>
+	let vm = new Vue({
+		el:"#returnStock",
+		data:{
+			orderId:localStorage.getItem('orderId') != null ? localStorage.getItem('orderId') : '',//订单id
+			isLoading: false,//是否显示加载图标
+			reasonData:[],//获取退货原因
+			orderInfo:[],//订单信息数组
+		},
+		mounted:function(){
+			this.reason();
+			this.orderDetailData();
+		},
+		computed: {
+			computeDelQty() {
+				return function (item,index) {
+					if(parseFloat(item.return_qty)>=0){
+						return item.del_quantity = this.numSub(item.new_customer_buying_quantity,item.return_qty)
+					}else{
+						return item.del_quantity = parseFloat(item.new_customer_buying_quantity)
+					}
+				}
+			}
+		},
+		methods:{
+			returnPage:function(){
+				window.history.go(-1)
+			},
+			//获取退货原因
+			reason(){
+				let _this = this
+				getData("{:url('/driver/returnStockReason')}", "", function (res) {
+					console.log('获取退货原因----',res)
+					res = res.result
+					_this.reasonData = res
+				});
+			},
+			//获取订单详细信息
+			orderDetailData(){
+				let data = {
+					'orderId':this.orderId
+				}
+				console.log('获取订单信息参数----',data)
+				let _this = this
+				_this.isLoading=true
+				getData("{:url('/driver/orderItemDetails')}", data, function (res) {
+					console.log('获取订单信息结果----',res)
+					_this.isLoading=false
+					res = res.result
+					_this.orderInfo = res
+					//获取订单每条明细中的默认选项
+					for(let i in _this.orderInfo.item_detail){
+						_this.$set(_this.orderInfo.item_detail[i],'is_show_reason',false);//默认是否显示退货原因
+						_this.$set(_this.orderInfo.item_detail[i],'reason',_this.reasonData[_this.orderInfo.item_detail[i].reasonType]);//默认显示的退货原因
+					}
+				});
+			},
+			//点击显示退货原因下拉列表框
+			showReason(item,index){
+				item.is_show_reason = !item.is_show_reason
+			},
+			//选择理由
+			chooseReason(item1,index1,item,index){
+				item.is_show_reason = !item.is_show_reason
+				item.reason = item1
+				item.reasonType = index1
+			},
+			//校验是否是最多两位小数的数据
+			handleInput(item){
+				// 通过正则过滤小数点后两位
+				item.return_qty = (item.return_qty.match(/^\d*(\.?\d{0,2})/g)[0]) || null
+			},
+			//确定退货
+			sure(){
+				let return_data = [];
+				for(let i in this.orderInfo.item_detail){
+					this.orderInfo.item_detail[i].return_qty = parseFloat(this.orderInfo.item_detail[i].return_qty)
+					if(this.orderInfo.item_detail[i].return_qty > 0){
+						if(this.orderInfo.item_detail[i].return_qty > parseFloat(this.orderInfo.item_detail[i].customer_buying_quantity)){
+							alert('Returns up to '+this.orderInfo.item_detail[i].customer_buying_quantity);
+							return;
+						}
+						return_data.push({
+							"item_order_id":this.orderInfo.item_detail[i].id,
+							"return_qty":this.orderInfo.item_detail[i].return_qty,
+							"reasonType":this.orderInfo.item_detail[i].reasonType,
+						});
+					}
+				}
+				if(return_data.length<=0){
+					alert('Please select the returned product and fill in the return quantity');
+					return;
+				}
+				let data = {
+					'orderId':this.orderId,
+					'return_data':return_data
+				}
+				console.log('return stock参数---',data)
+				let _this = this
+				getData("{:url('/driver/doReturnStock')}", data, function (res) {
+					console.log('return stock结果---',res);
+					alert(res.message)
+				})
+			},
+			numSub(arg1,arg2){
+				var r1,r2,m;
+				try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+				try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+				m=Math.pow(10,Math.max(r1,r2))
+				return ((arg1*m-arg2*m)/m);
+			},
+			numAdd(arg1, arg2) {
+				var r1, r2, m;
+				try { r1 = arg1.toString().split(".")[1].length; } catch (e) { r1 = 0; }
+				try { r2 = arg2.toString().split(".")[1].length; } catch (e) { r2 = 0; }
+				m = Math.pow(10, Math.max(r1, r2));
+				return ((arg1 * m + arg2 * m) / m);
+			},
+		}
+	})
+</script>

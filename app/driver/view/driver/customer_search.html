@@ -4,22 +4,22 @@
 	<meta charset="UTF-8">
 	<meta name="format-detection" content="telephone=no">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-	<title>driver management</title>
+	<title>Driver Management</title>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/placeOrder.css">
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/orderGoods.css"/>
 	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
-	<script src="__STATIC__/product/js/jquery.base64.js"></script>
 	<script src="__STATIC__/product/js/vue.min.js"></script>
-	<script src="__STATIC__/product/js/common.js"></script>
+	<script src="__STATIC__/product/js/axios.min.js"></script>
+	<script src="__STATIC__/product/js/driver_common.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
 </head>
 <body class="bgF2F2F2">
 <div id="customerSearch" v-cloak>
 	<div class="head bgfff center">
-		customer inquiries
+		Customer Inquiries
 	</div>
 	<div style="height:3.5rem;"></div>
 	<!-- 主体部分开始 -->
@@ -27,20 +27,20 @@
 	<div class="bgfff borR7 pa15">
 		<div class="searchBox flexBox1 noTop">
 			<img src="__STATIC__/product/img/search.png" class="searchIcon"/>
-			<input v-model="searchCon" placeholder="Please enter business information" @input="search"/>
+			<input v-model.trim="searchCon" placeholder="Please enter business information" @input="search" @keyup.enter="searchEnterFun"/>
 			<img v-if="searchCon!=''" src="__STATIC__/product/img/cha.png" class="cha" @click="remove"/>
 		</div>
 	</div>
 	<div class="ma15 borR7 bgfff flexBox1 sjgl f30 col1C1C1C">
-		<div class="div1" @click="chose('chose-day')">
+		<div class="div1" @click="chose(1)">
 			{{list.length>0?choseDate.date:'Delivery Date'}}
 			<img src="__STATIC__/product/img/wl2.png" />
-			<div class="pullBox" v-show="current=='chose-day'">
+			<div class="pullBox" v-show="current==1">
 				<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>
 			</div>
 		</div>
 		<div class="div1" v-if="driverInfo">
-			{{driverInfo.name}}-{{driverInfo.truck_name}}-{{driverInfo.plate_number}}
+			{{driver_info.name}}-{{driver_info.truck_name}}-{{driver_info.plate_number}}
 		</div>
 		<div class="div1" v-else>
 
@@ -56,7 +56,7 @@
 		</div>
 	</div>
 
-	<div @click="close" class="wlmask" v-if="current=='chose-day'"></div>
+	<div @click="close" class="wlmask" v-show="isShowMask"></div>
 
 	<div class="bgfff ma15 borR7 f30 col1C1C1C" v-for="(item,index) in order">
 		<div class="flexBox1 wldate pa15 col000 f30 f500">
@@ -73,19 +73,35 @@
 <!--			<span>{{item.business_name}}</span>-->
 <!--			<span>croydon</span>-->
 <!--		</div>-->
-		<div class="bgfff flexBox1 pa15 borderB" @click="googleMap(item.address)">
+		<div class="bgfff flexBox1 pa15 borderB">
 			<div>{{item.business_name}}</div>
-			<div class="wlbtn1">{{item.boxs}}box</div>
+			<div class="wlbtn1">{{item.boxesNumber}}box</div>
 		</div>
 		<div class="flexBox2 pa15 borderB">
 			<a class="col000" :href="'tel:'+item.phone"><img src="__STATIC__/product/img/service3.png" class="location2"/>
 				{{item.phone}}</a>
 		</div>
-		<div class="bgfff flexBox1 pa15 borderB">
-			<div @click="googleMap(item.address)">{{item.address}}</div>
+		<div class="bgfff flexBox2 pa15 borderB" @click="googleMap(item.address)">
+			<img src="__STATIC__/product/img/location2.png" class="location2"/>{{item.address}}
+		</div>
+		<div class="bgfff flexBox5 pa15 borderB">
+			<div class="commonBtn pa0-15 mar10" @click="returnStock(item,index)">return</div>
 			<div class="commonBtn pa0-15" v-if="item.coupon_status == 'c01'" @click="photograph(item,index)">photograph</div>
 		</div>
 	</div>
+<!--	<div class="bgfff ma15 borR7 f30 col1C1C1C">-->
+<!--		<div class="flexBox1 borderB pa15 relative">-->
+<!--			<span>ABC restaurant</span>-->
+<!--			<span>croydon</span>-->
+<!--		</div>-->
+<!--		<div class="pa15">-->
+<!--			<div>61725      abc     0425 616 988</div>-->
+<!--			<div class="flexBox1">-->
+<!--				<span></span>-->
+<!--				<div class="commonBtn pa0-15">确认及拍照</div>-->
+<!--			</div>-->
+<!--		</div>-->
+<!--	</div>-->
 	<!--自定义的组件使用-->
 	<common-footer current-menu="3"></common-footer>
 </div>
@@ -97,52 +113,67 @@
 		data:{
 			list:[],//配送日期数组
 			choseDate:[],//当前选中的日期数组
-			logistic_delivery_date:'',//配送日期
-			driverInfo:[],//司机信息
+			logistic_delivery_date:localStorage.getItem('logistic_delivery_date') != null ? localStorage.getItem('logistic_delivery_date') : '',//配送日期
+			driver_info:[],//司机信息
 			isLoading: false,//是否显示加载图标
+			isShowMask: false,//是否显示遮罩层
 			order:[],//订单数组
 			current:'',//
 			o_sort:0,//排序类型
 			o_sort_type:1,//排序方式 1升序 2降序
 			searchCon:'',
-			isChose:false,
 			choseData:'',
 			currentMenu:3   // 当前菜单
 		},
 		mounted:function(){
-			this.driverInfo = JSON.parse(decodeBase64(localStorage.getItem('driver_info')))
 			//获取配送日期
 			this.deliveryDateFun();
+			//获取司机信息
+			this.driverInfo();
 		},
 		methods:{
 			//获取配送日期
 			deliveryDateFun(){
 				var data = {
-					'logistic_delivery_date':localStorage.logistic_delivery_date
+					'logistic_delivery_date':this.logistic_delivery_date
 				}
 				var _this = this
 				_this.isLoading=true
-				getData("{:url('/product/driverDeliveryDate')}", data, function (res) {
+				getData("{:url('/driver/driverDeliveryDate')}", data, function (res) {
+					_this.isLoading=false
 					_this.list = res.result.list
 					_this.choseDate =  res.result.default
-					_this.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
+					_this.logistic_delivery_date = localStorage.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
 					//获取初始化数据
 					if(_this.logistic_delivery_date){
 						_this.orderData()
 					}
 				});
 			},
+			//获取司机信息
+			driverInfo(){
+				let _this = this
+				getData("{:url('/driver/driverLoginInfo')}", '', function (res) {
+					console.log('获取登录信息---',res);
+					_this.driver_info =  res.result
+				})
+			},
+			//回车搜索
+			searchEnterFun(e){
+				this.orderData()
+			},
 			//获取订单相关信息
 			orderData(){
 				var data = {
 					'logistic_delivery_date':this.logistic_delivery_date,
 					'o_sort':this.o_sort,
-					'o_sort_type':this.o_sort_type
+					'o_sort_type':this.o_sort_type,
+					'search':this.searchCon
 				}
 				console.log('获取订单参数----',data)
 				var _this = this
 				_this.isLoading=true
-				getData("{:url('/product/driverOrder')}", data, function (res) {
+				getData("{:url('/driver/driverOrder')}", data, function (res) {
 					console.log('获取订单结果----',res)
 					_this.isLoading=false
 					res = res.result
@@ -153,11 +184,9 @@
 			},
 			//切换日期
 			choseDay(item){
-				this.current=''
 				this.choseDate=item
-				this.logistic_delivery_date=item.logistic_delivery_date
-				//存储当前日期
-				localStorage.logistic_delivery_date=this.logistic_delivery_date
+				this.logistic_delivery_date=localStorage.logistic_delivery_date=item.logistic_delivery_date
+				this.close()
 				//重置订单数据
 				this.orderData()
 			},
@@ -178,37 +207,33 @@
 				this.orderData()
 			},
 			//打开谷歌地图，并定位
-			googleMap(){
-
+			googleMap(address){
+				window.open("https://www.google.com/maps/search/?api=1&query="+address)
 			},
 			//打开拍照页面
 			photograph(item,index){
 				localStorage.orderId = item.orderId
-				window.location.href = "{:url('/product/confirmRecept')}"
+				window.location.href = "{:url('/driver/confirmRecept')}"
 			},
 			chose:function(index){
 				this.current=index
+				this.isShowMask=true
 			},
 			close:function(){
 				this.current=''
+				this.isShowMask=false
 			},
 			search:function(){
-				if(this.searchCon!=''){
-					this.isShowSearchRes=true
-					this.isShowHistory=false
-				}else{
-					this.isShowHistory=true
-					this.isShowSearchRes=false
-				}
+				this.orderData()
 			},
 			remove:function(){
 				this.searchCon=''
+				this.orderData()
 			},
-			Chose:function(){
-				this.isChose=!this.isChose
-			},
-			Chose2:function(data){
-				this.choseData=data
+			//返回货物页面
+			returnStock(item,index){
+				localStorage.orderId = item.orderId
+				window.location.href="{:url('/driver/returnStock')}"
 			}
 		}
 	})

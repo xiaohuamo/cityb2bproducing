@@ -777,4 +777,29 @@ class WjCustomerCoupon extends Model
             }
         }
     }
+
+    /**
+     * 获取退货的明细信息
+     * @param $orderId
+     */
+    public function getOrderItemDetails($orderId)
+    {
+        $data = self::alias('wcc')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rmo.menu_en_name guige_name,rm.unit_en,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,IFNULL(ordi.return_qty,0) return_qty,IFNULL(ordi.reasonType,1) reasonType')
+            ->leftJoin('order o','o.orderId = wcc.order_id')
+            ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
+            ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
+            ->leftJoin('order_return_detail_info ordi','ordi.item_order_id = wcc.id')
+            ->where([
+                ['wcc.order_id','=',$orderId],
+                ['wcc.customer_buying_quantity','>',0]
+            ])
+            ->select()->toArray();
+        foreach ($data as &$v){
+            $v['new_customer_buying_quantity'] = floatval($v['new_customer_buying_quantity']>=0 ? $v['new_customer_buying_quantity'] : $v['customer_buying_quantity']);
+            $v['del_quantity'] = floatval(bcsub((string)$v['new_customer_buying_quantity'],$v['return_qty'],2));
+            $v['return_qty'] = floatval($v['return_qty']);
+        }
+        return $data;
+    }
 }

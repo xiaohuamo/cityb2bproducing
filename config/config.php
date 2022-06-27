@@ -15,4 +15,11 @@ return [
         'KEY_' => 'abc',
         '_KEY' => 'def',
     ],
+    'RETURN_REASON' => [
+        1=>'Missing',
+        2=>'Wrong item',
+        3=>'Quality',
+        4=>'Damage',
+        5=>'Other'
+    ]
 ];
