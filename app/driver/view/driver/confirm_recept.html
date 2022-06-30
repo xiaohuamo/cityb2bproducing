@@ -124,6 +124,8 @@
 					console.log('更新图片结果---',res);
 					if(res.status != 200){
 						alert(res.message);
+					}else{
+						_this.orderInfo.receipt_picture = res.result
 					}
 				});
 			},
