@@ -552,7 +552,7 @@ class Driver extends Base
                     'item_order_id' => $v['item_order_id'],
                     'return_qty' => $v['return_qty'],
                     'reasonType' => $v['reasonType'],
-                    'note' => ''
+                    'note' => $v['note']
                 ];
             }
             $insert_return_data = $update_return_data = $delete_return_id_arr = [];

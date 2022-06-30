@@ -130,8 +130,12 @@
 			},
 			//开始工作
 			sure(){
-				if(this.jobFillData.end_kile_metre<0){
+				if(this.jobFillData.end_kile_metre==''||this.jobFillData.end_kile_metre==null||this.jobFillData.end_kile_metre<0){
 					alert('Please enter the correct number of kilometers');
+					return;
+				}
+				if(parseFloat(this.jobFillData.end_kile_metre)<parseFloat(this.jobData.start_kile_metre_num)){
+					alert('The end kilo metre cannot be less than the start kilo metre');
 					return;
 				}
 				if(this.jobFillData.end_temprature==null||this.jobFillData.end_temprature==''){

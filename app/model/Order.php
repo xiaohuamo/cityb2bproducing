@@ -735,7 +735,8 @@ class Order extends Model
         foreach($order as &$v){
             $v['delivery_date'] = date('m/d/Y',$v['logistic_delivery_date']);
             $v['business_name'] = $v['business_name'] ?: $v['name'];
-            $v['business_shortcode'] = $v['displayName'] ?: $v['first_name'].' '.$v['last_name'];
+            $v['business_shortcode']  = $v['displayName'] ?: $v['first_name'].' '.$v['last_name'];
+            $v['name'] = $this->getCustomerName($v);
         }
         return $order;
     }

@@ -137,8 +137,12 @@
 					console.log(res);
 					if(res.status == 200){
 						_this.orderInfo.coupon_status='b01'
+						//确认完成后跳转回导航页面
+						localStorage.is_show_nav_pop = 1
+						window.location.href = "{:url('driver/customerSearch')}";
+					}else{
+						alert(res.message);
 					}
-					alert(res.message);
 				});
 			}
 		}

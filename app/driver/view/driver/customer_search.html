@@ -13,6 +13,7 @@
 	<script src="__STATIC__/product/js/vue.min.js"></script>
 	<script src="__STATIC__/product/js/axios.min.js"></script>
 	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
 </head>
@@ -61,12 +62,13 @@
 	<div class="bgfff ma15 borR7 f30 col1C1C1C" v-for="(item,index) in order">
 		<div class="flexBox1 wldate pa15 col000 f30 f500">
 			<span class="col000 f40">s{{item.logistic_stop_No}}</span>
-			<div>
-				<div class="pmb5">{{item.delivery_date}}</div>
-				<div>
-					<div class="jm">{{item.business_shortcode}}</div>
-				</div>
-			</div>
+			<span class="col000 f40">{{item.delivery_date}}</span>
+<!--			<div>-->
+<!--				<div class="pmb5">{{item.delivery_date}}</div>-->
+<!--				<div>-->
+<!--					<div class="jm">{{item.business_shortcode}}</div>-->
+<!--				</div>-->
+<!--			</div>-->
 			<span class="col000 f50 bold">{{item.logistic_sequence_No}}</span>
 		</div>
 <!--		<div class="flexBox1 borderB pa15 relative">-->
@@ -74,7 +76,7 @@
 <!--			<span>croydon</span>-->
 <!--		</div>-->
 		<div class="bgfff flexBox1 pa15 borderB">
-			<div>{{item.business_name}}</div>
+			<div class="col000 f40 bold">{{item.name}}</div>
 			<div class="wlbtn1">{{item.boxesNumber}}box</div>
 		</div>
 		<div class="flexBox2 pa15 borderB">
@@ -87,6 +89,7 @@
 		<div class="bgfff flexBox5 pa15 borderB">
 			<div class="commonBtn pa0-15 mar10" @click="returnStock(item,index)">return</div>
 			<div class="commonBtn pa0-15" v-if="item.coupon_status == 'c01'" @click="photograph(item,index)">photograph</div>
+			<div class="commonBtn bglg45A009-78DB36 pa0-15" v-if="item.coupon_status == 'b01'" @click="photograph(item,index)">arrived</div>
 		</div>
 	</div>
 <!--	<div class="bgfff ma15 borR7 f30 col1C1C1C">-->
@@ -123,7 +126,8 @@
 			o_sort_type:1,//排序方式 1升序 2降序
 			searchCon:'',
 			choseData:'',
-			currentMenu:3   // 当前菜单
+			currentMenu:3,   // 当前菜单
+			nav_current_index:localStorage.getItem('nav_current_index') != null ? localStorage.getItem('nav_current_index') : 0,
 		},
 		mounted:function(){
 			//获取配送日期
@@ -180,6 +184,25 @@
 					_this.driverOrderDoneNum = res.all_order_count.order_done_count
 					_this.driverOrderNum = res.all_order_count.order_count
 					_this.order = res.order
+					//如果是从拍照页面回到该页面，弹窗提示是否直接进入下一项
+					let is_show_nav_pop = localStorage.getItem('is_show_nav_pop')
+					if (is_show_nav_pop == 1) {
+						localStorage.is_show_nav_pop=0
+						if(_this.nav_current_index+1==_this.order.length){
+							return
+						}
+						swal({
+							title: 'Whether to go directly to the next navigation?',
+							buttons: true,
+						}).then((willContinue) => {
+							if (!willContinue) {
+								return
+							} else {
+								_this.nav_current_index = localStorage.nav_current_index = parseFloat(_this.nav_current_index)+1
+								_this.photograph(_this.order[_this.nav_current_index],_this.nav_current_index)
+							}
+						});
+					}
 				});
 			},
 			//切换日期
@@ -213,6 +236,7 @@
 			//打开拍照页面
 			photograph(item,index){
 				localStorage.orderId = item.orderId
+				this.nav_current_index = localStorage.nav_current_index = index
 				window.location.href = "{:url('/driver/confirmRecept')}"
 			},
 			chose:function(index){

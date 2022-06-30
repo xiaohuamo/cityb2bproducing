@@ -246,6 +246,12 @@ body{
 .bgB4B4B4{
 	background:#B4B4B4 !important;
 }
+.bglg45A009-78DB36{
+	background:linear-gradient(-87deg, #45A009, #78DB36) !important;
+}
+.bglg45A009-78DB36{
+	background:linear-gradient(-87deg, #45A009, #78DB36) !important;
+}
 
 .flexBox1{
 	display:flex;
@@ -1023,6 +1029,11 @@ input[type=checkbox]:checked::before {
 	border: none;
 	outline: none;
 	text-align: center;
+}
+.reasonBox{
+	flex: 1;
+	height: 5rem;
+	border: 1px solid #ECEDEE;
 }
 
 

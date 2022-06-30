@@ -785,7 +785,7 @@ class WjCustomerCoupon extends Model
     public function getOrderItemDetails($orderId)
     {
         $data = self::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rmo.menu_en_name guige_name,rm.unit_en,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,IFNULL(ordi.return_qty,0) return_qty,IFNULL(ordi.reasonType,1) reasonType')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rmo.menu_en_name guige_name,rm.unit_en,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,IFNULL(ordi.return_qty,0) return_qty,IFNULL(ordi.reasonType,1) reasonType,IFNULL(ordi.note,"") note')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')

@@ -57,21 +57,22 @@
 		<div class="borR7 ma15" v-for="(item,index) in order">
 			<div class="flexBox1 wldate pa15 col000 f30 f500">
 				<span class="col000 f40">s{{item.logistic_stop_No}}</span>
-				<div>
-					<div class="pmb5">{{item.delivery_date}}</div>
-					<div>
-						 <div class="jm">{{item.business_shortcode}}</div>
-					</div>
-				</div>
+				<span class="col000 f40">{{item.delivery_date}}</span>
+<!--				<div>-->
+<!--					<div class="pmb5">{{item.delivery_date}}</div>-->
+<!--					<div>-->
+<!--						 <div class="jm">{{item.business_shortcode}}</div>-->
+<!--					</div>-->
+<!--				</div>-->
 				<span class="col000 f50 bold">{{item.logistic_sequence_No}}</span>
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
-				<div>{{item.business_name}}</div>
+				<div class="col000 f40 bold">{{item.name}}</div>
 				<div class="wlbtn1">{{item.boxesNumber}}box</div>
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
 				<div @click="googleMap(item.address)">{{item.address}}</div>
-				<div class="wlbtn2" v-if="item.driver_receipt_status == 0" @click="markReceipt(item,index)">mark receipt</div>
+				<div class="wlbtn3" v-if="item.driver_receipt_status == 0" @click="markReceipt(item,index)">mark receipt</div>
 				<div class="wlbtn2" v-else>received</div>
 			</div>
 		</div>
@@ -97,7 +98,7 @@
 			order:[],//订单数组
 			current:'',//
 			o_sort:0,//排序类型
-			o_sort_type:1,//排序方式 1升序 2降序
+			o_sort_type:2,//排序方式 1升序 2降序
 		},
 		mounted: function () {
 			// this.driverInfo = JSON.parse(decodeBase64(localStorage.getItem('driver_info')))

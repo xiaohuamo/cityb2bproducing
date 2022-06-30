@@ -50,13 +50,17 @@
 		<div class="pa15">
 			<div class="flexBox2 pmb10">
 				<div class="bold boxWidth30">Reasons</div>
-				<div class="selectBtn pa0-15 flexBox1 relative" @click="showReason(item,index)">
+				<div class="selectBtn pa0-15 flexBox1 relative" @click="(!orderInfo.order_return_info||orderInfo.order_return_info.is_approved==0)&&showReason(item,index)">
 					{{item.reason}}
 					<img src="__STATIC__/product/img/down_white.png" />
 					<div class="pullBox2 col1C1C1C" v-show="item.is_show_reason">
 						<div v-for="(item1,index1) in reasonData" @click.stop="chooseReason(item1,index1,item,index)">{{item1}}</div>
 					</div>
 				</div>
+			</div>
+			<div class="flexBox2 pmb10" v-if="item.reasonType==5">
+				<div class="boxWidth30"></div>
+				<textarea class="reasonBox f30" placeholder="Please fill in the reason for return..." v-model="item.note" :disabled="orderInfo.order_return_info&&orderInfo.order_return_info.is_approved==1"></textarea>
 			</div>
 			<div class="flexBox2 pmb10">
 				<span class="bold boxWidth30">Ord.qty</span>
@@ -72,7 +76,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="ma0-15 pa0-15 bold pmb15">
+	<div class="ma0-15 pa0-15 bold pmb15" v-if="!orderInfo.order_return_info||orderInfo.order_return_info.is_approved==0">
 		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>
 	</div>
 </div>
@@ -164,6 +168,7 @@
 							"item_order_id":this.orderInfo.item_detail[i].id,
 							"return_qty":this.orderInfo.item_detail[i].return_qty,
 							"reasonType":this.orderInfo.item_detail[i].reasonType,
+							"note":this.orderInfo.item_detail[i].reasonType==5?this.orderInfo.item_detail[i].note:'',
 						});
 					}
 				}
@@ -179,7 +184,12 @@
 				let _this = this
 				getData("{:url('/driver/doReturnStock')}", data, function (res) {
 					console.log('return stock结果---',res);
-					alert(res.message)
+					if(res.status == 200){
+						//点击确定后返回导航页面
+						window.location.href = "{:url('driver/customerSearch')}";
+					}else{
+						alert(res.message)
+					}
 				})
 			},
 			numSub(arg1,arg2){

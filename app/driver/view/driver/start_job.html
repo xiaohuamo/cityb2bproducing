@@ -157,6 +157,8 @@
 					if(res.status == 200){
 						let timeStamp = new Date()/1000;
 						_this.jobData.start_job_time = timeStamp
+						//开始工作之后自动跳转到receive页面
+						window.location.href = "{:url('driver/order')}";
 					}else{
 						alert(res.message)
 					}
