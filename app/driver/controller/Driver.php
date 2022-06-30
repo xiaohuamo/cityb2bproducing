@@ -111,9 +111,6 @@ class Driver extends Base
         $up_dir = '/thumbnails/'.date('y-m').'/avatar';//存放在当前目录的upload文件夹下
         $root_path = app()->getRootPath() . 'public';//存储图片的根目录
         $head_path = $root_path . $up_dir;
-        if(!file_exists($head_path)){
-            mkdir($head_path,0777,true);
-        }
         if(preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_img, $result)){
             $type = $result[2];
             if(in_array($type,array('pjpeg','jpeg','jpg','gif','bmp','png'))){
@@ -267,8 +264,6 @@ class Driver extends Base
         $businessId = $request->businessId;
         $root_path = app()->getRootPath() . 'public';//存储图片的根目录
         $thumb = "/thumbnails/$businessId/".date('y-m')."/photograph";
-        //判断文件是否存在，不存在就创建
-        file_exists($thumb)?'':mkdir($thumb,0777,true);
         try {
             validate(['picture'=>'fileExt:jpg,png,jpeg'])->check($files);
             //将原图上传保存
