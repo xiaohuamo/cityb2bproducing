@@ -47,7 +47,7 @@
 				</div>
 			</div>
 
-			<div class="btn bgFD6921">{{driverOrderDoneNum}}/{{driverOrderNum}}</div>
+			<div class="btn bgFD6921" v-if="choose_logistic_truck_No">{{driverOrderDoneNum}}/{{driverOrderNum}}</div>
 			<div class="btn bg34C079">{{orderDoneNum}}/{{orderNum}}</div>
 			<div>
 				<img v-if=!fullscreen src="__STATIC__/product/img/fullscreen.png" class="systemIcon2" @click="handleFullScreen"/>
@@ -413,7 +413,6 @@
 		let vm=new Vue({
 			el:"#main",
 			data:{
-				onLine: false,//navigator.onLine,
 				//内容区域高度 = 当前屏幕高度 - 头部高度 - 底部高度
 				fullHeight: document.documentElement.clientHeight,//获取屏幕高度
 				isLoading:false,
@@ -521,7 +520,8 @@
 				print_type: 2,//打印类型 0-one label 1-Fit print all 2-fit print 3-print order 4-blank label
 				orderItemOtherData:[],//订单明细的其他数据
 				setup_info:'',//供应商设置信息
-				fullscreen: false  // 是否全屏
+				fullscreen: false,  // 是否全屏
+				onLine: navigator.onLine,
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -560,7 +560,16 @@
 				updateOnlineStatus(e) {
 					const { type } = e;
 					this.onLine = type === 'online';
-					console.log('ssss---',this.onLine);
+					if(!this.onLine){
+						this.isShowMessage=true
+						this.popMessage='The current network is not good, please try again later'
+						this.clear()
+						this.clearTime()
+						return;
+					} else {
+						this.popBox('Network has been restored')
+						this.returnPage(this.currentPage)
+					}
 				},
 				//获取配送日期
 				deliveryDateFun(){

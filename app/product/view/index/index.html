@@ -52,7 +52,7 @@
 				</div>
 			</div>
 
-			<div class="btn bgFD6921">{{driverOrderDoneNum}}/{{driverOrderNum}}</div>
+			<div class="btn bgFD6921" v-if="logistic_truck_No">{{driverOrderDoneNum}}/{{driverOrderNum}}</div>
 			<div class="btn bg34C079">{{orderDoneNum}}/{{orderNum}}</div>
 			<div>
 				<img v-if=!fullscreen src="__STATIC__/product/img/fullscreen.png" class="systemIcon2" @click="handleFullScreen"/>
@@ -555,8 +555,11 @@
 				isShowOrderDetail: false,//是否显示订单明细信息
 				orderDetails:[],//订单明细数据
 				orderItem:'',//订单明细
+				onLine: navigator.onLine,
 			},
 			mounted: function () {
+				window.addEventListener('online',  this.updateOnlineStatus);
+				window.addEventListener('offline', this.updateOnlineStatus);
 				//获取pincode显示得到样式
 				var _this = this
 				_this.isLoading=true
@@ -587,6 +590,20 @@
 				_this.deliveryDateFun();
 			},
 			methods:{
+				updateOnlineStatus(e) {
+					const { type } = e;
+					this.onLine = type === 'online';
+					if(!this.onLine){
+						this.isShowMessage=true
+						this.popMessage='The current network is not good, please try again later'
+						this.clear()
+						this.clearTime()
+						return;
+					} else {
+						this.popBox('Network has been restored')
+						this.dataRefreh();
+					}
+				},
 				//获取配送日期
 				deliveryDateFun(){
 					var data = {
@@ -2634,6 +2651,10 @@
 			created(){
 				this.lastTime = new Date().getTime();   //网页第一次打开时，记录当前时间
 				this.dataRefreh();
+			},
+			beforeDestroy(){
+				window.removeEventListener('online',  this.updateOnlineStatus);
+				window.removeEventListener('offline', this.updateOnlineStatus);
 			},
 			destroyed(){
 				// 在页面销毁后，清除计时器
