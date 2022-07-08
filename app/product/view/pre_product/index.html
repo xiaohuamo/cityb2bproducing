@@ -781,20 +781,18 @@
 									_this.timeOutLock = setInterval(() => {
 										//判断上次最后一次点击的时间和这次点击的时间间隔是否大于1分钟
 										if (new Date().getTime() - _this.currentInterTime > _this.interTimeOut) {
-											clearTimeout(_this.timeOutLock);
+											clearInterval(_this.timeOutLock);
+											_this.timeOutLock=null
 											_this.isLoading = false
 											_this.popBox('The server is busy, please try again later')
 										}else{
 											_this.lockProductRes(res.result, item, index).then(function (value) {
 												if (value.status != 119) {
-													clearTimeout(_this.timeOutLock);
 													if (value.status == 200) {
 														resolve(1);
 													} else {
 														resolve(2);
 													}
-												}else{
-													_this.isLoading = true
 												}
 											})
 										}
@@ -873,12 +871,14 @@
 						}
 						// console.log('获取队参数----',data);
 						var _this = this
+						_this.isLoading = true
 						getData("{:url('/product/prepLockProductResult')}", data, function (res) {
 							console.log('获取队列结果----', res);
 							if (res.status == 119) {
 								resolve(res);
 							} else {
-								clearTimeout(_this.timeOutLock);
+								clearInterval(_this.timeOutLock);
+								_this.timeOutLock=null
 								_this.isLoading = false
 								//锁定成功--上锁
 								if (res.status == 200) {

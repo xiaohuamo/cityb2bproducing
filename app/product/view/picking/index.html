@@ -42,7 +42,7 @@
 				<div class="choseCustomerBox" v-if="whichPopShow==3">
 					<div class="mb10 F18" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">
 						<span v-if="index == 0">{{item.name}}</span>
-						<span v-else>{{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
+						<span v-else>{{item.start_time}}-{{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
 					</div>
 				</div>
 			</div>
@@ -89,13 +89,13 @@
 					</div>
 				</div>
 				<div v-if="currentPage==3" class="leftMenu2">
-					<div :class="[{'bgFFF7F3 col5e5656':item.status==0,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2" @click="goto(item,index,'.J_right_cate_'+item.logistic_truck_No,5);">
+					<div :class="[{'bgFFF7F3 col5e5656':item.status==0,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2" @click="goto(item,index,'.J_right_cate_'+item.logistic_schedule_id,5);">
 						<div :class="item.status==1||item.status==2?'blink':''">
-							<div v-if="item.logistic_truck_No!=0">{{item.truck_name}}-{{item.plate_number}}</div>
+							<div v-if="item.logistic_schedule_id!=0">{{item.truck_name}}-{{item.plate_number}}</div>
 							<div>{{item.name}}</div>
 							<div>{{item.all_order_num}} ORDS&nbsp;&nbsp;<span class="w600">{{item.all_bxs_num}}BXS</span></div>
-							<!--						<div>Dep:{{item.schedule_time}}</div>-->
-							<!--						<div>{{item.remain_time}}</div>-->
+							<div class="w600" v-if="item.schedule_time">Dep: {{item.schedule_time}}</div>
+							<div class="w600" v-if="item.remain_time_desc">{{item.remain_time_desc}}</div>
 							<img v-if="item.status==1&&item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 							<img src="__STATIC__/product/img/menusj.png" class="menusj" v-if="currentPage3LeftIndex==index"/>
 						</div>
@@ -103,13 +103,13 @@
 				</div>
 
 				<div v-if="currentPage==1" class="hand leftMenu J_left_menu_1">
-					<div :class="['J_page1_left_cate_'+item.logistic_truck_No,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.logistic_truck_No">
+					<div :class="['J_page1_left_cate_'+item.logistic_schedule_id,{'arrow_box':menudata2SortIndex==index,'bgFFF7F3 col5e5656':item.status==0,'bgFD6921':item.status==1,'bgGrey':item.status==2,'bg34C079 colfff':item.status==3}]" class="F18 lbtn2 relative" v-for="(item,index) in menudata2Sort" @click="clickOneCate(item,index);" @dblclick="gtouchstart(item,index,1);" :id="'anchor-'+item.logistic_schedule_id">
 						<div :class="item.status==1||item.status==2?'blink':''">
-							<div v-if="item.logistic_truck_No!=0">{{item.truck_name}}-{{item.plate_number}}</div>
+							<div v-if="item.logistic_schedule_id!=0">{{item.truck_name}}-{{item.plate_number}}</div>
 							<div>{{item.name}}</div>
 							<div>{{item.all_order_num}} ORDS&nbsp;&nbsp;<span class="w600">{{item.all_bxs_num}}BXS</span></div>
-	<!--						<div>Dep:{{item.schedule_time}}</div>-->
-	<!--						<div>{{item.remain_time}}</div>-->
+							<div class="w600" v-if="item.schedule_time">Dep: {{item.schedule_time}}</div>
+							<div class="w600" v-if="item.remain_time_desc">{{item.remain_time_desc}}</div>
 							<img v-if="item.status==1&&item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 							<img src="__STATIC__/product/img/menusj.png" class="menusj" v-if="menudata2SortIndex==index"/>
 						</div>
@@ -303,11 +303,11 @@
 				</div>
 				<div v-if="currentPage==3" class="rightCateMenu J_right_menu_3">
 					<div v-for="(item,index) in allDriverOrder" :class="index>0?'maT30':''">
-						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)" v-if="item.logistic_truck_No!=0">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time}}</div>
-						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_truck_No" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1)" v-else>{{item.name}}</div>
+						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_schedule_id" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1)" v-if="item.logistic_schedule_id!=0">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time_desc}}</div>
+						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_schedule_id" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1)" v-else>{{item.name}}</div>
 						<div class="flexbox2">
 							<div v-for="(item1,index1) in item.order" :class="{'arrow_box':currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1,'bgFFF7F3 col5e5656':item1.status==0,'bgOrange':item1.status==1,'bgGreen':item1.status==3,'bgGrey':item1.status==2}" class="colfff rbtn6 relative mb10">
-								<div :class="item1.status==1||item1.status==2?'blink':''" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_truck_No,1,item1)">
+								<div :class="item1.status==1||item1.status==2?'blink':''" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1,item1)">
 									<div style="text-align:left;"><span class="num">{{item1.logistic_sequence_No}}</span>{{item1.finish_quantities}}/{{item1.sum_quantities}}<span class="num1"><span class="w600">{{item1.boxesNumber}}</span>BXS</span></div>
 									<div :class="item1.order_name&&item1.order_name.length>12?'F13 maT5':'F18'">{{item1.order_name}}</div>
 									<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
@@ -426,6 +426,8 @@
 				choseDate2:'',
 				choseDate3:'',
 				logistic_delivery_date:'',//筛选日期
+				logistic_schedule_id:localStorage.getItem('logistic_schedule_id') != null ? localStorage.getItem('logistic_schedule_id') : 0,//当前调度id
+				choose_logistic_schedule_id:0,//筛选调度id
 				choose_logistic_truck_No:'',//筛选司机
 				logistic_truck_No:localStorage.getItem('logistic_truck_No') != null ? localStorage.getItem('logistic_truck_No') : 0,//当前选择司机
 				product_id:0,//当前选择的产品id
@@ -433,7 +435,7 @@
 				orderId:localStorage.getItem('orderId') != null ? localStorage.getItem('orderId') : '',//当前选择的订单id
 				list:[],
 				list2:[{"id":"","name":"All customers"}],
-				list3:[{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
+				list3:[{"logistic_schedule_id":0,"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
 				driverOrderDoneNum:0,//对应司机已完成订单数
 				driverOrderNum:0,//对应司机全部订单数
 				orderDoneNum:0,//订单已完成数
@@ -612,7 +614,9 @@
 					}
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
+						"logistic_schedule_id": _this.logistic_schedule_id,
 						"logistic_truck_No":_this.logistic_truck_No,
+						"choose_logistic_schedule_id": _this.choose_logistic_schedule_id,
 						"choose_logistic_truck_No":_this.choose_logistic_truck_No,
 						"goods_sort":_this.isHandle,
 						"type":type
@@ -627,8 +631,8 @@
 						_this.orderNum = res.all_order_count.order_count
 						if(type == 'refresh'){
 							//更新数据时，保持原数据位置不变
-							_this.menudata2=_this.sortAccordingOtherData(res.truck,_this.menudata2,'logistic_truck_No')
-							_this.menudata2Sort=_this.sortAccordingOtherData(res.truck,_this.menudata2Sort,'logistic_truck_No')
+							_this.menudata2=_this.sortAccordingOtherData(res.truck,_this.menudata2,'logistic_schedule_id')
+							_this.menudata2Sort=_this.sortAccordingOtherData(res.truck,_this.menudata2Sort,'logistic_schedule_id')
 							console.log('刷新后产品数据-----',_this.menudata2Sort);
 						}else{
 							_this.menudata2=_this.menudata2Sort=_this.menudataTwoCate=_this.menudataTwoCateSort=_this.handleList=_this.handleListSort=[]
@@ -638,13 +642,14 @@
 						}
 						if(_this.menudata2.length > 0){
 							//获取当前默认选中的一级类目id
-							if(_this.logistic_truck_No==''){
+							if(_this.logistic_schedule_id==0){
+								_this.logistic_schedule_id=_this.menudata2[0].logistic_schedule_id
 								_this.logistic_truck_No=_this.menudata2[0].logistic_truck_No
 								_this.currentContent=0
 								_this.menudata2SortIndex=0
 							}else{
 								for(var i in _this.menudata2){
-									if(_this.menudata2[i]['logistic_truck_No']==_this.logistic_truck_No){
+									if(_this.menudata2[i]['logistic_schedule_id']==_this.logistic_schedule_id){
 										_this.currentContent=i
 										_this.menudata2SortIndex=i
 										break;
@@ -652,10 +657,10 @@
 								}
 							}
 							//如果存在司机信息，则跳转到对应的位置
-							if(_this.logistic_truck_No!=''){
+							if(_this.logistic_schedule_id>0){
 								let is_has_logistic_truck_No = 0;//缓存的司机id是否存在 1-是 0-否
 								for(let i in _this.menudata2Sort){
-									if(_this.menudata2Sort[i]['logistic_truck_No']==_this.logistic_truck_No){
+									if(_this.menudata2Sort[i]['logistic_schedule_id']==_this.logistic_schedule_id){
 										_this.currentContent=i
 										_this.menudata2SortIndex=i
 										is_has_logistic_truck_No = 1;
@@ -666,6 +671,7 @@
 									_this.currentContent=_this.menudata2SortIndex=0
 								}
 							}
+							localStorage.logistic_schedule_id = _this.logistic_schedule_id
 							localStorage.logistic_truck_No = _this.logistic_truck_No
 							if(_this.menudata2Sort[_this.menudata2SortIndex].is_has_two_cate == 1){
 								//获取默认显示的二级类目
@@ -678,7 +684,7 @@
 							}
 							if(type != 'refresh'&&_this.currentPage==1){
 								//如果有缓存的产品id,则划到对应的位置
-								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_left_cate_'+_this.logistic_truck_No,1)
+								_this.goto(_this.menudata2Sort[_this.menudata2SortIndex],_this.menudata2SortIndex,'.J_page1_left_cate_'+_this.logistic_schedule_id,1)
 							}
 						}
 						if(_this.currentPage == 3) {
@@ -693,13 +699,16 @@
 					if(type == 'allDriverOrder'){
 						var data = {
 							"logistic_delivery_date":_this.logistic_delivery_date,
+							"logistic_schedule_id": _this.logistic_schedule_id,
 							"logistic_truck_No":_this.menudata2Sort[_this.currentPage3LeftIndex].logistic_truck_No,
+							"choose_logistic_schedule_id": _this.choose_logistic_schedule_id,
 							"choose_logistic_truck_No":_this.choose_logistic_truck_No,
 							"type":type
 						}
 					} else {
 						var data = {
 							"logistic_delivery_date":_this.logistic_delivery_date,
+							"logistic_schedule_id": _this.logistic_schedule_id,
 							"logistic_truck_No":_this.logistic_truck_No,
 							"tw_sort":_this.twSort,
 							"tw_sort_type":_this.twSortType,
@@ -717,7 +726,7 @@
 							_this.allDriverOrder = res.order
 							//将首页选中和当前导航页默认选中同步
 							for(var i in _this.allDriverOrder){
-								if(_this.allDriverOrder[i]['logistic_truck_No'] == _this.logistic_truck_No){
+								if(_this.allDriverOrder[i]['logistic_schedule_id'] == _this.logistic_schedule_id){
 									_this.currentPage3OneCateIndex = i
 									for(var j in _this.allDriverOrder[i]['order']){
 										if(_this.allDriverOrder[i]['order'][j].orderId == _this.orderId){
@@ -809,6 +818,7 @@
 						if (cate == 1) {
 							if (this.menudata2SortIndex != index) {
 								this.menudata2SortIndex = index
+								this.logistic_schedule_id = item.logistic_schedule_id
 								this.logistic_truck_No = item.logistic_truck_No
 								this.twoCate()
 							}
@@ -862,20 +872,18 @@
 									_this.timeOutLock = setInterval(() => {
 										//判断上次最后一次点击的时间和这次点击的时间间隔是否大于1分钟
 										if (new Date().getTime() - _this.currentInterTime > _this.interTimeOut) {
-											clearTimeout(_this.timeOutLock);
+											clearInterval(_this.timeOutLock);
+											_this.timeOutLock=null
 											_this.isLoading = false
 											_this.popBox('The server is busy, please try again later')
 										}else{
 											_this.lockRes(res.result, item, index).then(function(value){
 												if(value.status != 119){
-													clearTimeout(_this.timeOutLock);
 													if(value.status == 200){
 														resolve(1);
 													}else{
 														resolve(2);
 													}
-												}else{
-													_this.isLoading = true
 												}
 											})
 										}
@@ -910,7 +918,7 @@
 										_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 0
 										//修改原数组的值
 										for (var i in _this.menudata2) {
-											if (_this.menudata2[i]['logistic_truck_No'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_truck_No) {
+											if (_this.menudata2[i]['logistic_schedule_id'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_schedule_id) {
 												_this.menudata2[i]['status'] = 0
 												break;
 											}
@@ -953,12 +961,14 @@
 							"uniqid": result.uniqid
 						}
 						var _this = this
+						_this.isLoading = true
 						getData("{:url('/product/pickLockProductResult')}", data, function (res) {
 							console.log('获取队列结果----', res);
 							if (res.status == 119) {
 								resolve(res);
 							} else {
-								clearTimeout(_this.timeOutLock);
+								clearInterval(_this.timeOutLock);
+								_this.timeOutLock=null
 								_this.isLoading = false
 								//锁定成功--上锁
 								if (res.status == 200) {
@@ -976,7 +986,7 @@
 									_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 1
 									//修改原数组的值
 									for (var i in _this.menudata2) {
-										if (_this.menudata2[i]['logistic_truck_No'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_truck_No) {
+										if (_this.menudata2[i]['logistic_schedule_id'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_schedule_id) {
 											_this.menudata2[i]['status'] = 1
 											break;
 										}
@@ -1100,6 +1110,7 @@
 				changeStatus(item,index,dispatching_is_producing_done=-1){
 					var data = {
 						"id": item.id,
+						"logistic_schedule_id": this.logistic_schedule_id,
 						"logistic_truck_No": this.logistic_truck_No
 					}
 					//判断改产品是否被产品拣货端锁定，按照产品拣货优先级高
@@ -1181,7 +1192,7 @@
 											_this.menudata2Sort[_this.menudata2SortIndex]['status'] = 0
 											//修改原数组的值
 											for (var i in _this.menudata2) {
-												if (_this.menudata2[i]['logistic_truck_No'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_truck_No) {
+												if (_this.menudata2[i]['logistic_schedule_id'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_schedule_id) {
 													_this.menudata2[i]['status'] = 0
 													break;
 												}
@@ -1200,7 +1211,7 @@
 										_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 0
 										//修改原数组的值
 										for (var i in _this.menudata2) {
-											if (_this.menudata2[i]['logistic_truck_No'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_truck_No) {
+											if (_this.menudata2[i]['logistic_schedule_id'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_schedule_id) {
 												_this.menudata2[i]['status'] = 1
 												_this.menudata2[i]['isDone'] = 0
 												break;
@@ -1217,7 +1228,7 @@
 								}
 								//修改原数组的值
 								for (var i in _this.menudata2) {
-									if (_this.menudata2[i]['logistic_truck_No'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_truck_No) {
+									if (_this.menudata2[i]['logistic_schedule_id'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_schedule_id) {
 										_this.menudata2[i].finish_quantities = _this.menudata2Sort[_this.menudata2SortIndex]['finish_quantities']
 										break;
 									}
@@ -1229,7 +1240,7 @@
 									_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 1
 									//修改原数组的值
 									for (var i in _this.menudata2) {
-										if (_this.menudata2[i]['logistic_truck_No'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_truck_No) {
+										if (_this.menudata2[i]['logistic_schedule_id'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_schedule_id) {
 											_this.menudata2[i]['status'] = 3
 											_this.menudata2[i]['isDone'] = 1
 											break;
@@ -1242,7 +1253,7 @@
 									_this.menudata2Sort[_this.menudata2SortIndex]['isDone'] = 0
 									//修改原数组的值
 									for (var i in _this.menudata2) {
-										if (_this.menudata2[i]['logistic_truck_No'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_truck_No) {
+										if (_this.menudata2[i]['logistic_schedule_id'] == _this.menudata2Sort[_this.menudata2SortIndex].logistic_schedule_id) {
 											_this.menudata2[i]['status'] = 1
 											_this.menudata2[i]['isDone'] = 0
 											break;
@@ -1285,6 +1296,7 @@
 					clearTimeout(this.clickTimer);  //首先清除计时器
 					this.clickTimer = setTimeout(() => {
 						this.isLoading=true
+						this.logistic_schedule_id = localStorage.logistic_schedule_id = item.logistic_schedule_id
 						this.logistic_truck_No = localStorage.logistic_truck_No = item.logistic_truck_No
 						this.menudata2SortIndex=index
 						// this.orderId = ''
@@ -1634,7 +1646,8 @@
 						return
 					}
 					var _this=this
-					vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
+					_this.orderItemOtherData[index]['printBg'] = 'printBg2'
+					// vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
 					setTimeout(function(){
 						_this.orderItemOtherData[index].printBg = '';
 					},5000);
@@ -1903,6 +1916,7 @@
 					//重置司机默认信息-start
 					this.choseDate3=this.list3[0].name
 					this.current3=0
+					this.logistic_schedule_id=0
 					this.logistic_truck_No=''
 					//重置司机默认信息-end
 					//重置产品默认信息-start
@@ -1931,6 +1945,7 @@
 					//重置司机默认信息-start
 					this.choseDate3=this.list3[0].name
 					this.current3=0
+					this.logistic_schedule_id=0
 					this.logistic_truck_No=''
 					//重置司机默认信息-end
 					//重置产品默认信息-start
@@ -1952,13 +1967,13 @@
 				},
 				//切换司机
 				choseDriver(item,index){
-					this.choseDate3=index==0?item.name:item.name+'-'+item.truck_name+'-'+item.plate_number
+					this.choseDate3=index==0?item.name:item.start_time+'-'+item.name+'-'+item.truck_name+'-'+item.plate_number
 					this.current3=index
 					this.whichPopShow=-1
+					this.choose_logistic_schedule_id=item.logistic_schedule_id
 					this.choose_logistic_truck_No=item.logistic_truck_No
 					//重置默认信息-start
 					this.currentContent=0
-					this.logistic_truck_No=item.logistic_truck_No
 					this.orderId=''
 					//重置默认信息-end
 					//重置加工明细排序信息-start
@@ -1996,7 +2011,7 @@
 							'logistic_delivery_date':_this.logistic_delivery_date
 						}
 						getData("{:url('/product/drivers')}", data , function (res) {
-							_this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
+							_this.list3 = [{"logistic_schedule_id":0,"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
 							_this.list3 = _this.list3.concat(res.result.all_drivers)
 						});
 					}
@@ -2034,6 +2049,7 @@
 					//调取获取当前备货接口
 					var data = {
 						"logistic_delivery_date":this.logistic_delivery_date,
+						"logistic_schedule_id": this.choose_logistic_schedule_id,
 						"logistic_truck_No":this.choose_logistic_truck_No,
 						// "category_id":cate_id
 					}
@@ -2054,6 +2070,7 @@
 						case 1:
 							this.currentPage=1
 							//将司机id和订单id存入缓存
+							this.logistic_schedule_id = localStorage.logistic_schedule_id = item.logistic_schedule_id
 							this.logistic_truck_No = localStorage.logistic_truck_No = item.logistic_truck_No
 							if(item1 != '') {
 								this.orderId = localStorage.orderId = item1.orderId
@@ -2117,7 +2134,7 @@
 					switch (type) {
 						case 1://当前选中的索引值
 							for(var i in this.menudata2){
-								if(this.menudata2[i]['logistic_truck_No'] == this.menudata2Sort[this.menudata2SortIndex]['logistic_truck_No']){
+								if(this.menudata2[i]['logistic_schedule_id'] == this.menudata2Sort[this.menudata2SortIndex]['logistic_schedule_id']){
 									this.currentContent=i
 									break;
 								}
@@ -2132,6 +2149,7 @@
 						this.isHandle=this.isHandle+1
 					}
 					//未进行排序前当前选中的产品id
+					var logistic_schedule_id = this.menudata2Sort[this.menudata2SortIndex].logistic_schedule_id
 					var logistic_truck_No = this.menudata2Sort[this.menudata2SortIndex].logistic_truck_No
 					//将产品进行排序
 					this.menudata2Sort=JSON.parse(JSON.stringify(this.menudata2))
@@ -2146,13 +2164,13 @@
 					// this.menudataTwoCateIndex=0
 					//排序之后-动态改变当前选中的索引id值
 					for (var i in this.menudata2Sort) {
-						if(this.menudata2Sort[i].logistic_truck_No == logistic_truck_No){
+						if(this.menudata2Sort[i].logistic_schedule_id == logistic_schedule_id){
 							this.menudata2SortIndex = i
 							break;
 						}
 					}
 					for (var i in this.menudata2) {
-						if(this.menudata2[i].logistic_truck_No == logistic_truck_No){
+						if(this.menudata2[i].logistic_schedule_id == logistic_schedule_id){
 							this.currentContent = i
 							break;
 						}
@@ -2680,6 +2698,7 @@
 					}
 					var data = {
 						"logistic_delivery_date":this.logistic_delivery_date,
+						"logistic_schedule_id": this.choose_logistic_schedule_id,
 						"logistic_truck_No":this.choose_logistic_truck_No,
 						"product_id":item.product_id,
 					}
@@ -2758,6 +2777,7 @@
 					this.clickTimer = setTimeout(() => {
 						var data = {
 							"logistic_delivery_date":this.logistic_delivery_date,
+							"logistic_schedule_id": this.choose_logistic_schedule_id,
 							"logistic_truck_No":this.choose_logistic_truck_No,
 							"product_id":item.product_id,
 						}

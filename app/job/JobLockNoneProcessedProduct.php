@@ -24,7 +24,7 @@ class JobLockNoneProcessedProduct
             }
 
             $WjCustomerCoupon = new WjCustomerCoupon();
-            $product_data = $WjCustomerCoupon->getNoneProcessedData($data['businessId'],$data['user_id'],$data['data']['logistic_delivery_date'],$data['data']['logistic_truck_No'],[$data['data']['product_id']]);
+            $product_data = $WjCustomerCoupon->getNoneProcessedData($data['businessId'],$data['user_id'],$data['data']['logistic_delivery_date'],$data['data']['logistic_truck_No'],[$data['data']['product_id']],$data['data']['logistic_schedule_id']);
             if (!$product_data) {
                 $redis->set($data['uniqid'],json_encode(show_arr(config('status.code')['param_error']['code'],config('status.code')['param_error']['msg'])));
             }
@@ -46,7 +46,7 @@ class JobLockNoneProcessedProduct
                 }
             }
             //2.将当前产品未完成的产品锁定当前操作人
-            $res = $WjCustomerCoupon->updateNoneProcessedData($data['businessId'],$data['data']['logistic_delivery_date'],$data['data']['logistic_truck_No'],$data['data']['product_id'],$data['user_id'],1);
+            $res = $WjCustomerCoupon->updateNoneProcessedData($data['businessId'],$data['data']['logistic_delivery_date'],$data['data']['logistic_truck_No'],$data['data']['product_id'],$data['user_id'],1,$data['data']['logistic_schedule_id']);
             //添加用户行为日志
             $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();
             $NoneprocessedProducingBehaviorLog->addProducingBehaviorLog($data['user_id'],$data['businessId'],1,$data['data']['logistic_delivery_date'],$data['data']);

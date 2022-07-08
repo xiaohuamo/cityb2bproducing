@@ -19,7 +19,7 @@ class User extends Model
         if(empty($userId)){
             $map = "u.role=3 and u.id=$businessId or (u.role=20 and u.user_belong_to_user=$businessId and (sr.roles like '%,0,%' or sr.roles like '%,1,%' or sr.roles like '%,9,%' or sr.roles like '%,11,%' or sr.roles like '%,12,%'))";
         } else {
-            $map = "staff_id=$userId";
+            $map = "u.id=$userId";
         }
         $data = Db::name('user')
             ->alias('u')

@@ -47,7 +47,7 @@
 				<div class="choseCustomerBox" v-if="whichPopShow==3">
 					<div class="mb10 F20" v-for="(item,index) in list3" :class="current3==index?'colFD6921':''" @click.stop="choseDriver(item,index)">
 						<span v-if="index == 0">{{item.name}}</span>
-						<span v-else>{{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
+						<span v-else>{{item.start_time}}-{{item.name}}-{{item.truck_name}}-{{item.plate_number}}</span>
 					</div>
 				</div>
 			</div>
@@ -472,12 +472,13 @@
 				choseDate2:'',
 				choseDate3:'',
 				logistic_delivery_date:'',//筛选日期
+				logistic_schedule_id:0,//筛选调度id
 				logistic_truck_No:'',//筛选司机
 				product_id:localStorage.getItem('product_id') != null ? localStorage.getItem('product_id') : 0,//当前选择的产品id
 				guige1_id:localStorage.getItem('guige1_id') != null ? localStorage.getItem('guige1_id') : '',//当前选择的规格id
 				list:[],
 				list2:[{"id":"","name":"All customers"}],
-				list3:[{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
+				list3:[{"logistic_schedule_id":0,"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}],
 				driverOrderDoneNum:0,//对应司机已完成订单数
 				driverOrderNum:0,//对应司机全部订单数
 				orderDoneNum:0,//订单已完成数
@@ -645,6 +646,7 @@
 					}
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
+						"logistic_schedule_id":_this.logistic_schedule_id,
 						"logistic_truck_No":_this.logistic_truck_No,
 						"goods_sort":_this.isHandle,
 						"type":type
@@ -705,6 +707,7 @@
 					var _this = this
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
+						"logistic_schedule_id":_this.logistic_schedule_id,
 						"logistic_truck_No":_this.logistic_truck_No,
 						"product_id":product_id
 					}
@@ -746,6 +749,7 @@
 					var _this = this
 					var data = {
 						"logistic_delivery_date":_this.logistic_delivery_date,
+						"logistic_schedule_id":_this.logistic_schedule_id,
 						"logistic_truck_No":_this.logistic_truck_No,
 						"product_id":product_id,
 						"guige1_id":guige1_id,
@@ -857,20 +861,18 @@
 									_this.timeOutLock = setInterval(() => {
 										//判断上次最后一次点击的时间和这次点击的时间间隔是否大于1分钟
 										if (new Date().getTime() - _this.currentInterTime > _this.interTimeOut) {
-											clearTimeout(_this.timeOutLock);
+											clearInterval(_this.timeOutLock);
+											_this.timeOutLock=null
 											_this.isLoading = false
 											_this.popBox('The server is busy, please try again later')
 										}else{
 											_this.lockProductRes(res.result, item, index).then(function (value) {
 												if (value.status != 119) {
-													clearTimeout(_this.timeOutLock);
 													if (value.status == 200) {
 														resolve(1);
 													} else {
 														resolve(2);
 													}
-												}else{
-													_this.isLoading = true
 												}
 											})
 										}
@@ -948,12 +950,14 @@
 							"uniqid": result.uniqid
 						}
 						var _this = this
+						_this.isLoading = true
 						getData("{:url('/product/lockProductResult')}", data, function (res) {
 							console.log('获取队列结果----', res);
 							if (res.status == 119) {
 								resolve(res)
 							} else {
-								clearTimeout(_this.timeOutLock);
+								clearInterval(_this.timeOutLock);
+								_this.timeOutLock=null
 								_this.isLoading = false
 								//锁定成功--上锁
 								if (res.status == 200) {
@@ -1072,6 +1076,7 @@
 				changeStatus(item,index,is_producing_done=-1){
 					var data = {
 						"id": item.id,
+						"logistic_schedule_id":this.logistic_schedule_id,
 						"logistic_truck_No": this.logistic_truck_No
 					}
 					if(is_producing_done>-1){
@@ -1575,7 +1580,8 @@
 						return
 					}
 					var _this=this
-					vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
+					_this.orderItemOtherData[index]['printBg'] = 'printBg2'
+					// vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
 					setTimeout(function(){
 						_this.orderItemOtherData[index].printBg = '';
 					},5000);
@@ -1869,6 +1875,7 @@
 					//重置司机默认信息-start
 					this.choseDate3=this.list3[0].name
 					this.current3=0
+					this.logistic_schedule_id=0
 					this.logistic_truck_No=''
 					//重置司机默认信息-end
 					//重置产品默认信息-start
@@ -1890,9 +1897,10 @@
 				},
 				//切换司机
 				choseDriver(item,index){
-					this.choseDate3=index==0?item.name:item.name+'-'+item.truck_name+'-'+item.plate_number
+					this.choseDate3=index==0?item.name:item.start_time+'-'+item.name+'-'+item.truck_name+'-'+item.plate_number
 					this.current3=index
 					this.whichPopShow=-1
+					this.logistic_schedule_id=item.logistic_schedule_id
 					this.logistic_truck_No=item.logistic_truck_No
 					//重置产品默认信息-start
 					this.currentContent=0
@@ -1932,7 +1940,7 @@
 							'logistic_delivery_date':_this.logistic_delivery_date
 						}
 						getData("{:url('/product/drivers')}", data , function (res) {
-							_this.list3 = [{"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
+							_this.list3 = [{"logistic_schedule_id":0,"logistic_truck_No":"","name":"All Drivers&Truck","truck_name":"","plate_number":""}]
 							_this.list3 = _this.list3.concat(res.result.all_drivers)
 						});
 					}
@@ -1976,6 +1984,7 @@
 					//调取获取当前备货接口
 					var data = {
 						"logistic_delivery_date":this.logistic_delivery_date,
+						"logistic_schedule_id":this.logistic_schedule_id,
 						"logistic_truck_No":this.logistic_truck_No,
 						"category_id":cate_id
 					}

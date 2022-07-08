@@ -30,9 +30,10 @@ class ProducingProgressSummery extends Model
         ]);
         if (!empty($pps_info)) {
             //1.判断数据是否有变动
-            if($pps_info['sum_quantities'] != $data['sum_quantities']){
+            if($pps_info['sum_quantities'] != $data['sum_quantities'] || $pps_info['finish_quantities'] != $data['finish_quantities']){
                 $update_data['sum_quantities'] = $data['sum_quantities'];
-                if($data['isDone']==1 && $pps_info['sum_quantities'] < $data['sum_quantities']){
+                $update_data['finish_quantities'] = $data['finish_quantities'];
+                if($data['isDone']==1 && $update_data['finish_quantities'] < $update_data['sum_quantities']){
                     $update_data['isDone'] = 0;
                 }
                 $res = self::getUpdate(['id' => $data['pps_id']], $update_data);
@@ -53,12 +54,13 @@ class ProducingProgressSummery extends Model
      * @param int $goods_sort 产品排序
      * @param string $category_id 分类id
      * @param int $sorce 调用接口来源 1-inidata 2-current Stock
+     * @param int $logistic_schedule_id 调度id
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$goods_sort=0,$category_id='',$source=1)
+    public function getGoodsOneCate($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$goods_sort=0,$category_id='',$source=1,$logistic_schedule_id=0)
     {
         $map = [];
         if($category_id){
@@ -73,10 +75,11 @@ class ProducingProgressSummery extends Model
                 break;
             default:$order_by = 'isDone asc,rc.category_sort_id asc,rm.menu_order_id asc';
         }
-        if (!empty($logistic_truck_No)) {
+        if ($logistic_schedule_id>0) {
             $where = [
                 ['o.business_userId', '=', $businessId],
                 ['o.logistic_delivery_date','=',$logistic_delivery_date],
+                ['o.logistic_schedule_id','=',$logistic_schedule_id],
                 ['o.logistic_truck_no','=',$logistic_truck_No],
                 ['wcc.customer_buying_quantity','>',0],
             ];
@@ -114,7 +117,7 @@ class ProducingProgressSummery extends Model
             $v['sum_quantities'] = floatval($v['sum_quantities']);
             $v['finish_quantities'] = floatval($v['finish_quantities']);
             //获取是否有二级分类
-            if (!empty($logistic_truck_No)) {
+            if ($logistic_schedule_id>0) {
                 $map = [
                     ['wcc.restaurant_menu_id', '=', $v['product_id']],
                     ['wcc.guige1_id', '>', 0],
@@ -181,13 +184,14 @@ class ProducingProgressSummery extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function productTwoCateDoneInfo($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id_arr)
+    public function productTwoCateDoneInfo($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id_arr,$logistic_schedule_id=0)
     {
         //获取是否有二级分类
-        if ($logistic_truck_No !== '') {
+        if ($logistic_schedule_id>0) {
             $where = [
                 ['o.business_userId', '=', $businessId],
                 ['o.logistic_delivery_date','=',$logistic_delivery_date],
+                ['o.logistic_schedule_id','=',$logistic_schedule_id],
                 ['o.logistic_truck_no','=',$logistic_truck_No],
                 ['wcc.customer_buying_quantity','>',0],
                 ['wcc.restaurant_menu_id', 'in', $product_id_arr],
@@ -217,7 +221,7 @@ class ProducingProgressSummery extends Model
                 ->column('pps.product_id,sum(pps.sum_quantities) sum_quantities,sum(pps.finish_quantities) finish_quantities,pps.isDone,pps.operator_user_id','pps.product_id');
         }
         foreach ($goods_one_cate as &$v){
-            if ($logistic_truck_No !== '') {
+            if ($logistic_schedule_id>0) {
                 $map = [
                     ['wcc.restaurant_menu_id', '=', $v['product_id']],
                     ['wcc.guige1_id', '>', 0],
@@ -273,12 +277,13 @@ class ProducingProgressSummery extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getGoodsTwoCate($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id)
+    public function getGoodsTwoCate($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$logistic_schedule_id=0)
     {
-        if (!empty($logistic_truck_No)) {
+        if ($logistic_schedule_id>0) {
             $where = [
                 ['o.business_userId', '=', $businessId],
                 ['o.logistic_delivery_date','=',$logistic_delivery_date],
+                ['o.logistic_schedule_id','=',$logistic_schedule_id],
                 ['o.logistic_truck_no','=',$logistic_truck_No],
                 ['wcc.restaurant_menu_id','=',$product_id],
                 ['wcc.guige1_id','>',0]
