@@ -137,6 +137,19 @@
 			},
 			//开始工作
 			sure(){
+				if(jobData.status != 3){
+					swal({
+						title: 'Please start job first, whether to jump to start job?',
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href="{:url('/driver/startJob')}"
+						}
+					});
+					return;
+				}
 				if(this.jobFillData.end_kile_metre==''||this.jobFillData.end_kile_metre==null||this.jobFillData.end_kile_metre<0){
 					alert('Please enter the correct number of kilometers');
 					return;
