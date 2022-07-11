@@ -41,6 +41,18 @@
 			<span class="col1C1C1C f30">{{jobData.name}}-{{jobData.truck_name}}-{{jobData.plate_number}}</span>
 		</div>
 		<div class="flexBox1 settingBox">
+			<span class="col1C1C1C f30">Schedule Time</span>
+			<span class="col1C1C1C f30">{{jobData.driver_work_start_time}}-{{jobData.driver_work_end_time}}</span>
+		</div>
+		<div class="flexBox1 settingBox">
+			<span class="col1C1C1C f30 boxWidth">Start Location</span>
+			<span class="col1C1C1C f30">{{jobData.driver_start_location}}</span>
+		</div>
+		<div class="flexBox1 settingBox">
+			<span class="col1C1C1C f30 boxWidth">End Location</span>
+			<span class="col1C1C1C f30">{{jobData.driver_end_location}}</span>
+		</div>
+		<div class="flexBox1 settingBox">
 			<span class="col1C1C1C f30">End Kilo Metre</span>
 			<span class="col1C1C1C f30"><input class="inputBox f30" type="text"  v-model="jobFillData.end_kile_metre" :readonly="jobData.end_job_time>0" @input="handleInput($event)">km</span>
 		</div>

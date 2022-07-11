@@ -587,21 +587,14 @@ class Order extends Model
         if($date_arr){
             //获取存储的默认调度
             $default_driver_schedue = $this->setDefaultDate(2,2,$businessId,$user_id);
-            if($logistic_delivery_date != '' && $logistic_schedule_id > 0){
-                foreach ($date_arr as $k=>&$v) {
-                    if($v['logistic_delivery_date'] == $logistic_delivery_date && $v['logistic_schedule_id'] == $logistic_schedule_id){
-
-                    }
-                }
+            if(!empty($default_driver_schedue) && !($logistic_delivery_date != '' && $logistic_schedule_id > 0)) {
+                $default_driver_schedue_arr = json_decode($default_driver_schedue, true);
+                $logistic_delivery_date = $default_driver_schedue_arr['logistic_delivery_date'];
+                $logistic_schedule_id = $default_driver_schedue_arr['logistic_schedule_id'];
             }
             foreach ($date_arr as $k=>&$v) {
                 $v['diff_today'] = $v['logistic_delivery_date']-$today_time;//计算就离今天的差值
                 $v['diff_schedule_delivery'] = $v['schedule_start_time']-$v['logistic_delivery_date'];//计算就离配送当天发车时间的差值
-                if(!empty($default_driver_schedue) && !($logistic_delivery_date != '' && $logistic_schedule_id > 0)) {
-                    $default_driver_schedue_arr = json_decode($default_driver_schedue, true);
-                    $logistic_delivery_date = $default_driver_schedue_arr['logistic_delivery_date'];
-                    $logistic_schedule_id = $default_driver_schedue_arr['logistic_schedule_id'];
-                }
                 if($logistic_delivery_date != '' && $logistic_schedule_id > 0){
                     if ($v['logistic_delivery_date'] == $logistic_delivery_date && $v['logistic_schedule_id'] == $logistic_schedule_id) {
                         $date_arr[$k]['is_default'] = 1;
@@ -615,6 +608,7 @@ class Order extends Model
             array_multisort($diff_today_arr,SORT_ASC,$diff_schedule_delivery_arr, SORT_ASC, $date_arr);
             //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
             if ($default) {
+                $this->defaultData($businessId, $user_id, $date_arr, $default_k);
                 return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
             } else {
                 $today_before_k = $today_k = $today_after_k = '';

@@ -18,7 +18,7 @@ class TruckJob extends Model
     public function getTruckJobInfo($businessId,$user_id,$logistic_delivery_date,$logistic_schedule_id)
     {
         $info = Truck::alias('t')
-            ->field('tj.*,tds.id tds_id,tds.status,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
+            ->field('tj.*,tds.id tds_id,tds.status,tds.driver_start_location,tds.driver_end_location,tds.driver_work_start_time,tds.driver_work_end_time,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
             ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.driver_id=t.current_driver and tds.schedule_id=$logistic_schedule_id")
             ->leftjoin('truck_job tj',"tj.truck_driver_schedule_id=tds.id")
             ->leftjoin('user u','u.id=t.current_driver')
