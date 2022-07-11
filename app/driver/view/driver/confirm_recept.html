@@ -49,7 +49,7 @@
 				<img src="__STATIC__/product/img/photo.png"/>
 				<div class="f35 col0F0F0F bold">Please upload a picture</div>
 			</template>
-			<input v-if="orderInfo.coupon_status!='b01'" class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile">
+			<input v-if="!orderInfo.receipt_picture" class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile">
 		</div>
 	</div>
 	<div class="ma0-15 pa0-15 bold pmb15" v-if="orderInfo.coupon_status!='b01'">

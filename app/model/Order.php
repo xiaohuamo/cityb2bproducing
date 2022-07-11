@@ -562,62 +562,129 @@ class Order extends Model
     /**
      * 获取司机可以配送的日期
      */
-    public function getDriverDeliveryDate($businessId,$logistic_truck_No,$logistic_delivery_date='')
+    public function getDriverDeliveryDate($businessId,$user_id,$logistic_delivery_date='',$logistic_schedule_id=0)
     {
-        $date_arr = Db::name('order')->where([
-            ['business_userId', '=', $businessId],
-            ['logistic_delivery_date', '>', time()-3600*24*7],
-            ['logistic_truck_No', '=', $logistic_truck_No]
-        ])->field("logistic_delivery_date,FROM_UNIXTIME(logistic_delivery_date,'%Y-%m-%d') date,2 as is_default")->group('logistic_delivery_date')->order('logistic_delivery_date asc')->select()->toArray();
+
+        //当天凌晨时间戳
+        $start_time = strtotime(date('Y-m-d'));//-3600*24*17;
+        $date_arr = Db::name('order')
+            ->alias('o')
+            ->field("o.logistic_delivery_date,o.logistic_schedule_id,FROM_UNIXTIME(o.logistic_delivery_date,'%Y-%m-%d') date,2 as is_default,tds.schedule_start_time")
+            ->leftJoin('truck_driver_schedule tds',"tds.factory_id = o.business_userId and tds.delivery_date=o.logistic_delivery_date and tds.schedule_id=o.logistic_schedule_id and tds.driver_id=$user_id")
+            ->where([
+                ['o.business_userId', '=', $businessId],
+                ['o.logistic_delivery_date', '>=', $start_time],
+                ['o.logistic_schedule_id', '>', 0],
+                ['tds.driver_id','=',$user_id]
+            ])
+            ->group('o.logistic_delivery_date,o.logistic_schedule_id')
+            ->order('o.logistic_delivery_date asc,o.logistic_schedule_id asc,tds.schedule_start_time asc')
+            ->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d', time()));
         $default = [];//默认显示日期数据
         $default_k = 0;//默认显示日期索引值
-        foreach ($date_arr as $k => $v) {
-            $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'], $today_time);
-            if ($v['logistic_delivery_date'] == $logistic_delivery_date) {
-                $date_arr[$k]['is_default'] = 1;
-                $default = $date_arr[$k];
-                $default_k = $k;
+        if($date_arr){
+            //获取存储的默认调度
+            $default_driver_schedue = $this->setDefaultDate(2,2,$businessId,$user_id);
+            if($logistic_delivery_date != '' && $logistic_schedule_id > 0){
+                foreach ($date_arr as $k=>&$v) {
+                    if($v['logistic_delivery_date'] == $logistic_delivery_date && $v['logistic_schedule_id'] == $logistic_schedule_id){
+
+                    }
+                }
             }
-        }
-        //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
-        if ($default) {
-            return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
+            foreach ($date_arr as $k=>&$v) {
+                $v['diff_today'] = $v['logistic_delivery_date']-$today_time;//计算就离今天的差值
+                $v['diff_schedule_delivery'] = $v['schedule_start_time']-$v['logistic_delivery_date'];//计算就离配送当天发车时间的差值
+                if(!empty($default_driver_schedue) && !($logistic_delivery_date != '' && $logistic_schedule_id > 0)) {
+                    $default_driver_schedue_arr = json_decode($default_driver_schedue, true);
+                    $logistic_delivery_date = $default_driver_schedue_arr['logistic_delivery_date'];
+                    $logistic_schedule_id = $default_driver_schedue_arr['logistic_schedule_id'];
+                }
+                if($logistic_delivery_date != '' && $logistic_schedule_id > 0){
+                    if ($v['logistic_delivery_date'] == $logistic_delivery_date && $v['logistic_schedule_id'] == $logistic_schedule_id) {
+                        $date_arr[$k]['is_default'] = 1;
+                        $default = $date_arr[$k];
+                        $default_k = $k;
+                    }
+                }
+            }
+            $diff_today_arr = array_column($date_arr, 'diff_today');
+            $diff_schedule_delivery_arr = array_column($date_arr, 'diff_schedule_delivery');
+            array_multisort($diff_today_arr,SORT_ASC,$diff_schedule_delivery_arr, SORT_ASC, $date_arr);
+            //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
+            if ($default) {
+                return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
+            } else {
+                $today_before_k = $today_k = $today_after_k = '';
+                //如果有当天的，默认取当前的，如果没有，则获取距离当天最近的日期
+                if (in_array(0, $diff_today_arr)) {
+                    $today_k = array_search(0, $diff_today_arr);
+                    return $this->defaultData($businessId, $user_id, $date_arr, $today_k);
+                } else {
+                    $today_before_arr = $today_after_arr = [];//存储今天之前和今天之后的数据
+                    foreach ($date_arr as $k => $v) {
+                        if ($v['diff_today'] < 0) {
+                            $today_before_arr[] = $v;
+                        }
+                        if ($v['diff_today'] > 0) {
+                            $today_after_arr[] = $v;
+                        }
+                    }
+                    if ($today_after_arr) {
+                        $today_after_k = array_search($today_after_arr[0]['diff_today'], $diff_today_arr);
+                        return $this->defaultData($businessId, $user_id, $date_arr, $today_after_k);
+                    } else {
+                        $today_before_k = array_search($today_before_arr[count($today_before_arr) - 1]['diff_today'], $diff_today_arr);
+                        return $this->defaultData($businessId, $user_id, $date_arr, $today_before_k);
+                    }
+                }
+            }
         } else {
-            $today_before_k = $today_k = $today_after_k = '';
-            foreach ($date_arr as $k => $v) {
-                $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'], $today_time);
-                if ($v['logistic_delivery_date'] - $today_time <= 0) {
-                    $today_before_k = $k;
-                }
-                if ($v['logistic_delivery_date'] - $today_time == 0) {
-                    $today_k = $k;
-                }
-                if ($v['logistic_delivery_date'] - $today_time > 0) {
-                    $today_after_k = $k;
-                    break;
-                }
-            }
-            if ($today_k !== '') {
-                $date_arr[$today_k]['is_default'] = 1;
-                $default = $date_arr[$today_k];
-                $default_k = $today_k;
-                return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
-            }
-            if ($today_after_k !== '') {
-                $date_arr[$today_after_k]['is_default'] = 1;
-                $default = $date_arr[$today_after_k];
-                $default_k = $today_after_k;
-                return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
-            }
-            if ($today_before_k !== '') {
-                $date_arr[$today_before_k]['is_default'] = 1;
-                $default = $date_arr[$today_before_k];
-                $default_k = $today_before_k;
-                return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
-            }
             return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
+        }
+    }
+
+    /**
+     * 存储默认数据并返回
+     * @param $businessId
+     * @param $user_id
+     * @param $date_arr 数据
+     * @param $defaut_key 默认key值
+     * @return array
+     */
+    public function defaultData($businessId,$user_id,$date_arr,$defaut_key)
+    {
+        $date_arr[$defaut_key]['is_default'] = 1;
+        $default = $date_arr[$defaut_key];
+        $default_k = $defaut_key;
+        //存储默认调度
+        $this->setDefaultDate(2,1,$businessId,$user_id,$default);
+        return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
+    }
+
+    /**
+     * 设置默认的存储日期
+     * @param int $type
+     * @param int $action_type 1-存储 2-获取
+     * @param array $data 存储的数据
+     */
+    public function setDefaultDate($type=1,$action_type=1,$businessId,$user_id,$data=[]){
+        $redis = redis_connect();
+        switch ($type){
+            case 1:;break;//生产端，预生产，产品拣货端和生产端
+            case 2:
+                $key = 'default_driver_schedue_'.$businessId.'_'.$user_id;
+                break;//司机端
+        }
+        if($action_type == 1){
+            //存储过期时间到第二天的凌晨，第二天获取最新的
+            $expire_time = strtotime(date('Y-m-d',strtotime('+1 day')))-time();
+            $redis->setex($key,$expire_time,json_encode($data));
+        } else {
+            $data = $redis->get($key);
+            return $data;
         }
     }
 
@@ -625,17 +692,17 @@ class Order extends Model
      * 获取司机端的订单数（已加工订单数/总订单数）
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
-     * @param string $logistic_truck_No 配送司机id
+     * @param string $logistic_schedule_id 配送司机调度id
      * @param int $type 1。获取boxs的统计信息 2.获取订单的统计信息
      * @return array
      */
-    public function getDriverOrderCount($businessId,$logistic_delivery_date,$logistic_truck_No,$type=2)
+    public function getDriverOrderCount($businessId,$logistic_delivery_date,$logistic_schedule_id,$type=2)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.logistic_delivery_date', '=', $logistic_delivery_date],
-            ['o.logistic_truck_No', '=', $logistic_truck_No]
+            ['o.logistic_schedule_id', '=', $logistic_schedule_id]
         ];
         $sql_model = Db::name('order')
             ->alias('o')
@@ -668,16 +735,16 @@ class Order extends Model
      * 获取司机端的订单数（已加工订单数/总订单数）
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
-     * @param string $logistic_truck_No 配送司机id
+     * @param string $logistic_schedule_id 配送司机调度id
      * @return array
      */
-    public function getDriverBoxCount($businessId,$logistic_delivery_date,$logistic_truck_No)
+    public function getDriverBoxCount($businessId,$logistic_delivery_date,$logistic_schedule_id)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.business_userId', '=', $businessId],
             ['o.logistic_delivery_date', '=', $logistic_delivery_date],
-            ['o.logistic_truck_No', '=', $logistic_truck_No]
+            ['o.logistic_schedule_id', '=', $logistic_schedule_id]
         ];
         //获取需要配送的订单总数
         $order_count = Db::name('order')
@@ -702,14 +769,14 @@ class Order extends Model
      * 获取司机订单明细信息
      * @return array
      */
-    public function getDriverOrderList($logistic_delivery_date,$businessId,$logistic_truck_No,$o_sort=0,$o_sort_type=1,$search='')
+    public function getDriverOrderList($logistic_delivery_date,$businessId,$logistic_schedule_id,$o_sort=0,$o_sort_type=1,$search='')
     {
         //获取当前用户对应的司机编号
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.logistic_delivery_date', '=', $logistic_delivery_date],
             ['o.business_userId', '=', $businessId],
-            ['o.logistic_truck_No', '=', $logistic_truck_No],
+            ['o.logistic_schedule_id', '=', $logistic_schedule_id],
         ];
         if($search != ''){
           $map .= " and (o.displayName like '%$search%' or o.first_name  like '%$search%' or o.last_name like '%$search%' or uf.nickname like '%$search%' or o.phone like '%$search%')";
@@ -739,8 +806,9 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxesNumber,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name')
-            ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
+            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxesNumber,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name,tds.status')
+            ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.schedule_id=o.logistic_schedule_id")
+            ->leftJoin('user_factory uf','uf.user_id = o.userId and uf.factory_id='.$businessId)
             ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)
             ->where($map)

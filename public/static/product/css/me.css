@@ -230,6 +230,9 @@
 	top: 123px;
 	z-index: 2;
 }
+.wlmaskTop133{
+	top:133px;
+}
 
 
 
@@ -365,8 +368,8 @@
 	position: absolute;
 	background: #F7F8FC;
 	z-index: 3;
-	top:123px;
-	right: 26px;
+	top:60px;
+	right: 0px;
 	border-radius:0px 0px 7px 7px;
 }
 .pullBox1 div{

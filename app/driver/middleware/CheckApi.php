@@ -39,7 +39,7 @@ class CheckApi
             } else {
                 return show(config('status.code')['token_error']['code'], config('status.code')['token_error']['msg']);
             }
-        } catch(Exception $e) { //其他错误
+        } catch(\Exception $e) { //其他错误
             return show(config('status.code')['token_error']['code'], $e->getMessage());
         }
     }

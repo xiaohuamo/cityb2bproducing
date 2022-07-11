@@ -117,6 +117,9 @@ body{
 .bg34C079{
 	background: #34C079;
 }
+.bg999{
+	background: #999999 !important;
+}
 
 .col333{
 	color: #333333;
@@ -246,11 +249,11 @@ body{
 .bgB4B4B4{
 	background:#B4B4B4 !important;
 }
-.bglg45A009-78DB36{
-	background:linear-gradient(-87deg, #45A009, #78DB36) !important;
+.bglgFD5001-FC8F4F{
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
 }
 .bglg45A009-78DB36{
-	background:linear-gradient(-87deg, #45A009, #78DB36) !important;
+	background:linear-gradient(-87deg, #45A009, #78DB36);
 }
 
 .flexBox1{
@@ -424,7 +427,6 @@ body{
 	max-width: 6.8rem;
 	height: 2.28rem;
 	line-height: 2.28rem;
-	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
 	border-radius: 12px;
 	color: #fff;
 	text-align: center;

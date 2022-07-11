@@ -24,14 +24,16 @@
 	<!-- start job部分 -->
 	<div class="ma15 borR7 bgfff f30 col1C1C1C">
 		<div class="flexBox1 settingBox">
-			<div class="flexBox1 boxWidth">
-				<span class="col1C1C1C f30">Delivery Date</span>
-				<span class="col1C1C1C f30" @click="chose(1)">{{list.length>0?choseDate.date:'Delivery Date'}}</span>
-				<div class="pullBox1" v-show="current==1">
-					<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>
-				</div>
+			<div class="flexBox1">
+				<span class="col1C1C1C f30">Schedule No</span>
 			</div>
-			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
+			<div>
+				<span class="col1C1C1C f30">{{list.length>0?choseDate.date+'-'+choseDate.logistic_schedule_id:'Schedule No'}}</span>
+			<!--				<div class="pullBox1" v-show="current==1">-->
+			<!--					<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>-->
+			<!--				</div>-->
+			</div>
+<!--			<img src="__STATIC__/product/img/arrow2.png" class="arrow" />-->
 		</div>
 		<div class="flexBox1 settingBox">
 			<span class="col1C1C1C f30">Truck Info</span>
@@ -66,7 +68,8 @@
 		data:{
 			list:[],//配送日期数组
 			choseDate:[],//当前选中的日期数组
-			logistic_delivery_date:localStorage.getItem('logistic_delivery_date') != null ? localStorage.getItem('logistic_delivery_date') : '',//配送日期
+			logistic_delivery_date:'',//配送日期
+			logistic_schedule_id:0,//调度id
 			isLoading: false,//是否显示加载图标
 			isShowMask: false,//是否显示遮罩层
 			current:'',//当前选中类型 1-delivery date
@@ -80,7 +83,8 @@
 			//获取配送日期
 			deliveryDateFun(){
 				let data = {
-					'logistic_delivery_date':this.logistic_delivery_date
+					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id
 				}
 				let _this = this
 				_this.isLoading=true
@@ -90,8 +94,9 @@
 					_this.list = res.result.list
 					_this.choseDate =  res.result.default
 					_this.logistic_delivery_date = localStorage.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
+					_this.logistic_schedule_id = localStorage.logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
 					//获取当前的配送日期之后，获取车辆的信息
-					if(_this.logistic_delivery_date){
+					if(_this.logistic_delivery_date&&_this.logistic_schedule_id>0){
 						_this.getJobData()
 					}
 				});
@@ -100,9 +105,10 @@
 			choseDay(item){
 				this.choseDate=item
 				this.logistic_delivery_date=localStorage.logistic_delivery_date=item.logistic_delivery_date
+				this.logistic_schedule_id=localStorage.logistic_schedule_id=item.logistic_schedule_id
 				this.close()
 				//重新获取车辆数据
-				this.getJobData()
+				this.deliveryDateFun()
 			},
 			chose:function(index){
 				this.current=index
@@ -115,7 +121,8 @@
 			//获取车辆信息
 			getJobData(){
 				let data = {
-					'logistic_delivery_date':this.logistic_delivery_date
+					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id,
 				}
 				console.log('获取车辆信息参数---',data);
 				let _this = this
@@ -149,6 +156,7 @@
 				}
 				let data = {
 					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id,
 					'end_kile_metre':parseFloat(this.jobFillData.end_kile_metre.replace(',','')),
 					'end_temprature':this.jobFillData.end_temprature,
 					'end_truck_check':this.jobFillData.end_truck_check,

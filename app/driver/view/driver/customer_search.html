@@ -33,12 +33,12 @@
 		</div>
 	</div>
 	<div class="ma15 borR7 bgfff flexBox1 sjgl f30 col1C1C1C">
-		<div class="div1" @click="chose(1)">
-			{{list.length>0?choseDate.date:'Delivery Date'}}
-			<img src="__STATIC__/product/img/wl2.png" />
-			<div class="pullBox" v-show="current==1">
-				<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>
-			</div>
+		<div class="div1">
+			{{list.length>0?choseDate.date+'-'+choseDate.logistic_schedule_id:'Schedule No'}}
+<!--			<img src="__STATIC__/product/img/wl2.png" />-->
+<!--			<div class="pullBox" v-show="current==1">-->
+<!--				<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>-->
+<!--			</div>-->
 		</div>
 		<div class="div1" v-if="driverInfo">
 			{{driver_info.name}}-{{driver_info.truck_name}}-{{driver_info.plate_number}}
@@ -87,9 +87,11 @@
 			<img src="__STATIC__/product/img/location2.png" class="location2"/>{{item.address}}
 		</div>
 		<div class="bgfff flexBox5 pa15 borderB">
-			<div class="commonBtn pa0-15 mar10" @click="returnStock(item,index)">return</div>
-			<div class="commonBtn pa0-15" v-if="item.coupon_status == 'c01'" @click="photograph(item,index)">photograph</div>
-			<div class="commonBtn bglg45A009-78DB36 pa0-15" v-if="item.coupon_status == 'b01'" @click="photograph(item,index)">arrived</div>
+			<div class="commonBtn bglgFD5001-FC8F4F pa0-15 mar10" @click="item.status!=4&&returnStock(item,index)">return</div>
+			<div class="commonBtn bglgFD5001-FC8F4F pa0-5 mar10" v-if="item.coupon_status == 'c01'" @click="item.status!=4&&makeDelivery(item,index)">mark delivery</div>
+			<div class="commonBtn bglg45A009-78DB36 pa0-15 mar10" v-if="item.coupon_status == 'b01'">delivered</div>
+			<div class="commonBtn bglgFD5001-FC8F4F pa0-5" v-if="item.coupon_status == 'c01'" @click="item.status!=4&&photograph(item,index)">photograph</div>
+			<div class="commonBtn bglg45A009-78DB36 pa0-15" v-if="item.coupon_status == 'b01'" @click="item.status!=4&&photograph(item,index)">arrived</div>
 		</div>
 	</div>
 <!--	<div class="bgfff ma15 borR7 f30 col1C1C1C">-->
@@ -116,10 +118,12 @@
 		data:{
 			list:[],//配送日期数组
 			choseDate:[],//当前选中的日期数组
-			logistic_delivery_date:localStorage.getItem('logistic_delivery_date') != null ? localStorage.getItem('logistic_delivery_date') : '',//配送日期
+			logistic_delivery_date:'',//配送日期
+			logistic_schedule_id:0,//调度id
 			driver_info:[],//司机信息
 			isLoading: false,//是否显示加载图标
 			isShowMask: false,//是否显示遮罩层
+			is_finish_receive:2,//司机是否已完成收货 1-是 2-否
 			order:[],//订单数组
 			current:'',//
 			o_sort:0,//排序类型
@@ -138,18 +142,20 @@
 		methods:{
 			//获取配送日期
 			deliveryDateFun(){
-				var data = {
-					'logistic_delivery_date':this.logistic_delivery_date
+				let data = {
+					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id
 				}
-				var _this = this
+				let _this = this
 				_this.isLoading=true
 				getData("{:url('/driver/driverDeliveryDate')}", data, function (res) {
 					_this.isLoading=false
 					_this.list = res.result.list
 					_this.choseDate =  res.result.default
 					_this.logistic_delivery_date = localStorage.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
+					_this.logistic_schedule_id = localStorage.logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
 					//获取初始化数据
-					if(_this.logistic_delivery_date){
+					if(_this.logistic_delivery_date&&_this.logistic_schedule_id>0){
 						_this.orderData()
 					}
 				});
@@ -170,6 +176,7 @@
 			orderData(){
 				var data = {
 					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id,
 					'o_sort':this.o_sort,
 					'o_sort_type':this.o_sort_type,
 					'search':this.searchCon
@@ -181,8 +188,7 @@
 					console.log('获取订单结果----',res)
 					_this.isLoading=false
 					res = res.result
-					_this.driverOrderDoneNum = res.all_order_count.order_done_count
-					_this.driverOrderNum = res.all_order_count.order_count
+					_this.is_finish_receive = res.is_finish_receive
 					_this.order = res.order
 					//如果是从拍照页面回到该页面，弹窗提示是否直接进入下一项
 					let is_show_nav_pop = localStorage.getItem('is_show_nav_pop')
@@ -209,9 +215,10 @@
 			choseDay(item){
 				this.choseDate=item
 				this.logistic_delivery_date=localStorage.logistic_delivery_date=item.logistic_delivery_date
+				this.logistic_schedule_id=localStorage.logistic_schedule_id=item.logistic_schedule_id
 				this.close()
 				//重置订单数据
-				this.orderData()
+				this.deliveryDateFun()
 			},
 			//订单排序
 			sortOrder(type){
@@ -233,11 +240,70 @@
 			googleMap(address){
 				window.open("https://www.google.com/maps/search/?api=1&query="+address)
 			},
+			//直接确认收货
+			makeDelivery(item,index){
+				if (item.status != 3 || item.status == 3 && this.is_finish_receive != 1) {
+					let message = ''
+					let url = ''
+					if(item.status != 3){
+						message = 'Please start job first, whether to jump to start job page?';
+						url = "{:url('/driver/startJob')}"
+					}else{
+						message = 'Please complete the receive first, whether to jump to the receive page?';
+						url = "{:url('/driver/order')}"
+					}
+					swal({
+						title: message,
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href=url
+						}
+					});
+				} else {
+					let param = {
+						'orderId': item.orderId
+					}
+					let _this = this
+					getData("{:url('/driver/confirmOrderFinish')}", param, function (res) {
+						console.log(res);
+						if (res.status == 200) {
+							item.coupon_status = 'b01'
+						} else {
+							alert(res.message);
+						}
+					});
+				}
+			},
 			//打开拍照页面
 			photograph(item,index){
-				localStorage.orderId = item.orderId
-				this.nav_current_index = localStorage.nav_current_index = index
-				window.location.href = "{:url('/driver/confirmRecept')}"
+				if (item.status != 3 || item.status == 3 && this.is_finish_receive != 1) {
+					let message = ''
+					let url = ''
+					if(item.status != 3){
+						message = 'Please start job first, whether to jump to start job page?';
+						url = "{:url('/driver/startJob')}"
+					}else{
+						message = 'Please complete the receive first, whether to jump to the receive page?';
+						url = "{:url('/driver/order')}"
+					}
+					swal({
+						title: message,
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href=url
+						}
+					});
+				} else {
+					localStorage.orderId = item.orderId
+					this.nav_current_index = localStorage.nav_current_index = index
+					window.location.href = "{:url('/driver/confirmRecept')}"
+				}
 			},
 			chose:function(index){
 				this.current=index
@@ -256,8 +322,21 @@
 			},
 			//返回货物页面
 			returnStock(item,index){
-				localStorage.orderId = item.orderId
-				window.location.href="{:url('/driver/returnStock')}"
+				if (item.status != 3) {
+					swal({
+						title: 'Please start job first, whether to jump to start job?',
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href="{:url('/driver/startJob')}"
+						}
+					});
+				} else {
+					localStorage.orderId = item.orderId
+					window.location.href = "{:url('/driver/returnStock')}"
+				}
 			}
 		}
 	})

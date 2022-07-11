@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace app\model;
 
 use app\common\traits\modelTrait;
+use think\facade\Db;
 use think\Model;
 
 /**
@@ -14,11 +15,12 @@ class TruckJob extends Model
     use modelTrait;
 
 
-    public function getTruckJobInfo($businessId,$user_id,$logistic_delivery_date)
+    public function getTruckJobInfo($businessId,$user_id,$logistic_delivery_date,$logistic_schedule_id)
     {
         $info = Truck::alias('t')
-            ->field('tj.*,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
-            ->leftjoin('truck_job tj','tj.truck_id=t.id and tj.delivery_date='.$logistic_delivery_date)
+            ->field('tj.*,tds.id tds_id,tds.status,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
+            ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.driver_id=t.current_driver and tds.schedule_id=$logistic_schedule_id")
+            ->leftjoin('truck_job tj',"tj.truck_driver_schedule_id=tds.id")
             ->leftjoin('user u','u.id=t.current_driver')
             ->where([
                 ['t.business_id','=',$businessId],
@@ -76,63 +78,78 @@ class TruckJob extends Model
         //1.查询该司机的工作数据今日是否存在，不存在新增，存在则编辑
         $job_info = self::getOne([
             'delivery_date' => $data['logistic_delivery_date'],
-            'truck_id' => $data['truck_id'],
+            'truck_driver_schedule_id' => $data['truck_driver_schedule_id'],
         ]);
         $time = time();
-        if(empty($job_info)){
-            $create_data = [
-                'truck_id' => $data['truck_id'],
-                'business_id' => $businessId,
-                'current_driver' => $user_id,
-                'delivery_date' => $data['logistic_delivery_date'],
-            ];
-            if($type == 1){
-                $start_data = [
-                    'start_kile_metre' => $data['start_kile_metre'],
-                    'start_temprature' => $data['start_temprature'],
-                    'start_truck_check' => $data['start_truck_check'],
-                    'start_truck_check_content' => $data['start_truck_check_content'],
-                    'start_job_time' => $time,
-                    'end_temprature' => ''
+        try{
+            Db::startTrans();
+            $status = 1;//调度状态 1-Planning 2-Scheduled 3-Running 4-Done 5-Closed
+            if(empty($job_info)){
+                $create_data = [
+                    'truck_driver_schedule_id' => $data['truck_driver_schedule_id'],
+                    'delivery_date' => $data['logistic_delivery_date'],
+                    'logistic_schedule_id' => $data['logistic_schedule_id'],
                 ];
-                $create_data = array_merge($create_data,$start_data);
-            }else{
-                $end_data = [
-                    'end_kile_metre' => $data['end_kile_metre'],
-                    'end_temprature' => $data['end_temprature'],
-                    'end_truck_check' => $data['end_truck_check'],
-                    'end_truck_check_content' => $data['end_truck_check_content'],
-                    'end_job_time' => $time,
-                ];
-                $create_data = array_merge($create_data,$end_data);
-            }
-            $res = self::createData($create_data);
-        } else {
-            if($type == 1){
-                $update_data = [
-                    'start_kile_metre' => $data['start_kile_metre'],
-                    'start_temprature' => $data['start_temprature'],
-                    'start_truck_check' => $data['start_truck_check'],
-                    'start_truck_check_content' => $data['start_truck_check_content'],
-                ];
-                if($job_info['start_job_time']<=0){
-                    $update_data['start_job_time'] = $time;
+                if($type == 1){
+                    $start_data = [
+                        'start_kile_metre' => $data['start_kile_metre'],
+                        'start_temprature' => $data['start_temprature'],
+                        'start_truck_check' => $data['start_truck_check'],
+                        'start_truck_check_content' => $data['start_truck_check_content'],
+                        'start_job_time' => $time,
+                        'end_temprature' => '',
+                        'status' => $status
+                    ];
+                    $create_data = array_merge($create_data,$start_data);
+                    $status = 3;
+                }else{
+                    $end_data = [
+                        'end_kile_metre' => $data['end_kile_metre'],
+                        'end_temprature' => $data['end_temprature'],
+                        'end_truck_check' => $data['end_truck_check'],
+                        'end_truck_check_content' => $data['end_truck_check_content'],
+                        'end_job_time' => $time,
+                    ];
+                    $create_data = array_merge($create_data,$end_data);
+                    $status = 4;
                 }
-            }else{
-                $update_data = [
-                    'end_kile_metre' => $data['end_kile_metre'],
-                    'end_temprature' => $data['end_temprature'],
-                    'end_truck_check' => $data['end_truck_check'],
-                    'end_truck_check_content' => $data['end_truck_check_content'],
-                ];
-                if($job_info['end_job_time']<=0){
-                    $update_data['end_job_time'] = $time;
+                self::createData($create_data);
+                TruckDriverSchedule::getUpdate(['id'=>$data['truck_driver_schedule_id']],['status'=>$status]);
+            } else {
+                if($type == 1){
+                    $update_data = [
+                        'start_kile_metre' => $data['start_kile_metre'],
+                        'start_temprature' => $data['start_temprature'],
+                        'start_truck_check' => $data['start_truck_check'],
+                        'start_truck_check_content' => $data['start_truck_check_content'],
+                    ];
+                    if($job_info['start_job_time']<=0){
+                        $update_data['start_job_time'] = $time;
+                    }
+                    $status = 3;
+                }else{
+                    $update_data = [
+                        'end_kile_metre' => $data['end_kile_metre'],
+                        'end_temprature' => $data['end_temprature'],
+                        'end_truck_check' => $data['end_truck_check'],
+                        'end_truck_check_content' => $data['end_truck_check_content'],
+                    ];
+                    if($job_info['end_job_time']<=0){
+                        $update_data['end_job_time'] = $time;
+                    }
+                    $status = 4;
                 }
+                 $res = self::getUpdate([
+                     'id' => $job_info['id']
+                 ],$update_data);
+                TruckDriverSchedule::getUpdate(['id'=>$data['truck_driver_schedule_id']],['status'=>$status]);
             }
-             $res = self::getUpdate([
-                 'id' => $job_info['id']
-             ],$update_data);
+            Db::commit();
+            return show_arr(config('status.code')['success']['code'], config('status.code')['success']['msg']);
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            return show_arr(config('status.code')['system_error']['code'], $e->getMessage());
         }
-        return $res;
     }
 }
