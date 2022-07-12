@@ -120,7 +120,9 @@ body{
 .bg999{
 	background: #999999 !important;
 }
-
+.bgFD5506{
+	background: #FD5506 !important;
+}
 .col333{
 	color: #333333;
 }
@@ -250,7 +252,7 @@ body{
 	background:#B4B4B4 !important;
 }
 .bglgFD5001-FC8F4F{
-	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F) !important;
 }
 .bglg45A009-78DB36{
 	background:linear-gradient(-87deg, #45A009, #78DB36);
