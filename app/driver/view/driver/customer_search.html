@@ -322,15 +322,24 @@
 			},
 			//返回货物页面
 			returnStock(item,index){
-				if (item.status != 3) {
+				if (item.status != 3 || item.status == 3 && this.is_finish_receive != 1) {
+					let message = ''
+					let url = ''
+					if(item.status != 3){
+						message = 'Please start job first, whether to jump to start job page?';
+						url = "{:url('/driver/startJob')}"
+					}else{
+						message = 'Please complete the receive first, whether to jump to the receive page?';
+						url = "{:url('/driver/order')}"
+					}
 					swal({
-						title: 'Please start job first, whether to jump to start job?',
+						title: message,
 						buttons: true,
 					}).then((willContinue) => {
 						if (!willContinue) {
 							return
 						} else {
-							window.location.href="{:url('/driver/startJob')}"
+							window.location.href=url
 						}
 					});
 				} else {
