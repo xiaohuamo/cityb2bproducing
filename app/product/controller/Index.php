@@ -331,7 +331,8 @@ class Index extends AuthBase
 
         $Order = new Order();
         $businessId = $this->getBusinessId();
-        $res = $Order->getDeliveryDate($businessId,$logistic_delivery_date);
+        $user_id = $this->getMemberUserId();
+        $res = $Order->getDeliveryDate($businessId,$user_id,$logistic_delivery_date);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 

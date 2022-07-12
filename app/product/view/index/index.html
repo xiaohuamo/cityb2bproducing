@@ -178,7 +178,7 @@
 										<div class="numicon" :class="item.new_customer_buying_quantity==0||item.is_producing_done==1||item.is_producing_done==3||item.is_producing_done==5?'bgGrey':'bgFA8752'" @click="printLable(item,index,'+','',$event)">+</div>
 									</div>
 <!--										<div class="printBg echo" @click="print(item,index,$event)"></div>-->
-									<div class="echo echoMl" :class="orderItemOtherData[index].printBg" @click="print(item,index,$event)"></div>
+									<div class="echo echoMl" :class="item.printBg" @click="print(item,index,$event)"></div>
 								</div>
 								<template v-if="item.is_producing_done==1">
 									<div class="rbtn3 F20 bg34C079 colfff relative" @click="handle(index)">
@@ -608,8 +608,9 @@
 				//获取配送日期
 				deliveryDateFun(){
 					var data = {
-						'logistic_delivery_date':localStorage.logistic_delivery_date
+						'logistic_delivery_date':this.logistic_delivery_date
 					}
+					console.log('获取到日期cansh---',data);
 					var _this = this
 					_this.isLoading=true
 					getData("{:url('/product/deliveryDate')}", data, function (res) {
@@ -791,7 +792,7 @@
 							_this.handleListSort = []
 							_this.handleList = res.order
 							_this.handleListSort = res.order
-							_this.orderItemOtherData=_this.handleListSort
+							// _this.orderItemOtherData=_this.handleListSort
 						}
 						console.log('获取产品加工明细单2222-----',_this.handleList)
 					});
@@ -1580,10 +1581,10 @@
 						return
 					}
 					var _this=this
-					_this.orderItemOtherData[index]['printBg'] = 'printBg2'
+					item.printBg = 'printBg2'
 					// vm.$set(_this.orderItemOtherData[index],'printBg','printBg2');
 					setTimeout(function(){
-						_this.orderItemOtherData[index].printBg = '';
+						item.printBg = '';
 					},5000);
 					if(this.setup_info&&this.setup_info.company_type==3) {
 						if(_this.print_type == 0 || _this.print_type == 2){
@@ -1841,7 +1842,7 @@
 					this.whichPopShow=-1
 					this.logistic_delivery_date=item.logistic_delivery_date
 					//存储当前日期
-					localStorage.logistic_delivery_date=this.logistic_delivery_date
+					// localStorage.logistic_delivery_date=this.logistic_delivery_date
 					//重置客户默认信息-start
 					this.choseDate2=this.list2[0].name
 					this.current2=0
@@ -1862,7 +1863,7 @@
 					this.wccSortType=1
 					//重置加工明细排序信息-end
 					this.isLoading=true
-					this.inidata()
+					this.deliveryDateFun()
 					if(this.currentPage==2){
 						// var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct()
@@ -2355,7 +2356,9 @@
 							//清除定时任务
 							_this.clearTime()
 							_this.isLoading = false
-							_this.inidata(_this.logistic_delivery_date)
+							// _this.inidata(_this.logistic_delivery_date)
+							_this.logistic_delivery_date = ''
+							_this.deliveryDateFun()
 						} else {
 							_this.message = res.message
 							_this.isPsdCorrect=true

@@ -49,7 +49,9 @@ class Picking extends AuthBase
 
         $DispatchingProgressSummery = new DispatchingProgressSummery();
         $businessId = $this->getBusinessId();
-        $res = $DispatchingProgressSummery->getDeliveryDate($businessId,$logistic_delivery_date);
+        $user_id = $this->getMemberUserId();
+
+        $res = $DispatchingProgressSummery->getDeliveryDate($businessId,$user_id,$logistic_delivery_date);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 

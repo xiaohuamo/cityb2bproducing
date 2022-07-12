@@ -71,7 +71,7 @@ class DispatchingProgressSummery extends Model
     /**
      * 获取cc_order可以配送的日期
      */
-    public function getDeliveryDate($businessId,$logistic_delivery_date='')
+    public function getDeliveryDate($businessId,$user_id,$logistic_delivery_date='')
     {
         $map = 'o.status=1 or o.accountPay=1';
         $where = [
@@ -90,58 +90,57 @@ class DispatchingProgressSummery extends Model
             ->group('o.logistic_delivery_date')
             ->order('o.logistic_delivery_date asc')
             ->select()->toArray();
-//        $date_arr = Db::name('dispatching_progress_summery')->where([
-//            ['business_id', '=', $businessId],
-//            ['delivery_date','>',time()-3600*24*30],
-//            ['isdeleted','=',0]
-//        ])->field("delivery_date logistic_delivery_date,FROM_UNIXTIME(delivery_date,'%Y-%m-%d') date,2 as is_default")->group('delivery_date')->order('delivery_date asc')->select()->toArray();
         //获取默认显示日期,距离今天最近的日期，将日期分为3组，今天之前，今天，今天之后距离今天最近的日期的key值
         $today_time = strtotime(date('Y-m-d',time()));
         $default = [];//默认显示日期数据
         $default_k = 0;//默认显示日期索引值
+        $Order = new Order();
+        //获取存储的默认日期,如果存储的日期大于今天的日期，则默认获取存储日期，否则获取距离今天最近的日期
+        $default_date = $Order->setDefaultDate(1,2,$businessId,$user_id);
+        if(empty($logistic_delivery_date)&&$default_date) {
+            $default_date_arr = json_decode($default_date, true);
+            $logistic_delivery_date = $default_date_arr['logistic_delivery_date'];
+            if($logistic_delivery_date < $today_time){
+                $logistic_delivery_date = '';
+            }
+        }
         foreach($date_arr as $k=>$v) {
             $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'], $today_time);
+            $date_arr[$k]['diff_today'] = $v['logistic_delivery_date']-$today_time;//计算就离今天的差值
             if($v['logistic_delivery_date'] == $logistic_delivery_date){
                 $date_arr[$k]['is_default'] = 1;
                 $default = $date_arr[$k];
                 $default_k = $k;
             }
         }
+        $diff_today_arr = array_column($date_arr,'diff_today');
+        array_multisort($diff_today_arr,SORT_ASC, $date_arr);
         //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
         if($default){
-            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
+            return $Order->defaultData($businessId, $user_id, $date_arr, $default_k);
         }else{
             $today_before_k = $today_k = $today_after_k = '';
-            foreach($date_arr as $k=>$v){
-                $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'],$today_time);
-                if($v['logistic_delivery_date']-$today_time <= 0){
-                    $today_before_k = $k;
+            //如果有当天的，默认取当前的，如果没有，则获取距离当天最近的日期
+            if (in_array(0, $diff_today_arr)) {
+                $today_k = array_search(0, $diff_today_arr);
+                return $Order->defaultData($businessId, $user_id, $date_arr, $today_k);
+            } else {
+                $today_before_arr = $today_after_arr = [];//存储今天之前和今天之后的数据
+                foreach ($date_arr as $k => $v) {
+                    if ($v['diff_today'] < 0) {
+                        $today_before_arr[] = $v;
+                    }
+                    if ($v['diff_today'] > 0) {
+                        $today_after_arr[] = $v;
+                    }
                 }
-                if($v['logistic_delivery_date']-$today_time == 0){
-                    $today_k = $k;
+                if ($today_after_arr) {
+                    $today_after_k = array_search($today_after_arr[0]['diff_today'], $diff_today_arr);
+                    return $Order->defaultData($businessId, $user_id, $date_arr, $today_after_k);
+                } else {
+                    $today_before_k = array_search($today_before_arr[count($today_before_arr) - 1]['diff_today'], $diff_today_arr);
+                    return $Order->defaultData($businessId, $user_id, $date_arr, $today_before_k);
                 }
-                if($v['logistic_delivery_date']-$today_time > 0){
-                    $today_after_k = $k;
-                    break;
-                }
-            }
-            if($today_k!==''){
-                $date_arr[$today_k]['is_default'] = 1;
-                $default = $date_arr[$today_k];
-                $default_k = $today_k;
-                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
-            }
-            if($today_after_k!=='') {
-                $date_arr[$today_after_k]['is_default'] = 1;
-                $default = $date_arr[$today_after_k];
-                $default_k = $today_after_k;
-                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
-            }
-            if($today_before_k!=='') {
-                $date_arr[$today_before_k]['is_default'] = 1;
-                $default = $date_arr[$today_before_k];
-                $default_k = $today_before_k;
-                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
             }
             //判断当前供应商最近7天内是否有订单数据，如果有，则前端需要实时刷新数据，如果没有，则无需更新
             $map = 'status=1 or accountPay=1';

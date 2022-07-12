@@ -18,7 +18,7 @@ class Order extends Model
     /**
      * 获取cc_order可以配送的日期
      */
-    public function getDeliveryDate($businessId,$logistic_delivery_date='')
+    public function getDeliveryDate($businessId,$user_id,$logistic_delivery_date='')
     {
         $date_arr = Db::name('producing_progress_summery')->where([
             ['business_userId', '=', $businessId],
@@ -29,49 +29,52 @@ class Order extends Model
         $today_time = strtotime(date('Y-m-d',time()));
         $default = [];//默认显示日期数据
         $default_k = 0;//默认显示日期索引值
+        //获取存储的默认日期,如果存储的日期大于今天的日期，则默认获取存储日期，否则获取距离今天最近的日期
+        $default_date = $this->setDefaultDate(1,2,$businessId,$user_id);
+        if(empty($logistic_delivery_date)&&$default_date) {
+            $default_date_arr = json_decode($default_date, true);
+            $logistic_delivery_date = $default_date_arr['logistic_delivery_date'];
+            if($logistic_delivery_date < $today_time){
+                $logistic_delivery_date = '';
+            }
+        }
         foreach($date_arr as $k=>$v) {
             $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'], $today_time);
+            $date_arr[$k]['diff_today'] = $v['logistic_delivery_date']-$today_time;//计算就离今天的差值
             if($v['logistic_delivery_date'] == $logistic_delivery_date){
                 $date_arr[$k]['is_default'] = 1;
                 $default = $date_arr[$k];
                 $default_k = $k;
             }
         }
+        $diff_today_arr = array_column($date_arr,'diff_today');
+        array_multisort($diff_today_arr,SORT_ASC, $date_arr);
         //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
-        if($default){
-            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
-        }else{
+        if ($default) {
+            return $this->defaultData($businessId, $user_id, $date_arr, $default_k);
+        } else {
             $today_before_k = $today_k = $today_after_k = '';
-            foreach($date_arr as $k=>$v){
-                $date_arr[$k]['date_day'] = date_day($v['logistic_delivery_date'],$today_time);
-                if($v['logistic_delivery_date']-$today_time <= 0){
-                    $today_before_k = $k;
+            //如果有当天的，默认取当前的，如果没有，则获取距离当天最近的日期
+            if (in_array(0, $diff_today_arr)) {
+                $today_k = array_search(0, $diff_today_arr);
+                return $this->defaultData($businessId, $user_id, $date_arr, $today_k);
+            } else {
+                $today_before_arr = $today_after_arr = [];//存储今天之前和今天之后的数据
+                foreach ($date_arr as $k => $v) {
+                    if ($v['diff_today'] < 0) {
+                        $today_before_arr[] = $v;
+                    }
+                    if ($v['diff_today'] > 0) {
+                        $today_after_arr[] = $v;
+                    }
                 }
-                if($v['logistic_delivery_date']-$today_time == 0){
-                    $today_k = $k;
+                if ($today_after_arr) {
+                    $today_after_k = array_search($today_after_arr[0]['diff_today'], $diff_today_arr);
+                    return $this->defaultData($businessId, $user_id, $date_arr, $today_after_k);
+                } else {
+                    $today_before_k = array_search($today_before_arr[count($today_before_arr) - 1]['diff_today'], $diff_today_arr);
+                    return $this->defaultData($businessId, $user_id, $date_arr, $today_before_k);
                 }
-                if($v['logistic_delivery_date']-$today_time > 0){
-                    $today_after_k = $k;
-                    break;
-                }
-            }
-            if($today_k!==''){
-                $date_arr[$today_k]['is_default'] = 1;
-                $default = $date_arr[$today_k];
-                $default_k = $today_k;
-                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
-            }
-            if($today_after_k!=='') {
-                $date_arr[$today_after_k]['is_default'] = 1;
-                $default = $date_arr[$today_after_k];
-                $default_k = $today_after_k;
-                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
-            }
-            if($today_before_k!=='') {
-                $date_arr[$today_before_k]['is_default'] = 1;
-                $default = $date_arr[$today_before_k];
-                $default_k = $today_before_k;
-                return ['list' => $date_arr,'default' => $default,'default_k' => $default_k];
             }
             //判断当前供应商最近7天内是否有订单数据，如果有，则前端需要实时刷新数据，如果没有，则无需更新
             $map = 'status=1 or accountPay=1';
@@ -608,14 +611,14 @@ class Order extends Model
             array_multisort($diff_today_arr,SORT_ASC,$diff_schedule_delivery_arr, SORT_ASC, $date_arr);
             //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
             if ($default) {
-                $this->defaultData($businessId, $user_id, $date_arr, $default_k);
+                $this->defaultData($businessId, $user_id, $date_arr, $default_k,2,1);
                 return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
             } else {
                 $today_before_k = $today_k = $today_after_k = '';
                 //如果有当天的，默认取当前的，如果没有，则获取距离当天最近的日期
                 if (in_array(0, $diff_today_arr)) {
                     $today_k = array_search(0, $diff_today_arr);
-                    return $this->defaultData($businessId, $user_id, $date_arr, $today_k);
+                    return $this->defaultData($businessId, $user_id, $date_arr, $today_k,2,1);
                 } else {
                     $today_before_arr = $today_after_arr = [];//存储今天之前和今天之后的数据
                     foreach ($date_arr as $k => $v) {
@@ -628,10 +631,10 @@ class Order extends Model
                     }
                     if ($today_after_arr) {
                         $today_after_k = array_search($today_after_arr[0]['diff_today'], $diff_today_arr);
-                        return $this->defaultData($businessId, $user_id, $date_arr, $today_after_k);
+                        return $this->defaultData($businessId, $user_id, $date_arr, $today_after_k,2,1);
                     } else {
                         $today_before_k = array_search($today_before_arr[count($today_before_arr) - 1]['diff_today'], $diff_today_arr);
-                        return $this->defaultData($businessId, $user_id, $date_arr, $today_before_k);
+                        return $this->defaultData($businessId, $user_id, $date_arr, $today_before_k,2,1);
                     }
                 }
             }
@@ -648,13 +651,13 @@ class Order extends Model
      * @param $defaut_key 默认key值
      * @return array
      */
-    public function defaultData($businessId,$user_id,$date_arr,$defaut_key)
+    public function defaultData($businessId,$user_id,$date_arr,$defaut_key,$type=1,$action_type=1)
     {
         $date_arr[$defaut_key]['is_default'] = 1;
         $default = $date_arr[$defaut_key];
         $default_k = $defaut_key;
         //存储默认调度
-        $this->setDefaultDate(2,1,$businessId,$user_id,$default);
+        $this->setDefaultDate($type,$action_type,$businessId,$user_id,$default);
         return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
     }
 
@@ -667,15 +670,18 @@ class Order extends Model
     public function setDefaultDate($type=1,$action_type=1,$businessId,$user_id,$data=[]){
         $redis = redis_connect();
         switch ($type){
-            case 1:;break;//生产端，预生产，产品拣货端和生产端
+            case 1:
+                $key = 'default_product_pick_date_'.$businessId.'_'.$user_id;
+                break;//生产端，预生产，产品拣货端和生产端
             case 2:
                 $key = 'default_driver_schedue_'.$businessId.'_'.$user_id;
                 break;//司机端
         }
         if($action_type == 1){
             //存储过期时间到第二天的凌晨，第二天获取最新的
-            $expire_time = strtotime(date('Y-m-d',strtotime('+1 day')))-time();
+            $expire_time = 7*24*3600;//strtotime(date('Y-m-d',strtotime('+1 day')))-time();
             $redis->setex($key,$expire_time,json_encode($data));
+//            $redis->set($key,json_encode($data));
         } else {
             $data = $redis->get($key);
             return $data;
@@ -1058,8 +1064,9 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.coupon_status,o.displayName,o.first_name,o.last_name,o.address,o.receipt_picture,o.phone,o.xero_invoice_id,o.xero_id,userId,uf.nickname')
+            ->field('o.orderId,o.business_userId,o.coupon_status,o.displayName,o.first_name,o.last_name,o.address,o.receipt_picture,o.phone,o.xero_invoice_id,o.xero_id,userId,uf.nickname,u.pic')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id=o.business_userId')
+            ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)
             ->find();
         if($order){

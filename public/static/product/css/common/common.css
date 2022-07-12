@@ -1039,6 +1039,11 @@ input[type=checkbox]:checked::before {
 	height: 5rem;
 	border: 1px solid #ECEDEE;
 }
+.nav{
+	padding: 10px;
+	border-radius: 5px;
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+}
 
 
 

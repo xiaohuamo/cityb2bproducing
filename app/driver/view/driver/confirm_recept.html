@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 	<title>Driver Management</title>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/common/common.css"/>
+	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/me.css"/>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/orderGoods.css"/>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/placeOrder.css"/>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/product/css/cart.css"/>
@@ -31,8 +32,10 @@
 		</div>
 		<div class="flexBox2 pa0-15 pmb10" @click="googleMap(orderInfo.address)">
 			<img src="__STATIC__/product/img/location2.png" class="location2"/>{{orderInfo.address}}
+			<div class="nav colfff"/>Nav</div>
 		</div>
 		<div class="pa0-15">
+<!--			<img v-if="orderInfo.pic" src="{{orderInfo.pic}}" class="w100"/>-->
 			<img src="__STATIC__/product/img/big.png" class="w100"/>
 		</div>
 		<div style="height: 200px;" class="pa0-15">
@@ -52,8 +55,9 @@
 			<input v-if="!orderInfo.receipt_picture" class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile">
 		</div>
 	</div>
-	<div class="ma0-15 pa0-15 bold pmb15" v-if="orderInfo.coupon_status!='b01'">
-		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>
+	<div class="pmb15" v-if="orderInfo.coupon_status!='b01'">
+		<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="sure">Confirm</div>
+<!--		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>-->
 	</div>
 	<!--自定义的组件使用-->
 	<common-footer current-menu="3"></common-footer>

@@ -20,7 +20,7 @@
 <body class="bgF2F2F2">
 <div id="customerSearch" v-cloak>
 	<div class="head bgfff center">
-		Customer Inquiries
+		Navigation
 	</div>
 	<div style="height:3.5rem;"></div>
 	<!-- 主体部分开始 -->
@@ -58,8 +58,8 @@
 	</div>
 
 	<div @click="close" class="wlmask" v-show="isShowMask"></div>
-
-	<div class="bgfff ma15 borR7 f30 col1C1C1C" v-for="(item,index) in order">
+	<div class="J_nav_order">
+		<div class="bgfff ma15 borR7 f30 col1C1C1C" :class="'J_nav_index_'+index" v-for="(item,index) in order">
 		<div class="flexBox1 wldate pa15 col000 f30 f500">
 			<span class="col000 f40">s{{item.logistic_stop_No}}</span>
 			<span class="col000 f40">{{item.delivery_date}}</span>
@@ -94,6 +94,7 @@
 			<div class="commonBtn bglg45A009-78DB36 pa0-15" v-if="item.coupon_status == 'b01'" @click="item.status!=4&&photograph(item,index)">arrived</div>
 		</div>
 	</div>
+	<div>
 <!--	<div class="bgfff ma15 borR7 f30 col1C1C1C">-->
 <!--		<div class="flexBox1 borderB pa15 relative">-->
 <!--			<span>ABC restaurant</span>-->
@@ -193,6 +194,7 @@
 					//如果是从拍照页面回到该页面，弹窗提示是否直接进入下一项
 					let is_show_nav_pop = localStorage.getItem('is_show_nav_pop')
 					if (is_show_nav_pop == 1) {
+						_this.goto('.J_nav_index_'+_this.nav_current_index)
 						localStorage.is_show_nav_pop=0
 						if(_this.nav_current_index+1==_this.order.length){
 							return
@@ -346,7 +348,13 @@
 					localStorage.orderId = item.orderId
 					window.location.href = "{:url('/driver/returnStock')}"
 				}
-			}
+			},
+			//跳转到对应的位置
+			goto(selector){
+				this.$nextTick(()=> {
+					$('html,body').animate({scrollTop:$(selector).offset().top-55},500)
+				})
+			},
 		}
 	})
 </script>

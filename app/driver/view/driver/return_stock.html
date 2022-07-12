@@ -76,8 +76,9 @@
 			</div>
 		</div>
 	</div>
-	<div class="ma0-15 pa0-15 bold pmb15" v-if="!orderInfo.order_return_info||orderInfo.order_return_info.is_approved==0">
-		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>
+	<div class="pmb15" v-if="!orderInfo.order_return_info||orderInfo.order_return_info.is_approved==0">
+<!--		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>-->
+		<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="sure">Confirm</div>
 	</div>
 </div>
 </body>

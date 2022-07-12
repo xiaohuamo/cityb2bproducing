@@ -498,14 +498,14 @@
 				onLine: navigator.onLine,
 			},
 			mounted: function () {
-				window.addEventListener('online',  this.updateOnlineStatus);
+				window.addEventListener('online', this.updateOnlineStatus);
 				window.addEventListener('offline', this.updateOnlineStatus);
 				//获取pincode显示得到样式
 				var _this = this
-				_this.isLoading=true
+				_this.isLoading = true
 				getData("{:url('/product/loginInfo')}", '', function (res) {
-					console.log('登录信息----',res);
-					_this.isLoading=false
+					console.log('登录信息----', res);
+					_this.isLoading = false
 					//获取登录信息
 					_this.userInfo = res.result.user_info
 					if (res.result.user_name) {
@@ -514,13 +514,13 @@
 						_this.isShowLoginOut = true
 						_this.isManager = res.result.is_manager
 						//管理员登录默认进入二级页面
-						if(res.result.is_manager == 1){
+						if (res.result.is_manager == 1) {
 							_this.currentPage = 2
 							_this.returnPage(2)
 						}
-						if(res.result.is_manager == 2){
+						if (res.result.is_manager == 2) {
 							_this.list4 = res.result.user_info
-							_this.currentOperatorIndex=0
+							_this.currentOperatorIndex = 0
 							_this.operator_user_id = res.result.user_info[0]['user_id']
 						}
 					} else {
@@ -528,7 +528,7 @@
 						_this.iskeyboardShow = true
 						_this.isClock = true
 					}
-					if(res.result.is_has_pincode==1){
+					if (res.result.is_has_pincode == 1) {
 						_this.isShowTypePincode1 = true
 						_this.pincodeType = 1 //默认显示pincode登录
 						_this.focusDatype = 10 //默认可直接输入密码
@@ -539,24 +539,8 @@
 					_this.is_pick_permission = res.result.is_pick_permission
 					_this.setup_info = res.result.setup_info
 				});
-				//获取加工日期
-				_this.isLoading=true
-				var data = {
-					'logistic_delivery_date':localStorage.logistic_delivery_date
-				}
-				getData("{:url('/product/prepDeliveryDate')}", data, function (res) {
-					console.log(res)
-					_this.list = res.result.list
-					_this.choseDate1 = res.result.default
-					_this.currentDay = res.result.default_k
-					_this.logistic_delivery_date = _this.choseDate1.hasOwnProperty('logistic_delivery_date')?_this.choseDate1.logistic_delivery_date:''
-					//获取初始化数据
-					if(_this.logistic_delivery_date){
-						localStorage.logistic_delivery_date = _this.logistic_delivery_date
-						_this.inidata()
-					}
-					_this.isLoading=false
-				});
+				//获取预加工日期
+				_this.deliveryDateFun();
 			},
 			methods:{
 				updateOnlineStatus(e) {
@@ -572,6 +556,28 @@
 						this.popBox('Network has been restored')
 						this.dataRefreh();
 					}
+				},
+				//获取预备加工日期
+				deliveryDateFun(){
+					let data = {
+						'logistic_delivery_date':this.logistic_delivery_date
+					}
+					console.log('获取日期参数=----',data);
+					let _this = this
+					_this.isLoading=true
+					getData("{:url('/product/prepDeliveryDate')}", data, function (res) {
+						_this.isLoading=false
+						console.log(res)
+						_this.list = res.result.list
+						_this.choseDate1 = res.result.default
+						_this.currentDay = res.result.default_k
+						_this.logistic_delivery_date = _this.choseDate1.hasOwnProperty('logistic_delivery_date')?_this.choseDate1.logistic_delivery_date:''
+						//获取初始化数据
+						if(_this.logistic_delivery_date){
+							// localStorage.logistic_delivery_date = _this.logistic_delivery_date
+							_this.inidata()
+						}
+					});
 				},
 				//获取初始化数据 type:refresh来源与数据刷新
 				inidata(type='') {
@@ -1725,7 +1731,7 @@
 					this.whichPopShow=-1
 					this.logistic_delivery_date=item.logistic_delivery_date
 					//存储当前日期
-					localStorage.logistic_delivery_date=this.logistic_delivery_date
+					// localStorage.logistic_delivery_date=this.logistic_delivery_date
 					//重置客户默认信息-start
 					this.choseDate2=this.list2[0].name
 					this.current2=0
@@ -1749,7 +1755,7 @@
 					this.wccSortType=1
 					//重置加工明细排序信息-end
 					this.isLoading=true
-					this.inidata()
+					this.deliveryDateFun()
 					if(this.currentPage==2){
 						var cate_id = this.menudata[this.currentMenu].id
 						this.cetegoryProduct(cate_id)
@@ -2296,7 +2302,9 @@
 							_this.clearTime()
 							_this.isLoading = false
 							//重置操作员默认信息-end
-							_this.inidata(_this.logistic_delivery_date)
+							// _this.inidata(_this.logistic_delivery_date)
+							_this.logistic_delivery_date = ''
+							_this.deliveryDateFun()
 						} else {
 							_this.message = res.message
 							_this.isPsdCorrect=true
