@@ -566,7 +566,7 @@ class Order extends Model
     {
 
         //当天凌晨时间戳
-        $start_time = strtotime(date('Y-m-d'));//-3600*24*17;
+        $start_time = strtotime(date('Y-m-d'))-3600*24*3;
         $date_arr = Db::name('order')
             ->alias('o')
             ->field("o.logistic_delivery_date,o.logistic_schedule_id,FROM_UNIXTIME(o.logistic_delivery_date,'%Y-%m-%d') date,2 as is_default,tds.schedule_start_time")
