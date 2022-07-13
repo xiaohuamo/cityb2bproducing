@@ -37,10 +37,10 @@
 
 			</div>
 			<div class="div1">
-				Boxs<span class="numbtn f40 bold pa10 bgFD6921 blink">{{boxDoneNum}}/{{boxNum}}</span>
+				Boxs<span class="numbtn f40 bold pa10" :class='{"bgFD6921 blink":driverOrderDoneNum<driverOrderNum,"bg34C079":driverOrderDoneNum>=driverOrderNum}'>{{boxDoneNum}}/{{boxNum}}</span>
 			</div>
 			<div class="div1">
-				Orders<span class="numbtn f40 bold pa10 bg34C079 blink">{{driverOrderDoneNum}}/{{driverOrderNum}}</span>
+				Orders<span class="numbtn f40 bold pa10" :class='{"bgFD6921 blink":driverOrderDoneNum<driverOrderNum,"bg34C079":driverOrderDoneNum>=driverOrderNum}'>{{driverOrderDoneNum}}/{{driverOrderNum}}</span>
 			</div>
 			<div class="no div2" @click="sortOrder(0)">
 				StopNo<img src="__STATIC__/product/img/wl1.png" />
@@ -69,7 +69,7 @@
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
 				<div class="col000 f40 bold">{{item.name}}</div>
-				<div class="wlbtn1">{{item.boxesNumber}}box</div>
+				<div class="wlbtn1">{{item.boxesNumber}}<span v-if="item.boxesNumber>1">boxes</span><span v-else>box</span></div>
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
 				<div @click="googleMap(item.address)">{{item.address}}</div>

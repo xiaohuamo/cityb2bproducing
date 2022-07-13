@@ -18,7 +18,7 @@ class TruckJob extends Model
     public function getTruckJobInfo($businessId,$user_id,$logistic_delivery_date,$logistic_schedule_id)
     {
         $info = Truck::alias('t')
-            ->field('tj.*,tds.id tds_id,tds.status,tds.driver_start_location,tds.driver_end_location,tds.driver_work_start_time,tds.driver_work_end_time,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
+            ->field('tj.*,tds.id tds_id,tds.truck_id,tds.status,tds.driver_start_location,tds.driver_end_location,tds.driver_work_start_time,tds.driver_work_end_time,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
             ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.driver_id=t.current_driver and tds.schedule_id=$logistic_schedule_id")
             ->leftjoin('truck_job tj',"tj.truck_driver_schedule_id=tds.id")
             ->leftjoin('user u','u.id=t.current_driver')
@@ -30,19 +30,25 @@ class TruckJob extends Model
             ->find();
         if($info){
             $info['name'] = $info['contactPersonFirstname'].' '.$info['contactPersonLastname'];
-            if($info['truck_id']>0){
-                //查询该司机的最后一次的结束里程数，作为开始里程数
-                $last_end_kile_metre = self::where([
-                    ['truck_id','=',$info['truck_id']],
-                    ['start_job_time','<',$info['start_job_time']],
-                ])->order('id desc')->value('end_kile_metre');
+            if(!empty($info['truck_id']) && empty($info['start_kile_metre_num'])){
+                //查询该车的最后一次的结束里程数，作为开始里程数
+                $last_driver_data = self::alias('tj')
+                    ->field('start_temprature,end_kile_metre')
+                    ->leftjoin('truck_driver_schedule tds',"tj.truck_driver_schedule_id=tds.id")
+                    ->where([
+                        ['tds.truck_id','=',$info['truck_id']],
+                        ['tj.end_job_time','>',0],
+                    ])->order('tj.id desc')->find();
+                $last_end_kile_metre = $last_driver_data ? $last_driver_data['end_kile_metre'] : '';
+                $last_start_temprature = $last_driver_data ? $last_driver_data['start_temprature'] : '';
             }else{
                 $last_end_kile_metre = '';
+                $last_start_temprature = '';
             }
-            $info['start_kile_metre_num'] = $info['start_kile_metre'];
+            $info['start_kile_metre_num'] = is_numeric($info['start_kile_metre'])&&$info['start_kile_metre']>=0?$info['start_kile_metre']:($last_end_kile_metre ? floatval($last_end_kile_metre) : '');
             $info['end_kile_metre_num'] = $info['end_kile_metre'];
             $info['start_kile_metre'] = is_numeric($info['start_kile_metre'])&&$info['start_kile_metre']>=0 ? $this->formatNumber($info['start_kile_metre']) : ($last_end_kile_metre ? number_format(floatval($last_end_kile_metre)) : '');
-            $info['start_temprature'] = is_numeric($info['start_temprature']) ? floatval($info['start_temprature']) : '';
+            $info['start_temprature'] = is_numeric($info['start_temprature']) ? floatval($info['start_temprature']) : ($last_start_temprature ?: '');
             $info['start_truck_check'] = $info['start_truck_check'] ?: 0;
             $info['end_kile_metre'] = is_numeric($info['end_kile_metre'])&&$info['end_kile_metre']>0 ? $this->formatNumber($info['end_kile_metre']) : '';
             $info['end_temprature'] = is_numeric($info['end_temprature']) ? floatval($info['end_temprature']) : '';

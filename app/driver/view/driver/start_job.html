@@ -62,7 +62,7 @@
 					<span class="col1C1C1C f30">Truck Check</span>
 					<input class="btn-switch large" type="checkbox" v-model="jobFillData.start_truck_check" v-bind:true-value=1 :disabled="jobData.start_job_time>0">
 				</div>
-				<textarea class="jobCheck mat15 f30" placeholder="If there is a problem, please enter the check content..." v-model="jobFillData.start_truck_check_content" :readonly="jobData.start_temprature!=''"></textarea>
+				<textarea class="jobCheck mat15 f30" placeholder="any issues such as damage ,broken etc. of vechile truck ,please leave note here ." v-model="jobFillData.start_truck_check_content" :readonly="jobData.start_job_time>0"></textarea>
 			</div>
 		</div>
 		<div class="signOut f35 colfff bglgFD5001-FC8F4F" v-if="jobData.start_job_time<=0" @click="sure">Start Job</div>
@@ -147,12 +147,12 @@
 			},
 			//开始工作
 			sure(){
-				if(this.jobFillData.start_kile_metre<0){
+				if(this.jobFillData.start_kile_metre_num<0){
 					alert('Please enter the correct number of kilometers');
 					return;
 				}
 				if(this.jobFillData.start_temprature==null||this.jobFillData.start_temprature==''){
-					alert('Please enter the correct temperature');
+					alert('please input vechile start kilo metres.');
 					return;
 				}
 				this.jobFillData.start_temprature = parseFloat(this.jobFillData.start_temprature)
@@ -163,7 +163,7 @@
 				let data = {
 					'logistic_delivery_date':this.logistic_delivery_date,
 					'logistic_schedule_id':this.logistic_schedule_id,
-					'start_kile_metre':this.jobFillData.start_kile_metre,
+					'start_kile_metre':this.numberData(this.jobFillData.start_kile_metre),
 					'start_temprature':this.jobFillData.start_temprature,
 					'start_truck_check':this.jobFillData.start_truck_check,
 					'start_truck_check_content':this.jobFillData.start_truck_check_content,
@@ -185,13 +185,52 @@
 			//校验是否是最多两位小数的数据
 			handleInput(e){
 				// 通过正则过滤小数点后两位
+				e.target.value = this.numberData(e.target.value)
 				e.target.value = (e.target.value.match(/^\d*(\.?\d{0,2})/g)[0]) || null
+				e.target.value = this.numberPutComma(e.target.value)
 			},
 			//校验是否是最多两位小数的数据
 			handleInput2(e){
 				// 通过正则过滤小数点后两位
 				e.target.value = (e.target.value.match(/^(\-)*\d*(\.?\d{0,2})/g)[0]) || null
 			},
+			//将公里数转换为数字
+			numberData(value){
+				value = value.replace(/,/g, '')
+				return value
+			},
+			// 格式化数字三位加一逗号 (为0不显示)
+			numberPutComma(value){
+				let installVal = value;
+				if(Number(value)){
+					value = Number(value)
+					let intPart = Math.trunc(value)// 获取整数部分
+					let intPartFormat = intPart.toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') // 将整数部分逢三一断
+					let value2Array = value.toString().split('.')
+					// =2表示数据有小数位
+					let floatPart = ''
+					if(value2Array.length === 2) {
+						floatPart = value2Array[1].toString() // 拿到小数部分
+						if(floatPart.length === 1) {
+							return intPartFormat + '.' + floatPart
+						} else {
+							if(installVal < 0 && intPartFormat == 0){
+								return '-' + intPartFormat + '.' + floatPart
+							}else{
+								return intPartFormat + '.' + floatPart
+							}
+						}
+					} else {
+						if(installVal.substr(-1,1) == '.'){
+							return intPartFormat + floatPart + '.'
+						}else{
+							return intPartFormat + floatPart
+						}
+					}
+				}else{
+					return value
+				}
+			}
 		}
 	})
 </script>

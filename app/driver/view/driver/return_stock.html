@@ -186,6 +186,8 @@
 				getData("{:url('/driver/doReturnStock')}", data, function (res) {
 					console.log('return stock结果---',res);
 					if(res.status == 200){
+						//确认退货后跳转回导航页面
+						localStorage.is_return_stock = 1
 						//点击确定后返回导航页面
 						window.location.href = "{:url('driver/customerSearch')}";
 					}else{

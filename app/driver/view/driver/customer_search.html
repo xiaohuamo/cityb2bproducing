@@ -77,7 +77,7 @@
 <!--		</div>-->
 		<div class="bgfff flexBox1 pa15 borderB">
 			<div class="col000 f40 bold">{{item.name}}</div>
-			<div class="wlbtn1">{{item.boxesNumber}}box</div>
+			<div class="wlbtn1">{{item.boxesNumber}}<span v-if="item.boxesNumber>1">boxes</span><span v-else>box</span></div>
 		</div>
 		<div class="flexBox2 pa15 borderB">
 			<a class="col000" :href="'tel:'+item.phone"><img src="__STATIC__/product/img/service3.png" class="location2"/>
@@ -193,9 +193,14 @@
 					_this.order = res.order
 					//如果是从拍照页面回到该页面，弹窗提示是否直接进入下一项
 					let is_show_nav_pop = localStorage.getItem('is_show_nav_pop')
-					if (is_show_nav_pop == 1) {
-						_this.goto('.J_nav_index_'+_this.nav_current_index)
-						localStorage.is_show_nav_pop=0
+					//如果从return页面回到该页面，需要滑动到对应的位置
+					let is_return_stock = localStorage.getItem('is_return_stock')
+					if (is_show_nav_pop == 1||is_return_stock == 1) {
+						_this.goto('.J_nav_index_' + _this.nav_current_index)
+						localStorage.is_show_nav_pop = 0
+						localStorage.is_return_stock = 0
+					}
+					if(is_show_nav_pop == 1){
 						if(_this.nav_current_index+1==_this.order.length){
 							return
 						}
@@ -346,6 +351,7 @@
 					});
 				} else {
 					localStorage.orderId = item.orderId
+					this.nav_current_index = localStorage.nav_current_index = index
 					window.location.href = "{:url('/driver/returnStock')}"
 				}
 			},

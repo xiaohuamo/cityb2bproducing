@@ -33,4 +33,14 @@ class DriverValidate extends Validate
         'doJobDone' => ['logistic_delivery_date','logistic_schedule_id','end_kile_metre','end_temprature','end_truck_check'],//结束工作
         'doReturnStock' => ['orderId','return_data'],//退货
     ];
+
+    /**
+     * 错误信息
+     */
+    protected $message = [
+        'start_kile_metre.require' => 'please input vechile start kilo metres.',
+        'start_temprature.require' => ' please input vechile start temprature.',
+        'end_kile_metre.require' => 'please input vechile end kilo metres.',
+        'end_temprature.require' => ' please input vechile end temprature.',
+    ];
 }
