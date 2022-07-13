@@ -219,10 +219,8 @@ class Driver extends Base
         $businessId = $request->businessId;
         $user_id = $request->user_id;//当前操作用户
 
-        $logistic_truck_No = $this->getlogistic_truck_No($businessId,$user_id);
-
         //1.查询该订单是否存在
-        $info = Order::is_exist(['business_userId'=>$businessId,'logistic_truck_No'=>$logistic_truck_No,'orderId'=>$param['orderId']]);
+        $info = Order::is_exist(['business_userId'=>$businessId,'orderId'=>$param['orderId']]);
         if (!$info) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
         }
@@ -232,6 +230,22 @@ class Driver extends Base
         }
         //3.修改订单状态
         Order::getUpdate(['id' => $info['id']],['driver_receipt_status' => 1]);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+    }
+
+    /**
+     * 点击全部收货按钮
+     */
+    public function changeAllReceiptStatus(Request $request)
+    {
+        //接收参数
+        $param = $request->only(['logistic_delivery_date','logistic_schedule_id']);
+
+        $businessId = $request->businessId;
+        $user_id = $request->user_id;//当前操作用户
+
+        //1.修改该调度的全部订单状态
+        Order::getUpdate(['business_userId'=>$businessId,'logistic_delivery_date'=>$param['logistic_delivery_date'],'logistic_schedule_id'=>$param['logistic_delivery_date']],['driver_receipt_status' => 1]);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
     }
 
@@ -356,6 +370,28 @@ class Driver extends Base
             'coupon_status' => 'b01',
         ]);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$info);
+    }
+
+    /**
+     * 确定送到全部货物
+     */
+    public function confirmAllOrderFinish(Request $request)
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_schedule_id']);
+        $validate = new DriverValidate();
+        if (!$validate->scene('confirmAllOrderFinish')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+
+        $businessId = $request->businessId;
+        $user_id = $request->user_id;//当前操作用户
+
+        //更改订单状态
+        Order::getUpdate(['business_userId'=>$businessId,'logistic_delivery_date'=>$param['logistic_delivery_date'],'logistic_schedule_id'=>$param['logistic_delivery_date']],[
+            'coupon_status' => 'b01',
+        ]);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
     }
 
     //获取司机工作信息

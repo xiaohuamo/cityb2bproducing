@@ -51,7 +51,7 @@ class TruckJob extends Model
             $info['start_temprature'] = is_numeric($info['start_temprature']) ? floatval($info['start_temprature']) : ($last_start_temprature ?: '');
             $info['start_truck_check'] = $info['start_truck_check'] ?: 0;
             $info['end_kile_metre'] = is_numeric($info['end_kile_metre'])&&$info['end_kile_metre']>0 ? $this->formatNumber($info['end_kile_metre']) : '';
-            $info['end_temprature'] = is_numeric($info['end_temprature']) ? floatval($info['end_temprature']) : '';
+            $info['end_temprature'] = is_numeric($info['end_temprature']) ? floatval($info['end_temprature']) : ($info['start_temprature'] ?: '');
             $info['end_truck_check'] = $info['end_truck_check'] ?: 0;
         }
         return $info;

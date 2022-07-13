@@ -59,7 +59,7 @@
 
 	<div @click="close" class="wlmask" v-show="isShowMask"></div>
 	<div class="J_nav_order">
-		<div class="bgfff ma15 borR7 f30 col1C1C1C" :class="'J_nav_index_'+index" v-for="(item,index) in order">
+		<div class="bgfff ma15 borR7 f30 col1C1C1C" :class="['J_nav_index_'+index,{'arrow_box':nav_current_index==index}]" v-for="(item,index) in order">
 		<div class="flexBox1 wldate pa15 col000 f30 f500">
 			<span class="col000 f40">s{{item.logistic_stop_No}}</span>
 			<span class="col000 f40">{{item.delivery_date}}</span>
@@ -132,7 +132,7 @@
 			searchCon:'',
 			choseData:'',
 			currentMenu:3,   // 当前菜单
-			nav_current_index:localStorage.getItem('nav_current_index') != null ? localStorage.getItem('nav_current_index') : 0,
+			nav_current_index:localStorage.getItem('nav_current_index') != null ? localStorage.getItem('nav_current_index') : -1,
 		},
 		mounted:function(){
 			//获取配送日期
@@ -195,7 +195,7 @@
 					let is_show_nav_pop = localStorage.getItem('is_show_nav_pop')
 					//如果从return页面回到该页面，需要滑动到对应的位置
 					let is_return_stock = localStorage.getItem('is_return_stock')
-					if (is_show_nav_pop == 1||is_return_stock == 1) {
+					if (_this.nav_current_index>=0) {
 						_this.goto('.J_nav_index_' + _this.nav_current_index)
 						localStorage.is_show_nav_pop = 0
 						localStorage.is_return_stock = 0

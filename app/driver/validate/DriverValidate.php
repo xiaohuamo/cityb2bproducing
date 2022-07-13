@@ -28,6 +28,7 @@ class DriverValidate extends Validate
     protected $scene = [
         'updateOrderRceiptPicture' => ['orderId','receipt_picture'],//更新收货图片
         'confirmOrderFinish' => ['orderId'],//确认完成收货
+        'confirmAllOrderFinish' => ['logistic_delivery_date','logistic_schedule_id'],//确认全部订单完成收货
         'truckJobInfo' => ['logistic_delivery_date','logistic_schedule_id'],//获取车辆信息
         'doStartJob' => ['logistic_delivery_date','logistic_schedule_id','start_kile_metre','start_temprature','start_truck_check'],//开始工作
         'doJobDone' => ['logistic_delivery_date','logistic_schedule_id','end_kile_metre','end_temprature','end_truck_check'],//结束工作

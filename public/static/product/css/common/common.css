@@ -1044,6 +1044,17 @@ input[type=checkbox]:checked::before {
 	border-radius: 5px;
 	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
 }
+.arrow_box{
+	border-style: solid;
+	border-width: 2px;
+	animation: glow 2s linear infinite;
+}
+@keyframes glow {
+	0% {border-color: #F2F2F2;}
+	50% { border-color: #F2F2F2;}
+	50.01% {border-color: #FD6921;}
+	100% {border-color: #FD6921;}
+}
 
 
 
