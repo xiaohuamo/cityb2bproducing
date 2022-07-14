@@ -11,9 +11,11 @@
 	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 	<script src="__STATIC__/product/js/vue.min.js"></script>
 	<script src="__STATIC__/product/js/axios.min.js"></script>
+	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<script src="__STATIC__/product/js/driver_common.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 	<div id="start" v-cloak>
@@ -85,6 +87,7 @@
 			current:'',//当前选中类型 1-delivery date
 			jobData:[],//获取工作数据
 			jobFillData:[],//填写的工作数据
+			timeOutEvent:null,//定时器
 		},
 		mounted: function () {
 			this.deliveryDateFun();
@@ -146,18 +149,22 @@
 				})
 			},
 			//开始工作
-			sure(){
+			async sure(){
 				if(this.jobFillData.start_kile_metre_num<0){
-					alert('Please enter the correct number of kilometers');
+					popContent('Please enter the correct number of kilometers');
 					return;
 				}
 				if(this.jobFillData.start_temprature==null||this.jobFillData.start_temprature==''){
-					alert('please input vechile start kilo metres.');
+					popContent('please input vechile start kilo metres.');
 					return;
 				}
 				this.jobFillData.start_temprature = parseFloat(this.jobFillData.start_temprature)
 				if(this.jobFillData.start_temprature<-30||this.jobFillData.start_temprature>10){
-					alert('Please enter the correct temperature');
+					popContent('Please enter the correct temperature');
+					return;
+				}
+				if(this.jobFillData.start_truck_check != 1){
+					popContent('Please check the vehicle');
 					return;
 				}
 				let data = {
@@ -173,12 +180,17 @@
 				getData("{:url('/driver/doStartJob')}", data, function (res) {
 					console.log('start job结果---',res);
 					if(res.status == 200){
-						let timeStamp = new Date()/1000;
-						_this.jobData.start_job_time = timeStamp
-						//开始工作之后自动跳转到receive页面
-						window.location.href = "{:url('driver/order')}";
+						popContent('Start job success');
+						this.timeOutEvent = setTimeout(()=>{
+							let timeStamp = new Date()/1000;
+							_this.jobData.start_job_time = timeStamp
+							//开始工作之后自动跳转到receive页面
+							window.location.href = "{:url('driver/order')}";
+							clearTimeout(this.timeOutEvent);//清除定时器
+						},2000);//这里设置定时器
 					}else{
-						alert(res.message)
+						popContent(res.message)
+						return
 					}
 				})
 			},

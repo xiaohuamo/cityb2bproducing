@@ -13,8 +13,10 @@
 	<script src="__STATIC__/product/js/vue.min.js"></script>
 	<script src="__STATIC__/product/js/axios.min.js"></script>
 	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 <div id="returnStock" v-cloak>
@@ -162,8 +164,8 @@
 					this.orderInfo.item_detail[i].return_qty = parseFloat(this.orderInfo.item_detail[i].return_qty)
 					if(this.orderInfo.item_detail[i].return_qty > 0){
 						if(this.orderInfo.item_detail[i].return_qty > parseFloat(this.orderInfo.item_detail[i].customer_buying_quantity)){
-							alert('Returns up to '+this.orderInfo.item_detail[i].customer_buying_quantity);
-							return;
+							popContent('Returns up to '+this.orderInfo.item_detail[i].customer_buying_quantity)
+							return
 						}
 						return_data.push({
 							"item_order_id":this.orderInfo.item_detail[i].id,
@@ -174,8 +176,8 @@
 					}
 				}
 				if(return_data.length<=0){
-					alert('Please select the returned product and fill in the return quantity');
-					return;
+					popContent('Please select the returned product and fill in the return quantity')
+					return
 				}
 				let data = {
 					'orderId':this.orderId,
@@ -191,7 +193,8 @@
 						//点击确定后返回导航页面
 						window.location.href = "{:url('driver/customerSearch')}";
 					}else{
-						alert(res.message)
+						popContent(res.message)
+						return
 					}
 				})
 			},

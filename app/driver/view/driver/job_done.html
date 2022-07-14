@@ -15,6 +15,7 @@
 	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 <div id="start" v-cloak>
@@ -164,20 +165,24 @@
 					return;
 				}
 				if(this.jobFillData.end_kile_metre==''||this.jobFillData.end_kile_metre==null||this.jobFillData.end_kile_metre<0){
-					alert('Please enter the correct number of kilometers');
+					popContent('Please enter the correct number of kilometers');
 					return;
 				}
 				if(parseFloat(this.jobFillData.end_kile_metre)<parseFloat(this.jobData.start_kile_metre_num)){
-					alert('The end kilo metre cannot be less than the start kilo metre');
+					popContent('The end kilo metre cannot be less than the start kilo metre');
 					return;
 				}
 				if(this.jobFillData.end_temprature==null||this.jobFillData.end_temprature==''){
-					alert('Please enter the correct temperature');
+					popContent('Please enter the correct temperature');
 					return;
 				}
 				this.jobFillData.end_temprature = parseFloat(this.jobFillData.end_temprature)
 				if(this.jobFillData.end_temprature<-30||this.jobFillData.end_temprature>10){
-					alert('Please enter the correct temperature');
+					popContent('Please enter the correct temperature');
+					return;
+				}
+				if(this.jobFillData.end_truck_check != 1){
+					popContent('Please check the vehicle');
 					return;
 				}
 				let data = {
@@ -193,10 +198,15 @@
 				getData("{:url('/driver/doJobDone')}", data, function (res) {
 					console.log('start job结果---',res);
 					if(res.status == 200){
-						let timeStamp = new Date()/1000;
-						_this.jobData.end_job_time = timeStamp
+						popContent('Job done success');
+						this.timeOutEvent = setTimeout(()=>{
+							let timeStamp = new Date()/1000;
+							_this.jobData.end_job_time = timeStamp
+							clearTimeout(this.timeOutEvent);//清除定时器
+						},2000);//这里设置定时器
 					}else{
-						alert(res.message)
+						popContent(res.message)
+						return
 					}
 				})
 			},

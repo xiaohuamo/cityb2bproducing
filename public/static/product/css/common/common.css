@@ -1055,6 +1055,14 @@ input[type=checkbox]:checked::before {
 	50.01% {border-color: #FD6921;}
 	100% {border-color: #FD6921;}
 }
+.swal-modal {
+	border-radius: 3px;
+}
+.swal-text {
+	color: #1C1C1C;
+	font-size: 1.25rem;
+	text-align: center;
+}
 
 
 

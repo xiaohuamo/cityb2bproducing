@@ -712,7 +712,8 @@ class Order extends Model
         if($type == 2){
             $order_count = $sql_model->count();
         } else {
-            $order_count = $sql_model->sum('boxesNumber');
+            $order_count_arr = $sql_model->field('IF(`edit_boxesNumber`>0,`edit_boxesNumber`,`boxesNumber`) as boxesNumber')->select()->toArray();
+            $order_count = array_sum(array_column($order_count_arr,'boxesNumber'));
         }
         //获取已加工的订单总数
         $where[] = ['o.driver_receipt_status', '=', 1];
@@ -723,7 +724,8 @@ class Order extends Model
         if($type == 2){
             $order_done_count = $sql_model1->count();
         } else {
-            $order_done_count = $sql_model1->sum('boxesNumber');
+            $order_done_count_arr = $sql_model1->field('IF(`edit_boxesNumber`>0,`edit_boxesNumber`,`boxesNumber`) as boxesNumber')->select()->toArray();
+            $order_done_count = array_sum(array_column($order_done_count_arr,'boxesNumber'));
         }
         return [
             'order_done_count' => $order_done_count,
@@ -806,7 +808,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxesNumber,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name,tds.status')
+            ->field('o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxesNumber,o.edit_boxesNumber,o.displayName,o.first_name,o.last_name,o.phone,uf.nickname user_name,u.nickname business_name,u.name,tds.status')
             ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.schedule_id=o.logistic_schedule_id")
             ->leftJoin('user_factory uf','uf.user_id = o.userId and uf.factory_id='.$businessId)
             ->leftJoin('user u','u.id = o.business_userId')
@@ -815,6 +817,11 @@ class Order extends Model
             ->order($order_by)
             ->select()->toArray();
         foreach($order as &$v){
+            //获取该订单的总箱数
+            if($v['edit_boxesNumber']<=0){
+                $v['edit_boxesNumber'] = $v['boxesNumber'];
+            }
+            $v['boxesNumber'] = $v['edit_boxesNumber'];
             $v['delivery_date'] = date('m/d/Y',$v['logistic_delivery_date']);
             $v['business_name'] = $v['business_name'] ?: $v['name'];
             $v['business_shortcode']  = $v['displayName'] ?: $v['first_name'].' '.$v['last_name'];

@@ -14,8 +14,10 @@
 	<script src="__STATIC__/product/js/vue.min.js"></script>
 	<script src="__STATIC__/product/js/axios.min.js"></script>
 	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 <div id="photo" v-cloak>
@@ -112,7 +114,8 @@
 						_this.receipt_picture = res.result
 						_this.updateOrderRceiptPicture()
 					}else{
-						alert(res.message);
+						popContent(res.message)
+						return
 					}
 				});
 			},
@@ -127,7 +130,8 @@
 				getData("{:url('/driver/updateOrderRceiptPicture')}", param, function (res) {
 					console.log('更新图片结果---',res);
 					if(res.status != 200){
-						alert(res.message);
+						popContent(res.message)
+						return
 					}else{
 						_this.orderInfo.receipt_picture = res.result
 					}
@@ -147,7 +151,8 @@
 						localStorage.is_show_nav_pop = 1
 						window.location.href = "{:url('driver/customerSearch')}";
 					}else{
-						alert(res.message);
+						popContent(res.message)
+						return
 					}
 				});
 			}

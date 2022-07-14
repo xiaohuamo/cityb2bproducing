@@ -15,6 +15,7 @@
 	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 	<div id="order" v-cloak>
@@ -77,6 +78,9 @@
 				<div class="wlbtn2" v-else>received</div>
 			</div>
 		</div>
+		<div class="pmb15" v-if="is_show_all_receive">
+			<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="receiveAll">Receive all boxes</div>
+		</div>
 		<!--自定义的组件使用-->
 		<common-footer current-menu="2"></common-footer>
 	</div>
@@ -101,6 +105,8 @@
 			current:'',//
 			o_sort:0,//排序类型
 			o_sort_type:2,//排序方式 1升序 2降序
+			is_show_all_receive:false,//是否显示全部收货按钮
+			timeOutEvent:null,//定时器
 		},
 		mounted: function () {
 			//获取配送日期
@@ -157,6 +163,9 @@
 					_this.driverOrderDoneNum = res.all_order_count.order_done_count
 					_this.driverOrderNum = res.all_order_count.order_count
 					_this.order = res.order
+					if(_this.order.length>0&&res.is_finish_receive!=1){
+						_this.is_show_all_receive=true
+					}
 				});
 			},
 			markReceipt(item,index){  // 標記收穫
@@ -185,7 +194,50 @@
 							_this.boxDoneNum+=item.boxesNumber
 							_this.driverOrderDoneNum+=1
 						} else {
-							alert(res.message)
+							popContent(res.message)
+							return
+						}
+					});
+				}
+			},
+			//标记全部收货
+			receiveAll(){
+				if(this.order[0]['status'] != 3){
+					swal({
+						title: 'Please start job first, whether to jump to start job?',
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href="{:url('/driver/startJob')}"
+						}
+					});
+				}else{
+					var data = {
+						'logistic_delivery_date':this.logistic_delivery_date,
+						'logistic_schedule_id':this.logistic_schedule_id,
+					}
+					console.log('获取全部收货参数---',data);
+					var _this = this
+					_this.isLoading=true
+					getData("{:url('/driver/changeAllReceiptStatus')}", data, function (res) {
+						_this.isLoading=false
+						console.log('获取全部收货结果---',res);
+						if (res.status == 200) {
+							popContent("Receive all boxes success")
+							this.timeOutEvent = setTimeout(()=>{
+								for(let i in _this.order){
+									_this.order[i]['driver_receipt_status'] = 1
+								}
+								//更改订单完成数量
+								_this.boxDoneNum=_this.boxNum
+								_this.driverOrderDoneNum=_this.driverOrderNum
+								_this.is_show_all_receive=false
+								clearTimeout(this.timeOutEvent);//清除定时器
+							},2000);//这里设置定时器
+						} else {
+							popContent(res.message)
 						}
 					});
 				}

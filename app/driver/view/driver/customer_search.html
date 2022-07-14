@@ -16,6 +16,7 @@
 	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 <div id="customerSearch" v-cloak>
@@ -95,19 +96,9 @@
 		</div>
 	</div>
 	<div>
-<!--	<div class="bgfff ma15 borR7 f30 col1C1C1C">-->
-<!--		<div class="flexBox1 borderB pa15 relative">-->
-<!--			<span>ABC restaurant</span>-->
-<!--			<span>croydon</span>-->
-<!--		</div>-->
-<!--		<div class="pa15">-->
-<!--			<div>61725      abc     0425 616 988</div>-->
-<!--			<div class="flexBox1">-->
-<!--				<span></span>-->
-<!--				<div class="commonBtn pa0-15">确认及拍照</div>-->
-<!--			</div>-->
-<!--		</div>-->
-<!--	</div>-->
+	<div class="pmb15" v-if="is_show_all_deliveryed">
+		<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="receiveAll">Mark all deliveryed</div>
+	</div>
 	<!--自定义的组件使用-->
 	<common-footer current-menu="3"></common-footer>
 </div>
@@ -133,6 +124,17 @@
 			choseData:'',
 			currentMenu:3,   // 当前菜单
 			nav_current_index:localStorage.getItem('nav_current_index') != null ? localStorage.getItem('nav_current_index') : -1,
+			is_show_all_deliveryed:false,//是否显示全部收货按钮
+			timeOutEvent:null,//定时器
+		},
+		computed: {
+			search() {
+				if (this.searchCon == '') {
+					return this.order
+				} else {
+					return this.order.filter(item => item.displayName.includes(this.searchCon))
+				}
+			}
 		},
 		mounted:function(){
 			//获取配送日期
@@ -191,6 +193,9 @@
 					res = res.result
 					_this.is_finish_receive = res.is_finish_receive
 					_this.order = res.order
+					if(_this.order.length>0&&res.is_finish_deliveryed!=1){
+						_this.is_show_all_deliveryed=true
+					}
 					//如果是从拍照页面回到该页面，弹窗提示是否直接进入下一项
 					let is_show_nav_pop = localStorage.getItem('is_show_nav_pop')
 					//如果从return页面回到该页面，需要滑动到对应的位置
@@ -279,7 +284,57 @@
 						if (res.status == 200) {
 							item.coupon_status = 'b01'
 						} else {
-							alert(res.message);
+							popContent(res.message)
+							return
+						}
+					});
+				}
+			},
+			//标记全部收货
+			receiveAll(){
+				if (this.order[0]['status'] != 3 || this.order[0]['status'] == 3 && this.is_finish_receive != 1) {
+					let message = ''
+					let url = ''
+					if(item.status != 3){
+						message = 'Please start job first, whether to jump to start job page?';
+						url = "{:url('/driver/startJob')}"
+					}else{
+						message = 'Please complete the receive first, whether to jump to the receive page?';
+						url = "{:url('/driver/order')}"
+					}
+					swal({
+						title: message,
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href=url
+						}
+					});
+				} else {
+					let data = {
+						'logistic_delivery_date':this.logistic_delivery_date,
+						'logistic_schedule_id':this.logistic_schedule_id,
+					}
+					console.log('获取全部送货参数---',data);
+					var _this = this
+					_this.isLoading=true
+					getData("{:url('/driver/confirmAllOrderFinish')}", data, function (res) {
+						_this.isLoading=false
+						console.log('获取全部送货结果---',res);
+						if (res.status == 200) {
+							popContent("Mark all deliveryed success")
+							this.timeOutEvent = setTimeout(()=>{
+								for(let i in _this.order){
+									_this.order[i]['coupon_status'] = 'b01'
+								}
+								_this.is_show_all_deliveryed=false
+								clearTimeout(this.timeOutEvent);//清除定时器
+							},2000);//这里设置定时器
+						} else {
+							popContent(res.message)
+							return;
 						}
 					});
 				}

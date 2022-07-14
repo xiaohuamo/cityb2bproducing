@@ -199,11 +199,13 @@ class Driver extends Base
         $all_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],2);
         //获取对应日期的加工订单
         $order = $Order->getDriverOrderList($param['logistic_delivery_date'],$businessId,$param['logistic_schedule_id'],$param['o_sort'],$param['o_sort_type'],$param['search']);
+        $coupon_status_arr = array_column($order,'coupon_status');
         $data = [
             'box_count' => $box_count,
             'all_order_count' => $all_order_count,
             'order' => $order,
             'is_finish_receive' => $all_order_count['order_done_count'] == $all_order_count['order_count'] ? 1 : 2,//是否完成收货 1-是 2-否
+            'is_finish_deliveryed' => in_array('c01',$coupon_status_arr) ? 2 : 1,//是否全部送货 1-是 2-否
         ];
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
@@ -245,8 +247,9 @@ class Driver extends Base
         $user_id = $request->user_id;//当前操作用户
 
         //1.修改该调度的全部订单状态
-        Order::getUpdate(['business_userId'=>$businessId,'logistic_delivery_date'=>$param['logistic_delivery_date'],'logistic_schedule_id'=>$param['logistic_delivery_date']],['driver_receipt_status' => 1]);
-        return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+        $map = "business_userId=$businessId and (status=1 or accountPay=1) and (coupon_status='c01' or coupon_status='b01') and logistic_delivery_date=".$param['logistic_delivery_date']." and logistic_schedule_id=".$param['logistic_schedule_id'];
+        $res = Order::getUpdate($map,['driver_receipt_status' => 1]);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 
     /**
@@ -388,7 +391,8 @@ class Driver extends Base
         $user_id = $request->user_id;//当前操作用户
 
         //更改订单状态
-        Order::getUpdate(['business_userId'=>$businessId,'logistic_delivery_date'=>$param['logistic_delivery_date'],'logistic_schedule_id'=>$param['logistic_delivery_date']],[
+        $map = "business_userId=$businessId and (status=1 or accountPay=1) and coupon_status='c01' and logistic_delivery_date=".$param['logistic_delivery_date']." and logistic_schedule_id=".$param['logistic_schedule_id'];
+        Order::getUpdate($map,[
             'coupon_status' => 'b01',
         ]);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
