@@ -8,7 +8,7 @@ use think\Request;
 use app\common\service\UploadFileService;
 use app\product\validate\IndexValidate;
 use app\driver\validate\DriverValidate;
-use app\model\{Order, Truck, User, TruckJob, WjCustomerCoupon, OrderReturn, OrderReturnDetailInfo};
+use app\model\{Order, Truck, User, TruckJob, UserFactory, WjCustomerCoupon, OrderReturn, OrderReturnDetailInfo};
 use think\route\dispatch\Controller;
 
 class Driver extends Base
@@ -306,6 +306,32 @@ class Driver extends Base
             return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$file);
         }catch (\Exception $exception){
             return show(config('status.code')['picture_error']['code'],$exception->getMessage());
+        }
+    }
+
+    /**
+     * 更新店铺图片信息
+     * @param Request $request
+     */
+    public function updateStorePicture(Request $request)
+    {
+        //接收参数
+        $param = $request->only(['user_id','factory_id','pic']);
+
+        $validate = new DriverValidate();
+        if (!$validate->scene('updateStorePicture')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+        $info = UserFactory::getOne(['user_id' => $param['user_id'],'factory_id' => $param['factory_id']],"id,pic");
+        if(empty($info)){
+            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+        }
+        //将图片存入数据库
+        $res = UserFactory::getUpdate(['id' => $info['id']],['pic' => $param['pic']]);
+        if($res !== false){
+            return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+        } else {
+            return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
         }
     }
 

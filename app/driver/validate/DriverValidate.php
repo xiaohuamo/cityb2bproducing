@@ -22,10 +22,14 @@ class DriverValidate extends Validate
         'end_truck_check' => 'require|in:0,1',//结束工作-是否检查车辆 0-否 1-是
         'end_truck_check_content' => 'require',//结束工作-车辆问题描述
         'return_data' => 'require|array',//退货数据
-        'reasonType' => 'require|in:1,2,3,4,5'
+        'reasonType' => 'require|in:1,2,3,4,5',
+        'user_id' => 'require',//用户id
+        'factory_id' => 'require',//厂家id
+        'pic' => 'require',//图片地址
     ];
 
     protected $scene = [
+        'updateStorePicture' => ['user_id','factory_id','pic'],//更新店铺图片
         'updateOrderRceiptPicture' => ['orderId','receipt_picture'],//更新收货图片
         'confirmOrderFinish' => ['orderId'],//确认完成收货
         'confirmAllOrderFinish' => ['logistic_delivery_date','logistic_schedule_id'],//确认全部订单完成收货

@@ -42,6 +42,8 @@ Route::post('changeAllReceiptStatus', 'Driver/changeAllReceiptStatus');
 Route::post('driverOrderDetail', 'Driver/orderDetail');
 //图片上传
 Route::post('uploadImage', 'Driver/uploadImage');
+//修改店铺图片
+Route::post('updateStorePicture', 'Driver/updateStorePicture');
 //确定货物送到
 Route::post('updateOrderRceiptPicture', 'Driver/updateOrderRceiptPicture');
 //确定货物送到

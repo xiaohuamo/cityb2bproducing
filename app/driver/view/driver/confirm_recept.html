@@ -36,9 +36,18 @@
 			<img src="__STATIC__/product/img/location2.png" class="location2"/>{{orderInfo.address}}
 			<div class="nav colfff"/>Nav</div>
 		</div>
-		<div class="pa0-15">
-<!--			<img v-if="orderInfo.pic" src="{{orderInfo.pic}}" class="w100"/>-->
-			<img src="__STATIC__/product/img/big.png" class="w100"/>
+		<div class="pa0-15 mab5" v-if="orderInfo.pic">
+			<img :src="orderInfo.pic" class="w100"/>
+<!--			<img src="__STATIC__/product/img/big.png" class="w100"/>-->
+			<input class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile($event,1)">
+		</div>
+		<div class="ma15 borR7 bgfff" v-else>
+			<div class="photoBox borR7 relative">
+				<img src="__STATIC__/product/img/photo.png"/>
+				<div class="f35 col919191">Store image is empty</div>
+				<div class="f35 col0F0F0F bold">Please upload a picture</div>
+				<input class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile($event,1)">
+			</div>
 		</div>
 		<div style="height: 200px;" class="pa0-15">
 			<iframe width="100%" height="100%" style="border:0" loading="lazy" allowfullscreen :src="`https://www.google.com/maps/embed/v1/place?q=${orderInfo.address}&key=AIzaSyCQwFD7_LcudCO4jzxq-BZ6cyPMFmenVmI`"></iframe>
@@ -52,9 +61,10 @@
 			</template>
 			<template v-else>
 				<img src="__STATIC__/product/img/photo.png"/>
+				<div class="f35 col919191">Delivery image is empty</div>
 				<div class="f35 col0F0F0F bold">Please upload a picture</div>
 			</template>
-			<input v-if="!orderInfo.receipt_picture" class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile">
+			<input v-if="!orderInfo.receipt_picture" class="uploadImage" type="file" name="image" accept="image/png, image/jpeg, image/jpg" @change="getFile($event,2)">
 		</div>
 	</div>
 	<div class="pmb15" v-if="orderInfo.coupon_status!='b01'">
@@ -102,24 +112,46 @@
 			googleMap(address){
 				window.open("https://www.google.com/maps/search/?api=1&query="+address)
 			},
-			getFile(e) {
+			//type 1-上传店铺图片 2-上传送货图片
+			getFile(e,type=1) {
 				let formData = new FormData();
 				let file = e.target.files[0];
 				formData.append("image", file);
-				formData.append("orderId", this.orderId);
 				let _this = this
 				getFormData("{:url('/driver/uploadImage')}", formData, function (res) {
 					console.log(res);
 					if(res.status == 200){
-						_this.receipt_picture = res.result
-						_this.updateOrderRceiptPicture()
+						if(type == 1){
+							_this.orderInfo.pic = res.result
+							_this.updateStorePicture()
+						}else{
+							_this.receipt_picture = res.result
+							_this.updateOrderRceiptPicture()
+						}
 					}else{
 						popContent(res.message)
 						return
 					}
 				});
 			},
-			//更新图片
+			//更新店铺图片
+			updateStorePicture(){
+				let param = {
+					'user_id': this.orderInfo.user_id,
+					'factory_id': this.orderInfo.factory_id,
+					'pic': this.orderInfo.pic
+				}
+				console.log('更新图片参数---',param);
+				let _this = this
+				getData("{:url('/driver/updateStorePicture')}", param, function (res) {
+					console.log('更新图片结果---',res);
+					if(res.status != 200){
+						popContent(res.message)
+						return
+					}
+				});
+			},
+			//更新送货图片
 			updateOrderRceiptPicture(){
 				let param = {
 					'orderId': this.orderId,
