@@ -74,15 +74,35 @@
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
 				<div @click="googleMap(item.address)">{{item.address}}</div>
-				<div class="wlbtn3" v-if="item.driver_receipt_status == 0" @click="markReceipt(item,index)">mark receipt</div>
-				<div class="wlbtn2" v-else>received</div>
+			</div>
+			<div class="bgfff flexBox5 pa15 borderB">
+				<div class="wlbtn3 mar10" v-if="item.driver_receipt_status == 0" @click="markReceipt(item,index)">mark receipt</div>
+				<div class="wlbtn2 mar10" v-else>received</div>
+				<div class="wlbtn2 bglgFD5001-FC8F4F" @click="showDetail(item)">details</div>
 			</div>
 		</div>
-		<div class="pmb15" v-if="is_show_all_receive">
+		<div class="pmb15" v-if="order.length>0&&is_show_all_receive">
 			<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="receiveAll">Receive all boxes</div>
 		</div>
 		<!--自定义的组件使用-->
 		<common-footer current-menu="2"></common-footer>
+		<!-- 显示订单信息-->
+		<div class="mask" v-if="isShowOrderDetail">
+			<div class="driverPopOrderDetail bgF2F2F2 pa15-0 borR7 relative">
+				<div class="driveChaClose" @click="closeBox">×</div>
+				<div class="driverPopOrderContent">
+					<div class="f30 col1C1C1C ma15" :class="index<orderDetail.length-1?'borderBBFBFBF':''" v-for="(item,index) in orderDetail">
+						<div class="flexBox1 col000 f30 f500 pmb10">
+							<span class="col000 f40">{{item.menu_en_name}} {{item.guige_name}}</span>
+						</div>
+						<div class="flexBox2 pmb15">
+							<span class="boxWidth30">{{item.menu_id}}</span>
+							<span class="f35">{{item.new_customer_buying_quantity}} {{item.unit_en}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>
@@ -107,6 +127,8 @@
 			o_sort_type:2,//排序方式 1升序 2降序
 			is_show_all_receive:false,//是否显示全部收货按钮
 			timeOutEvent:null,//定时器
+			isShowOrderDetail:false,//是否显示订单信息
+			orderDetail:[],//订单详情信息
 		},
 		mounted: function () {
 			//获取配送日期
@@ -278,6 +300,16 @@
 			//打开谷歌地图，并定位
 			googleMap(address){
 				window.open("https://www.google.com/maps/search/?api=1&query="+address)
+			},
+			//显示订单详情信息
+			showDetail(item){
+				this.isShowOrderDetail=true
+				this.orderDetail=item.order_detail
+			},
+			//关闭弹窗
+			closeBox(){
+				this.isShowOrderDetail=false
+				this.orderDetail=[]
 			},
 		}
 	})

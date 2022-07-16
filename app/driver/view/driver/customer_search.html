@@ -29,7 +29,7 @@
 	<div class="bgfff borR7 pa15">
 		<div class="searchBox flexBox1 noTop">
 			<img src="__STATIC__/product/img/search.png" class="searchIcon"/>
-			<input v-model.trim="searchCon" placeholder="Please enter business information" @input="search" @keyup.enter="searchEnterFun"/>
+			<input v-model.trim="searchCon" placeholder="Please enter business information" @keyup.enter="searchEnterFun"/>
 			<img v-if="searchCon!=''" src="__STATIC__/product/img/cha.png" class="cha" @click="remove"/>
 		</div>
 	</div>
@@ -60,7 +60,7 @@
 
 	<div @click="close" class="wlmask" v-show="isShowMask"></div>
 	<div class="J_nav_order">
-		<div class="bgfff ma15 borR7 f30 col1C1C1C" :class="['J_nav_index_'+index,{'arrow_box':nav_current_index==index}]" v-for="(item,index) in order">
+		<div class="bgfff ma15 borR7 f30 col1C1C1C" :class="['J_nav_index_'+index,{'arrow_box':nav_current_index==index}]" v-for="(item,index) in newOrder">
 		<div class="flexBox1 wldate pa15 col000 f30 f500">
 			<span class="col000 f40">s{{item.logistic_stop_No}}</span>
 			<span class="col000 f40">{{item.delivery_date}}</span>
@@ -96,7 +96,7 @@
 		</div>
 	</div>
 	<div>
-	<div class="pmb15" v-if="is_show_all_deliveryed">
+	<div class="pmb15" v-if="newOrder.length>0&&is_show_all_deliveryed">
 		<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="receiveAll">Mark all deliveryed</div>
 	</div>
 	<!--自定义的组件使用-->
@@ -128,11 +128,15 @@
 			timeOutEvent:null,//定时器
 		},
 		computed: {
-			search() {
+			newOrder() {
 				if (this.searchCon == '') {
 					return this.order
 				} else {
-					return this.order.filter(item => item.displayName.includes(this.searchCon))
+					let searchCon_arr = this.searchCon.split(' ')
+					// console.log(this.searchCon);
+					for(let i in searchCon_arr){
+						return this.order.filter(item => (item.name.toLowerCase().indexOf(searchCon_arr[i].toLowerCase())!==-1) || (item.phone.indexOf(searchCon_arr[i])!==-1))
+					}
 				}
 			}
 		},
@@ -182,7 +186,7 @@
 					'logistic_schedule_id':this.logistic_schedule_id,
 					'o_sort':this.o_sort,
 					'o_sort_type':this.o_sort_type,
-					'search':this.searchCon
+					// 'search':this.searchCon
 				}
 				console.log('获取订单参数----',data)
 				var _this = this
@@ -201,7 +205,7 @@
 					//如果从return页面回到该页面，需要滑动到对应的位置
 					let is_return_stock = localStorage.getItem('is_return_stock')
 					if (_this.nav_current_index>=0) {
-						_this.goto('.J_nav_index_' + _this.nav_current_index)
+						// _this.goto('.J_nav_index_' + _this.nav_current_index)
 						localStorage.is_show_nav_pop = 0
 						localStorage.is_return_stock = 0
 					}
@@ -313,28 +317,37 @@
 						}
 					});
 				} else {
-					let data = {
-						'logistic_delivery_date':this.logistic_delivery_date,
-						'logistic_schedule_id':this.logistic_schedule_id,
-					}
-					console.log('获取全部送货参数---',data);
-					var _this = this
-					_this.isLoading=true
-					getData("{:url('/driver/confirmAllOrderFinish')}", data, function (res) {
-						_this.isLoading=false
-						console.log('获取全部送货结果---',res);
-						if (res.status == 200) {
-							popContent("Mark all deliveryed success")
-							this.timeOutEvent = setTimeout(()=>{
-								for(let i in _this.order){
-									_this.order[i]['coupon_status'] = 'b01'
-								}
-								_this.is_show_all_deliveryed=false
-								clearTimeout(this.timeOutEvent);//清除定时器
-							},2000);//这里设置定时器
+					swal({
+						title: 'Are you sure you will deliveryed all your orders?',
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
 						} else {
-							popContent(res.message)
-							return;
+							let data = {
+								'logistic_delivery_date':this.logistic_delivery_date,
+								'logistic_schedule_id':this.logistic_schedule_id,
+							}
+							console.log('获取全部送货参数---',data);
+							var _this = this
+							_this.isLoading=true
+							getData("{:url('/driver/confirmAllOrderFinish')}", data, function (res) {
+								_this.isLoading=false
+								console.log('获取全部送货结果---',res);
+								if (res.status == 200) {
+									popContent("Mark all deliveryed success")
+									this.timeOutEvent = setTimeout(()=>{
+										for(let i in _this.order){
+											_this.order[i]['coupon_status'] = 'b01'
+										}
+										_this.is_show_all_deliveryed=false
+										clearTimeout(this.timeOutEvent);//清除定时器
+									},2000);//这里设置定时器
+								} else {
+									popContent(res.message)
+									return;
+								}
+							});
 						}
 					});
 				}

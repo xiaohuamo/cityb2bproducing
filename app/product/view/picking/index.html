@@ -137,6 +137,7 @@
 							<div :class="item.status==1||item.status==2?'blink':''">
 								<div style="text-align:left;"><span class="num">{{item.logistic_sequence_No}}</span>{{item.finish_quantities}}/{{item.sum_quantities}}<span class="num1"><span class="w600">{{item.boxesNumber}}</span>BXS</span></div>
 								<div :class="item.order_name&&item.order_name.length>12?'F13 maT5':'F18'">{{item.order_name}}</div>
+								<div class="stopNo col000 w600">s{{item.logistic_stop_No}}</div>
 								<img v-if="item.status==1||item.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 								<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-if="menudataTwoCateSortIndex==index"/>
 							</div>
@@ -303,13 +304,27 @@
 				</div>
 				<div v-if="currentPage==3" class="rightCateMenu J_right_menu_3">
 					<div v-for="(item,index) in allDriverOrder" :class="index>0?'maT30':''">
-						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_schedule_id" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1)" v-if="item.logistic_schedule_id!=0">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time_desc}}</div>
-						<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_schedule_id" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1)" v-else>{{item.name}}</div>
+						<div class="flexbox2">
+							<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_schedule_id" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1)" v-if="item.logistic_schedule_id!=0">{{item.truck_name}}&nbsp;&nbsp;{{item.plate_number}}&nbsp;&nbsp;{{item.name}}&nbsp;&nbsp;{{item.schedule_time}}&nbsp;&nbsp;{{item.remain_time_desc}}</div>
+							<div class="F18 hand cate2 mb10 bgFD6921 colfff" :class="'J_right_cate_'+item.logistic_schedule_id" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1)" v-else>{{item.name}}</div>
+							<div class="flexbox2 ml15 mb5">
+								<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':item.sort_type==0}" @click.stop="twoCateTabPannel(index,0)">
+									SEQ No<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+								</div>
+								<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':item.sort_type==1}" @click.stop="twoCateTabPannel(index,1)">
+									Stop No<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+								</div>
+								<div class="flexbox1 xxBox" :class="{'bgFD6921 colfff':item.sort_type==2}" @click.stop="twoCateTabPannel(index,2)">
+									Cust Code<img src="__STATIC__/product/img/xxx.png" class="xxx"/>
+								</div>
+							</div>
+						</div>
 						<div class="flexbox2">
 							<div v-for="(item1,index1) in item.order" :class="{'arrow_box':currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1,'bgFFF7F3 col5e5656':item1.status==0,'bgOrange':item1.status==1,'bgGreen':item1.status==3,'bgGrey':item1.status==2}" class="colfff rbtn6 relative mb10">
 								<div :class="item1.status==1||item1.status==2?'blink':''" @click="goto(item,index,'.J_page1_left_cate_'+item.logistic_schedule_id,1,item1)">
 									<div style="text-align:left;"><span class="num">{{item1.logistic_sequence_No}}</span>{{item1.finish_quantities}}/{{item1.sum_quantities}}<span class="num1"><span class="w600">{{item1.boxesNumber}}</span>BXS</span></div>
 									<div :class="item1.order_name&&item1.order_name.length>12?'F13 maT5':'F18'">{{item1.order_name}}</div>
+									<div class="stopNo col000 w600">s{{item1.logistic_stop_No}}</div>
 									<img v-if="item1.status==1||item1.status==2" src="__STATIC__/product/img/suo.png" class="suo"/>
 									<img src="__STATIC__/product/img/menusj.png" class="menusjbottom" v-if="currentPage3OneCateIndex==index&&currentPage3TwoCateIndex==index1"/>
 								</div>
@@ -524,6 +539,7 @@
 				setup_info:'',//供应商设置信息
 				fullscreen: false,  // 是否全屏
 				onLine: navigator.onLine,
+				driverOrderSort:[],//driver&order页面排序记录
 			},
 			mounted: function () {
 				window.addEventListener('online',  this.updateOnlineStatus);
@@ -724,6 +740,23 @@
 						if (type == 'allDriverOrder') {
 							console.log('driver&orders页面获取数据---',res.order);
 							_this.allDriverOrder = res.order
+							//默认排序类型
+							console.log('排序----',_this.driverOrderSort);
+							for(var i in _this.allDriverOrder) {
+								if(_this.driverOrderSort.length>0){
+									if(_this.driverOrderSort.hasOwnProperty(i)){
+										_this.$set(_this.allDriverOrder[i], 'sort_type', _this.driverOrderSort[i].sort_type);
+										_this.$set(_this.allDriverOrder[i], 'sort_type_ud', _this.driverOrderSort[i].sort_type_ud);
+										_this.twoCateTabPannel(i,_this.driverOrderSort[i].sort_type,_this.driverOrderSort[i].sort_type_ud)
+									}else{
+										_this.$set(_this.allDriverOrder[i], 'sort_type', 0);
+										_this.$set(_this.allDriverOrder[i], 'sort_type_ud', 1);
+									}
+								}else{
+									_this.$set(_this.allDriverOrder[i], 'sort_type', 0);//默认显示排序类型
+									_this.$set(_this.allDriverOrder[i], 'sort_type_ud', 1);//默认显示升降序排序 1-升序 2-降序
+								}
+							}
 							//将首页选中和当前导航页默认选中同步
 							for(var i in _this.allDriverOrder){
 								if(_this.allDriverOrder[i]['logistic_schedule_id'] == _this.logistic_schedule_id){
@@ -1338,14 +1371,11 @@
 						this.isLoading=false
 					}, 300);   //大概时间300ms
 				},
+				//index 排序类型
 				twoCateTab(index){
 					this.isLoading=true
 					this.lastTime = new Date().getTime();//记录最后一次点击时间
 					this.currentHandlePop=-1
-					//未进行排序前当前选中的订单id
-					var orderId = this.menudataTwoCateSort[this.menudataTwoCateSortIndex].orderId
-					//将产品加工明细进行排序
-					this.menudataTwoCateSort=JSON.parse(JSON.stringify(this.menudataTwoCate));
 					if(this.twSort != index){
 						this.twSortType = 1
 					}else{
@@ -1356,6 +1386,10 @@
 						}
 					}
 					this.twSort=index
+					//未进行排序前当前选中的订单id
+					var orderId = this.menudataTwoCateSort[this.menudataTwoCateSortIndex].orderId
+					//将产品加工明细进行排序
+					this.menudataTwoCateSort=JSON.parse(JSON.stringify(this.menudataTwoCate));
 					switch(index){
 						case 0:
 							this.sortData(this.menudataTwoCateSort,'logistic_sequence_No',this.twSortType);
@@ -1378,6 +1412,56 @@
 						if(this.menudataTwoCate[i].orderId == orderId){
 							this.menudataTwoCateIndex = i
 							break;
+						}
+					}
+					this.isLoading=false
+				},
+				//driver&order页面排序 index-索引值 type-排序类型
+				twoCateTabPannel(index,type=0,sort_type_ud=''){
+					this.isLoading=true
+					this.lastTime = new Date().getTime();//记录最后一次点击时间
+					this.currentHandlePop=-1
+					if(sort_type_ud != ''){
+						this.allDriverOrder[index]['sort_type_ud'] = sort_type_ud
+					}else{
+						if(this.allDriverOrder[index]['sort_type'] != type){
+							this.allDriverOrder[index]['sort_type_ud'] = 1
+						}else{
+							if(this.allDriverOrder[index]['sort_type_ud'] == 1){
+								this.allDriverOrder[index]['sort_type_ud'] = 2
+							}else{
+								this.allDriverOrder[index]['sort_type_ud'] = 1
+							}
+						}
+					}
+					this.allDriverOrder[index]['sort_type']=type
+					this.driverOrderSort[index] = {"sort_type":this.allDriverOrder[index]["sort_type"],"sort_type_ud":this.allDriverOrder[index]["sort_type_ud"]}
+					//未进行排序前当前选中的订单id
+					let orderId = ''
+					if(this.currentPage3OneCateIndex==index){
+						orderId = this.allDriverOrder[index]['order'][this.currentPage3TwoCateIndex]['orderId']
+					}
+					sort_type_ud = this.allDriverOrder[index]['sort_type_ud']
+					//将产品加工明细进行排序
+					this.allDriverOrder[index]['order']=JSON.parse(JSON.stringify(this.allDriverOrder[index]['order']));
+					switch(type){
+						case 0:
+							this.sortData(this.allDriverOrder[index]['order'],'logistic_sequence_No',sort_type_ud);
+							break;
+						case 1:
+							this.sortData(this.allDriverOrder[index]['order'],'logistic_stop_No',sort_type_ud);
+							break;
+						case 2:
+							this.sortData(this.allDriverOrder[index]['order'],'userId',sort_type_ud);
+							break;
+					}
+					//排序之后-动态改变当前选中的索引id值
+					if(orderId != ''){
+						for (var i in this.allDriverOrder[index]['order']) {
+							if(this.allDriverOrder[index]['order'][i].orderId == orderId){
+								this.currentPage3TwoCateIndex = i
+								break;
+							}
 						}
 					}
 					this.isLoading=false
@@ -1934,6 +2018,7 @@
 						this.returnPage(2)
 					}
 					if(this.currentPage==3){
+						this.driverOrderSort=[]
 						this.twoCate('allDriverOrder')
 					}
 					this.isLoading=false

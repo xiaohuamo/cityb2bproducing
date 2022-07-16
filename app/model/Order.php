@@ -816,6 +816,19 @@ class Order extends Model
             ->where($map)
             ->order($order_by)
             ->select()->toArray();
+        //获取订单明细
+        $order_detail_arr = [];
+        if($order) {
+            $order_detail_arr = Db::name('wj_customer_coupon')
+                ->alias('wcc')
+                ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->leftJoin('restaurant_menu rm', 'rm.id = wcc.restaurant_menu_id')
+                ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
+                ->where([
+                    ['wcc.order_id', 'in', array_column($order, 'orderId')],
+                    ['wcc.customer_buying_quantity', '>', 0],
+                ])->select()->toArray();
+        }
         foreach($order as &$v){
             //获取该订单的总箱数
             if($v['edit_boxesNumber']<=0){
@@ -826,6 +839,12 @@ class Order extends Model
             $v['business_name'] = $v['business_name'] ?: $v['name'];
             $v['business_shortcode']  = $v['displayName'] ?: $v['first_name'].' '.$v['last_name'];
             $v['name'] = $this->getCustomerName($v);
+            foreach ($order_detail_arr as $vv){
+                if($vv['order_id'] == $v['orderId']){
+                    $vv['new_customer_buying_quantity'] = $vv['new_customer_buying_quantity']>=0?$vv['new_customer_buying_quantity']:$vv['customer_buying_quantity'];
+                    $v['order_detail'][] = $vv;
+                }
+            }
         }
         return $order;
     }

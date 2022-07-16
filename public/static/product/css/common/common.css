@@ -330,6 +330,9 @@ body{
 .mar10{
 	margin-right:10px;
 }
+.mar15{
+	margin-right:15px;
+}
 .mb10{
 	margin-bottom:10px;
 }
@@ -382,6 +385,9 @@ body{
 .maT15{
 	margin-top: 15px !important;
 }
+.mab15{
+	margin-bottom: 15px;
+}
 .star{
 	width: 1.5625rem;
 	height: 1.5625rem;
@@ -401,6 +407,9 @@ body{
 
 .borderB{
 	border-bottom: 1px solid #ECEDEE;
+}
+.borderBBFBFBF{
+	border-bottom: 1px solid #BFBFBF;
 }
 .borderT{
 	border-top: 1px solid #E9E9E9;
@@ -1062,6 +1071,25 @@ input[type=checkbox]:checked::before {
 	color: #1C1C1C;
 	font-size: 1.25rem;
 	text-align: center;
+}
+.driveChaClose{
+	position: absolute;
+	top: -2.5rem;
+	right: -1.38rem;
+	font-size: 2.5rem;
+}
+.driverPopOrderDetail{
+	display: flex;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%,-50%);
+	width: 80%;
+	max-height: 60%;
+}
+.driverPopOrderContent{
+	flex: 1;
+	overflow: auto;
 }
 
 
