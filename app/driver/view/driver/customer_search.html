@@ -133,10 +133,17 @@
 					return this.order
 				} else {
 					let searchCon_arr = this.searchCon.split(' ')
-					// console.log(this.searchCon);
-					for(let i in searchCon_arr){
-						return this.order.filter(item => (item.name.toLowerCase().indexOf(searchCon_arr[i].toLowerCase())!==-1) || (item.phone.indexOf(searchCon_arr[i])!==-1))
-					}
+					let condition=''
+					return this.order.filter(item => {
+						for(let i in searchCon_arr) {
+							if(i==0){
+								condition = (item.name && item.name.toLowerCase().indexOf(searchCon_arr[i] && searchCon_arr[i].toLowerCase()) !== -1) || (item.phone && item.phone.indexOf(searchCon_arr[i]) !== -1)
+							}else{
+								condition = condition && ((item.name && item.name.toLowerCase().indexOf(searchCon_arr[i] && searchCon_arr[i].toLowerCase()) !== -1) || (item.phone && item.phone.indexOf(searchCon_arr[i]) !== -1))
+							}
+						}
+						return condition
+					})
 				}
 			}
 		},
@@ -205,7 +212,7 @@
 					//如果从return页面回到该页面，需要滑动到对应的位置
 					let is_return_stock = localStorage.getItem('is_return_stock')
 					if (_this.nav_current_index>=0) {
-						// _this.goto('.J_nav_index_' + _this.nav_current_index)
+						_this.goto('.J_nav_index_' + _this.nav_current_index)
 						localStorage.is_show_nav_pop = 0
 						localStorage.is_return_stock = 0
 					}
@@ -299,7 +306,7 @@
 				if (this.order[0]['status'] != 3 || this.order[0]['status'] == 3 && this.is_finish_receive != 1) {
 					let message = ''
 					let url = ''
-					if(item.status != 3){
+					if(this.order[0]['status'] != 3){
 						message = 'Please start job first, whether to jump to start job page?';
 						url = "{:url('/driver/startJob')}"
 					}else{
