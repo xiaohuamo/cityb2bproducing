@@ -8,7 +8,7 @@ use think\Request;
 use app\common\service\UploadFileService;
 use app\product\validate\IndexValidate;
 use app\driver\validate\DriverValidate;
-use app\model\{Order, Truck, User, TruckJob, WjCustomerCoupon, OrderReturn, OrderReturnDetailInfo};
+use app\model\{Order, Truck, User, TruckJob, UserFactory, WjCustomerCoupon, OrderReturn, OrderReturnDetailInfo};
 use think\route\dispatch\Controller;
 
 class Driver extends Base
@@ -111,9 +111,6 @@ class Driver extends Base
         $up_dir = '/thumbnails/'.date('y-m').'/avatar';//存放在当前目录的upload文件夹下
         $root_path = app()->getRootPath() . 'public';//存储图片的根目录
         $head_path = $root_path . $up_dir;
-        if(!file_exists($head_path)){
-            mkdir($head_path,0777,true);
-        }
         if(preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_img, $result)){
             $type = $result[2];
             if(in_array($type,array('pjpeg','jpeg','jpg','gif','bmp','png'))){
@@ -168,15 +165,15 @@ class Driver extends Base
     public function deliveryDate(Request $request)
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_schedule_id']);
         $logistic_delivery_date = $param['logistic_delivery_date']??'';
+        $logistic_schedule_id = $param['logistic_schedule_id']??0;
 
         $businessId = $request->businessId;
         $user_id = $request->user_id;//当前操作用户
 
         $Order = new Order();
-        $logistic_truck_No = $this->getlogistic_truck_No($businessId,$user_id);
-        $res = $Order->getDriverDeliveryDate($businessId,$logistic_truck_No,$logistic_delivery_date);
+        $res = $Order->getDriverDeliveryDate($businessId,$user_id,$logistic_delivery_date,$logistic_schedule_id);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 
@@ -187,7 +184,7 @@ class Driver extends Base
     public function driverOrder(Request $request)
     {
         //接收参数
-        $param = $request->only(['logistic_delivery_date','o_sort','o_sort_type','search']);
+        $param = $request->only(['logistic_delivery_date','logistic_schedule_id','o_sort','o_sort_type','search']);
         $param['o_sort'] = $param['o_sort']??0;//排序字段
         $param['o_sort_type'] = $param['o_sort_type']??1;//1-正向排序 2-反向排序
         $param['search'] = $param['search']??'';//搜索内容
@@ -196,17 +193,19 @@ class Driver extends Base
 
         $Order = new Order();
 
-        $logistic_truck_No = $this->getlogistic_truck_No($businessId,$user_id);
         //获取对应日期的总橡树和已完成的箱数
-        $box_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$logistic_truck_No,1);
+        $box_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],1);
         //获取对应日期的总的订单数和已完成的订单数
-        $all_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$logistic_truck_No,2);
+        $all_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],2);
         //获取对应日期的加工订单
-        $order = $Order->getDriverOrderList($param['logistic_delivery_date'],$businessId,$logistic_truck_No,$param['o_sort'],$param['o_sort_type'],$param['search']);
+        $order = $Order->getDriverOrderList($param['logistic_delivery_date'],$businessId,$param['logistic_schedule_id'],$param['o_sort'],$param['o_sort_type'],$param['search']);
+        $coupon_status_arr = array_column($order,'coupon_status');
         $data = [
             'box_count' => $box_count,
             'all_order_count' => $all_order_count,
             'order' => $order,
+            'is_finish_receive' => $all_order_count['order_done_count'] == $all_order_count['order_count'] ? 1 : 2,//是否完成收货 1-是 2-否
+            'is_finish_deliveryed' => in_array('c01',$coupon_status_arr) ? 2 : 1,//是否全部送货 1-是 2-否
         ];
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
@@ -222,10 +221,8 @@ class Driver extends Base
         $businessId = $request->businessId;
         $user_id = $request->user_id;//当前操作用户
 
-        $logistic_truck_No = $this->getlogistic_truck_No($businessId,$user_id);
-
         //1.查询该订单是否存在
-        $info = Order::is_exist(['business_userId'=>$businessId,'logistic_truck_No'=>$logistic_truck_No,'orderId'=>$param['orderId']]);
+        $info = Order::is_exist(['business_userId'=>$businessId,'orderId'=>$param['orderId']]);
         if (!$info) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
         }
@@ -236,6 +233,23 @@ class Driver extends Base
         //3.修改订单状态
         Order::getUpdate(['id' => $info['id']],['driver_receipt_status' => 1]);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+    }
+
+    /**
+     * 点击全部收货按钮
+     */
+    public function changeAllReceiptStatus(Request $request)
+    {
+        //接收参数
+        $param = $request->only(['logistic_delivery_date','logistic_schedule_id']);
+
+        $businessId = $request->businessId;
+        $user_id = $request->user_id;//当前操作用户
+
+        //1.修改该调度的全部订单状态
+        $map = "business_userId=$businessId and (status=1 or accountPay=1) and (coupon_status='c01' or coupon_status='b01') and logistic_delivery_date=".$param['logistic_delivery_date']." and logistic_schedule_id=".$param['logistic_schedule_id'];
+        $res = Order::getUpdate($map,['driver_receipt_status' => 1]);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 
     /**
@@ -267,8 +281,6 @@ class Driver extends Base
         $businessId = $request->businessId;
         $root_path = app()->getRootPath() . 'public';//存储图片的根目录
         $thumb = "/thumbnails/$businessId/".date('y-m')."/photograph";
-        //判断文件是否存在，不存在就创建
-        file_exists($thumb)?'':mkdir($thumb,0777,true);
         try {
             validate(['picture'=>'fileExt:jpg,png,jpeg'])->check($files);
             //将原图上传保存
@@ -298,6 +310,32 @@ class Driver extends Base
     }
 
     /**
+     * 更新店铺图片信息
+     * @param Request $request
+     */
+    public function updateStorePicture(Request $request)
+    {
+        //接收参数
+        $param = $request->only(['user_id','factory_id','pic']);
+
+        $validate = new DriverValidate();
+        if (!$validate->scene('updateStorePicture')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+        $info = UserFactory::getOne(['user_id' => $param['user_id'],'factory_id' => $param['factory_id']],"id,pic");
+        if(empty($info)){
+            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+        }
+        //将图片存入数据库
+        $res = UserFactory::getUpdate(['id' => $info['id']],['pic' => $param['pic']]);
+        if($res !== false){
+            return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+        } else {
+            return show(config('status.code')['system_error']['code'],config('status.code')['system_error']['msg']);
+        }
+    }
+
+    /**
      * 更新订单收货图片信息
      * @param Request $request
      */
@@ -314,7 +352,7 @@ class Driver extends Base
         if(empty($info)){
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
         }
-        if($info['coupon_status'] != 'c01'){
+        if($info['coupon_status'] != 'c01' && !empty($info['receipt_picture'])){
             return show(config('status.code')['finish_order_error']['code'], config('status.code')['finish_order_error']['msg']);
         }
         //将图片存入数据库
@@ -353,9 +391,9 @@ class Driver extends Base
 //        if($info['driver_receipt_status'] == 0){
 //            return show(config('status.code')['finish_order_status_error']['code'], config('status.code')['finish_order_status_error']['msg']);
 //        }
-        if($info['coupon_status'] != 'c01'){
-            return show(config('status.code')['finish_order_error']['code'], config('status.code')['finish_order_error']['msg']);
-        }
+//        if($info['coupon_status'] != 'c01'){
+//            return show(config('status.code')['finish_order_error']['code'], config('status.code')['finish_order_error']['msg']);
+//        }
         //更改订单状态
         Order::getUpdate(['orderId' => $param['orderId']],[
             'coupon_status' => 'b01',
@@ -363,17 +401,40 @@ class Driver extends Base
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$info);
     }
 
+    /**
+     * 确定送到全部货物
+     */
+    public function confirmAllOrderFinish(Request $request)
+    {
+        //接收参数
+        $param = $this->request->only(['logistic_delivery_date','logistic_schedule_id']);
+        $validate = new DriverValidate();
+        if (!$validate->scene('confirmAllOrderFinish')->check($param)) {
+            return show(config('status.code')['param_error']['code'], $validate->getError());
+        }
+
+        $businessId = $request->businessId;
+        $user_id = $request->user_id;//当前操作用户
+
+        //更改订单状态
+        $map = "business_userId=$businessId and (status=1 or accountPay=1) and coupon_status='c01' and logistic_delivery_date=".$param['logistic_delivery_date']." and logistic_schedule_id=".$param['logistic_schedule_id'];
+        Order::getUpdate($map,[
+            'coupon_status' => 'b01',
+        ]);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
+    }
+
     //获取司机工作信息
     public function truckJobInfo(Request $request)
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_schedule_id']);
         $validate = new DriverValidate();
         if (!$validate->scene('truckJobInfo')->check($param)) {
             return show(config('status.code')['param_error']['code'], $validate->getError());
         }
         $TruckJob = new TruckJob();
-        $data = $TruckJob->getTruckJobInfo($request->businessId,$request->user_id,$param['logistic_delivery_date']);
+        $data = $TruckJob->getTruckJobInfo($request->businessId,$request->user_id,$param['logistic_delivery_date'],$param['logistic_schedule_id']);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
@@ -385,7 +446,7 @@ class Driver extends Base
     public function doStartJob(Request $request)
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','start_kile_metre', 'start_temprature', 'start_truck_check', 'start_truck_check_content']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_schedule_id','start_kile_metre', 'start_temprature', 'start_truck_check', 'start_truck_check_content']);
         $param['start_truck_check_content'] = $param['start_truck_check_content']??'';
         $validate = new DriverValidate();
         if (!$validate->scene('doStartJob')->check($param)) {
@@ -398,18 +459,14 @@ class Driver extends Base
         $Truck = new Truck();
         $TruckJob = new TruckJob();
         //1.获取司机信息
-        $info = $Truck->getTruckInfo($businessId, $user_id);
+        $info = $TruckJob->getTruckJobInfo($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_schedule_id']);
         if (empty($info)) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
         }
         //更改订单状态
-        $param['truck_id'] = $info['truck_id'];
+        $param['truck_driver_schedule_id'] = $info['tds_id'];
         $res = $TruckJob->createJobData($param, $businessId, $user_id, 1);
-        if ($res) {
-            return show(config('status.code')['success']['code'], config('status.code')['success']['msg']);
-        } else {
-            return show(config('status.code')['system_error']['code'], config('status.code')['system_error']['msg']);
-        }
+        return show($res['status'], $res['message']);
     }
 
     /**
@@ -420,7 +477,7 @@ class Driver extends Base
     public function doJobDone(Request $request)
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','end_kile_metre','end_temprature','end_truck_check','end_truck_check_content']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_schedule_id','end_kile_metre','end_temprature','end_truck_check','end_truck_check_content']);
         $param['end_truck_check_content'] = $param['end_truck_check_content']??'';
         $validate = new DriverValidate();
         if (!$validate->scene('doJobDone')->check($param)) {
@@ -430,15 +487,23 @@ class Driver extends Base
         $businessId = $request->businessId;
         $user_id = $request->user_id;//当前操作用户
 
-        $Truck = new Truck();
         $TruckJob = new TruckJob();
+        $Order = new Order();
         //1.获取司机信息
-        $info = $Truck->getTruckInfo($businessId, $user_id);
+        $info = $TruckJob->getTruckJobInfo($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_schedule_id']);
         if (empty($info)) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
         }
+        if($info['status'] != 3){
+            return show(config('status.code')['driver_status_error']['code'], config('status.code')['driver_status_error']['msg']);
+        }
+        //判断该司机是否已全部收货
+        $all_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],2);
+        if($all_order_count['order_done_count'] != $all_order_count['order_count']){
+            return show(config('status.code')['driver_status_error']['code'], 'Please complete the delivery first');
+        }
         //更改订单状态
-        $param['truck_id'] = $info['truck_id'];
+        $param['truck_driver_schedule_id'] = $info['tds_id'];
         $res = $TruckJob->createJobData($param, $businessId, $user_id, 2);
         if ($res) {
             return show(config('status.code')['success']['code'], config('status.code')['success']['msg']);
@@ -552,7 +617,7 @@ class Driver extends Base
                     'item_order_id' => $v['item_order_id'],
                     'return_qty' => $v['return_qty'],
                     'reasonType' => $v['reasonType'],
-                    'note' => ''
+                    'note' => $v['note']
                 ];
             }
             $insert_return_data = $update_return_data = $delete_return_id_arr = [];

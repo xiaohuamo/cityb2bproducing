@@ -11,9 +11,11 @@
 	<script src="__STATIC__/product/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
 	<script src="__STATIC__/product/js/vue.min.js"></script>
 	<script src="__STATIC__/product/js/axios.min.js"></script>
+	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<script src="__STATIC__/product/js/driver_common.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 	<div id="start" v-cloak>
@@ -23,12 +25,12 @@
 
 		<!-- start job部分 -->
 		<div class="ma15 borR7 bgfff f30 col1C1C1C">
-			<div class="flexBox1 settingBox">
+			<div class="flexBox1 settingBox relative">
 				<div class="flexBox1 boxWidth">
-					<span class="col1C1C1C f30">Delivery Date</span>
-					<span class="col1C1C1C f30" @click="chose(1)">{{list.length>0?choseDate.date:'Delivery Date'}}</span>
+					<span class="col1C1C1C f30">Schedule No</span>
+					<span class="col1C1C1C f30" @click="chose(1)">{{list.length>0?choseDate.date+'-'+choseDate.logistic_schedule_id:'Schedule No'}}</span>
 					<div class="pullBox1" v-show="current==1">
-						<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>
+						<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}-{{item.logistic_schedule_id}}</div>
 					</div>
 				</div>
 				<img src="__STATIC__/product/img/arrow2.png" class="arrow" />
@@ -36,6 +38,18 @@
 			<div class="flexBox1 settingBox">
 				<span class="col1C1C1C f30">Truck Info</span>
 				<span class="col1C1C1C f30">{{jobData.name}}-{{jobData.truck_name}}-{{jobData.plate_number}}</span>
+			</div>
+			<div class="flexBox1 settingBox">
+				<span class="col1C1C1C f30">Schedule Time</span>
+				<span class="col1C1C1C f30">{{jobData.driver_work_start_time}}-{{jobData.driver_work_end_time}}</span>
+			</div>
+			<div class="flexBox1 settingBox">
+				<span class="col1C1C1C f30 boxWidth">Start Location</span>
+				<span class="col1C1C1C f30">{{jobData.driver_start_location}}</span>
+			</div>
+			<div class="flexBox1 settingBox">
+				<span class="col1C1C1C f30 boxWidth">End Location</span>
+				<span class="col1C1C1C f30">{{jobData.driver_end_location}}</span>
 			</div>
 			<div class="flexBox1 settingBox">
 				<span class="col1C1C1C f30">Start Kilo Metre</span>
@@ -50,10 +64,10 @@
 					<span class="col1C1C1C f30">Truck Check</span>
 					<input class="btn-switch large" type="checkbox" v-model="jobFillData.start_truck_check" v-bind:true-value=1 :disabled="jobData.start_job_time>0">
 				</div>
-				<textarea class="jobCheck mat15 f30" placeholder="If there is a problem, please enter the check content..." v-model="jobFillData.start_truck_check_content" :readonly="jobData.start_temprature!=''"></textarea>
+				<textarea class="jobCheck mat15 f30" placeholder="any issues such as damage ,broken etc. of vechile truck ,please leave note here ." v-model="jobFillData.start_truck_check_content" :readonly="jobData.start_job_time>0"></textarea>
 			</div>
 		</div>
-		<div class="signOut f35 col1C1C1C" v-if="jobData.start_job_time<=0" @click="sure">Start Job</div>
+		<div class="signOut f35 colfff bglgFD5001-FC8F4F" v-if="jobData.start_job_time<=0" @click="sure">Start Job</div>
 		<div class="wlmask" v-show="isShowMask"></div>
 		<!--自定义的组件使用-->
 		<common-footer current-menu="1"></common-footer>
@@ -66,12 +80,14 @@
 		data:{
 			list:[],//配送日期数组
 			choseDate:[],//当前选中的日期数组
-			logistic_delivery_date:localStorage.getItem('logistic_delivery_date') != null ? localStorage.getItem('logistic_delivery_date') : '',//配送日期
+			logistic_delivery_date:'',//配送日期
+			logistic_schedule_id:0,//调度id
 			isLoading: false,//是否显示加载图标
 			isShowMask: false,//是否显示遮罩层
 			current:'',//当前选中类型 1-delivery date
 			jobData:[],//获取工作数据
 			jobFillData:[],//填写的工作数据
+			timeOutEvent:null,//定时器
 		},
 		mounted: function () {
 			this.deliveryDateFun();
@@ -80,18 +96,20 @@
 			//获取配送日期
 			deliveryDateFun(){
 				let data = {
-					'logistic_delivery_date':this.logistic_delivery_date
+					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id
 				}
 				let _this = this
 				_this.isLoading=true
-				getData("{:url('/driver/driverDeliveryDate')}", data, function (res) {
+				getData("{:url('/driver/driverDeliveryDate')}",data, function (res) {
 					console.log('获取日期---',res);
 					_this.isLoading=false
 					_this.list = res.result.list
 					_this.choseDate =  res.result.default
 					_this.logistic_delivery_date = localStorage.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
+					_this.logistic_schedule_id = localStorage.logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
 					//获取当前的配送日期之后，获取车辆的信息
-					if(_this.logistic_delivery_date){
+					if(_this.logistic_delivery_date&&_this.logistic_schedule_id>0){
 						_this.getJobData()
 					}
 				});
@@ -100,9 +118,10 @@
 			choseDay(item){
 				this.choseDate=item
 				this.logistic_delivery_date=localStorage.logistic_delivery_date=item.logistic_delivery_date
+				this.logistic_schedule_id=localStorage.logistic_schedule_id=item.logistic_schedule_id
 				this.close()
 				//重新获取车辆数据
-				this.getJobData()
+				this.deliveryDateFun()
 			},
 			chose:function(index){
 				this.current=index
@@ -115,7 +134,8 @@
 			//获取车辆信息
 			getJobData(){
 				let data = {
-					'logistic_delivery_date':this.logistic_delivery_date
+					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id
 				}
 				console.log('获取车辆信息参数---',data);
 				let _this = this
@@ -129,23 +149,28 @@
 				})
 			},
 			//开始工作
-			sure(){
-				if(this.jobFillData.start_kile_metre<0){
-					alert('Please enter the correct number of kilometers');
+			async sure(){
+				if(parseFloat(this.numberData(this.jobFillData.start_kile_metre))<0){
+					popContent('Please enter the correct number of kilometers');
 					return;
 				}
 				if(this.jobFillData.start_temprature==null||this.jobFillData.start_temprature==''){
-					alert('Please enter the correct temperature');
+					popContent('please input vechile start kilo metres.');
 					return;
 				}
 				this.jobFillData.start_temprature = parseFloat(this.jobFillData.start_temprature)
 				if(this.jobFillData.start_temprature<-30||this.jobFillData.start_temprature>10){
-					alert('Please enter the correct temperature');
+					popContent('Please enter the correct temperature');
+					return;
+				}
+				if(this.jobFillData.start_truck_check != 1){
+					popContent('Please check the vehicle');
 					return;
 				}
 				let data = {
 					'logistic_delivery_date':this.logistic_delivery_date,
-					'start_kile_metre':this.jobFillData.start_kile_metre,
+					'logistic_schedule_id':this.logistic_schedule_id,
+					'start_kile_metre':this.numberData(this.jobFillData.start_kile_metre),
 					'start_temprature':this.jobFillData.start_temprature,
 					'start_truck_check':this.jobFillData.start_truck_check,
 					'start_truck_check_content':this.jobFillData.start_truck_check_content,
@@ -155,23 +180,69 @@
 				getData("{:url('/driver/doStartJob')}", data, function (res) {
 					console.log('start job结果---',res);
 					if(res.status == 200){
-						let timeStamp = new Date()/1000;
-						_this.jobData.start_job_time = timeStamp
+						popContent('Start job success');
+						this.timeOutEvent = setTimeout(()=>{
+							let timeStamp = new Date()/1000;
+							_this.jobData.start_job_time = timeStamp
+							//开始工作之后自动跳转到receive页面
+							window.location.href = "{:url('driver/order')}";
+							clearTimeout(this.timeOutEvent);//清除定时器
+						},2000);//这里设置定时器
 					}else{
-						alert(res.message)
+						popContent(res.message)
+						return
 					}
 				})
 			},
 			//校验是否是最多两位小数的数据
 			handleInput(e){
 				// 通过正则过滤小数点后两位
+				e.target.value = this.numberData(e.target.value)
 				e.target.value = (e.target.value.match(/^\d*(\.?\d{0,2})/g)[0]) || null
+				e.target.value = this.numberPutComma(e.target.value)
 			},
 			//校验是否是最多两位小数的数据
 			handleInput2(e){
 				// 通过正则过滤小数点后两位
 				e.target.value = (e.target.value.match(/^(\-)*\d*(\.?\d{0,2})/g)[0]) || null
 			},
+			//将公里数转换为数字
+			numberData(value){
+				value = value.replace(/,/g, '')
+				return value
+			},
+			// 格式化数字三位加一逗号 (为0不显示)
+			numberPutComma(value){
+				let installVal = value;
+				if(Number(value)){
+					value = Number(value)
+					let intPart = Math.trunc(value)// 获取整数部分
+					let intPartFormat = intPart.toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') // 将整数部分逢三一断
+					let value2Array = value.toString().split('.')
+					// =2表示数据有小数位
+					let floatPart = ''
+					if(value2Array.length === 2) {
+						floatPart = value2Array[1].toString() // 拿到小数部分
+						if(floatPart.length === 1) {
+							return intPartFormat + '.' + floatPart
+						} else {
+							if(installVal < 0 && intPartFormat == 0){
+								return '-' + intPartFormat + '.' + floatPart
+							}else{
+								return intPartFormat + '.' + floatPart
+							}
+						}
+					} else {
+						if(installVal.substr(-1,1) == '.'){
+							return intPartFormat + floatPart + '.'
+						}else{
+							return intPartFormat + floatPart
+						}
+					}
+				}else{
+					return value
+				}
+			}
 		}
 	})
 </script>

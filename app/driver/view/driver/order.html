@@ -12,8 +12,10 @@
 	<script src="__STATIC__/product/js/vue.min.js"></script>
 	<script src="__STATIC__/product/js/axios.min.js"></script>
 	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 	<div id="order" v-cloak>
@@ -22,12 +24,12 @@
 		</div><div style="height: 3rem;"></div>
 
 		<div class="ma15 borR7 bgfff flexBox1 sjgl f30 col1C1C1C">
-			<div class="div1" @click="chose(1)">
-				{{list.length>0?choseDate.date:'Delivery Date'}}
-				<img src="__STATIC__/product/img/wl2.png" />
-				<div class="pullBox" v-show="current==1">
-					<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>
-				</div>
+			<div class="div1">
+				{{list.length>0?choseDate.date+'-'+choseDate.logistic_schedule_id:'Schedule No'}}
+<!--				<img src="__STATIC__/product/img/wl2.png" />-->
+<!--				<div class="pullBox" v-show="current==1">-->
+<!--					<div v-for="item in list" @click.stop="choseDay(item)">{{item.date}}</div>-->
+<!--				</div>-->
 			</div>
 			<div class="div1" v-if="driverInfo">
 				{{driver_info.name}}-{{driver_info.truck_name}}-{{driver_info.plate_number}}
@@ -36,10 +38,10 @@
 
 			</div>
 			<div class="div1">
-				Boxs<span class="numbtn f40 bold pa10 bgFD6921 blink">{{boxDoneNum}}/{{boxNum}}</span>
+				Boxs<span class="numbtn f40 bold pa10" :class='{"bgFD6921 blink":driverOrderDoneNum<driverOrderNum,"bg34C079":driverOrderDoneNum>=driverOrderNum}'>{{boxDoneNum}}/{{boxNum}}</span>
 			</div>
 			<div class="div1">
-				Orders<span class="numbtn f40 bold pa10 bg34C079 blink">{{driverOrderDoneNum}}/{{driverOrderNum}}</span>
+				Orders<span class="numbtn f40 bold pa10" :class='{"bgFD6921 blink":driverOrderDoneNum<driverOrderNum,"bg34C079":driverOrderDoneNum>=driverOrderNum}'>{{driverOrderDoneNum}}/{{driverOrderNum}}</span>
 			</div>
 			<div class="no div2" @click="sortOrder(0)">
 				StopNo<img src="__STATIC__/product/img/wl1.png" />
@@ -52,31 +54,59 @@
 			</div>
 		</div>
 
-		<div @click="close" class="wlmask" v-show="isShowMask"></div>
+		<div @click="close" class="wlmask wlmaskTop133" v-show="isShowMask"></div>
 
 		<div class="borR7 ma15" v-for="(item,index) in order">
 			<div class="flexBox1 wldate pa15 col000 f30 f500">
 				<span class="col000 f40">s{{item.logistic_stop_No}}</span>
-				<div>
-					<div class="pmb5">{{item.delivery_date}}</div>
-					<div>
-						 <div class="jm">{{item.business_shortcode}}</div>
-					</div>
-				</div>
+				<span class="col000 f40">{{item.delivery_date}}</span>
+<!--				<div>-->
+<!--					<div class="pmb5">{{item.delivery_date}}</div>-->
+<!--					<div>-->
+<!--						 <div class="jm">{{item.business_shortcode}}</div>-->
+<!--					</div>-->
+<!--				</div>-->
 				<span class="col000 f50 bold">{{item.logistic_sequence_No}}</span>
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
-				<div>{{item.business_name}}</div>
-				<div class="wlbtn1">{{item.boxesNumber}}box</div>
+				<div class="col000 f40 bold">{{item.name}}</div>
+				<div class="wlbtn1"><span class="F30">{{item.boxesNumber}} </span><span v-if="item.boxesNumber>1">BXS</span><span v-else>BX</span></div>
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
 				<div @click="googleMap(item.address)">{{item.address}}</div>
-				<div class="wlbtn2" v-if="item.driver_receipt_status == 0" @click="markReceipt(item,index)">mark receipt</div>
-				<div class="wlbtn2" v-else>received</div>
 			</div>
+			<div class="bgfff flexBox5 pa15 borderB">
+				<div class="wlbtn3 mar10" v-if="item.driver_receipt_status == 0" @click="markReceipt(item,index)">mark receipt</div>
+				<div class="wlbtn2 mar10" v-else>received</div>
+				<div class="wlbtn2 bglgFD5001-FC8F4F" @click="showDetail(item)">details</div>
+			</div>
+		</div>
+		<div class="pmb15" v-if="order.length>0&&is_show_all_receive">
+			<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="receiveAll">Receive all boxes</div>
 		</div>
 		<!--自定义的组件使用-->
 		<common-footer current-menu="2"></common-footer>
+		<!-- 显示订单信息-->
+		<div class="mask" v-if="isShowOrderDetail">
+			<div class="driverPopOrderDetail bgfff pa15-0 borR7 relative">
+<!--				<div class="driveChaClose" @click="closeBox">×</div>-->
+				<img src="__STATIC__/product/img/cha2.png" class="driveChaClose" @click="closeBox">
+				<div class="driverPopOrderContent">
+					<div class="f30 col1C1C1C ma15" :class="index<orderDetail.length-1?'borderBBFBFBF':''" v-for="(item,index) in orderDetail">
+						<div class="flexBox1 col000 f30 f500 pmb10">
+							<span class="col000 f40">{{item.menu_en_name}} {{item.guige_name}}</span>
+						</div>
+						<div class="flexBox2 pmb15" v-if="item.print_label_sorts_arr.length>0">
+							<span class="bold colFD5001 f40" v-for="(item1,index1) in item.print_label_sorts_arr">{{item1}}/{{item.boxesNumber}}<span v-if="index1<item.print_label_sorts_arr.length-1">，</span></span>
+						</div>
+						<div class="flexBox2 pmb15">
+							<span class="boxWidth30">{{item.menu_id}}</span>
+							<span><span class="f40">{{item.new_customer_buying_quantity}}</span> {{item.unit_en}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>
@@ -86,7 +116,8 @@
 		data:{
 			list:[],//配送日期数组
 			choseDate:[],//当前选中的日期数组
-			logistic_delivery_date:localStorage.getItem('logistic_delivery_date') != null ? localStorage.getItem('logistic_delivery_date') : '',//配送日期
+			logistic_delivery_date:'',//配送日期
+			logistic_schedule_id:0,//调度id
 			driver_info:[],//司机信息
 			isLoading: false,//是否显示加载图标
 			isShowMask: false,//是否显示遮罩层
@@ -97,10 +128,13 @@
 			order:[],//订单数组
 			current:'',//
 			o_sort:0,//排序类型
-			o_sort_type:1,//排序方式 1升序 2降序
+			o_sort_type:2,//排序方式 1升序 2降序
+			is_show_all_receive:false,//是否显示全部收货按钮
+			timeOutEvent:null,//定时器
+			isShowOrderDetail:false,//是否显示订单信息
+			orderDetail:[],//订单详情信息
 		},
 		mounted: function () {
-			// this.driverInfo = JSON.parse(decodeBase64(localStorage.getItem('driver_info')))
 			//获取配送日期
 			this.deliveryDateFun();
 			this.driverInfo();
@@ -108,8 +142,9 @@
 		methods:{
 			//获取配送日期
 			deliveryDateFun(){
-				var data = {
-					'logistic_delivery_date':localStorage.logistic_delivery_date
+				let data = {
+					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id
 				}
 				var _this = this
 				_this.isLoading=true
@@ -119,8 +154,9 @@
 					_this.list = res.result.list
 					_this.choseDate =  res.result.default
 					_this.logistic_delivery_date = localStorage.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
+					_this.logistic_schedule_id = localStorage.logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
 					//获取初始化数据
-					if(_this.logistic_delivery_date){
+					if(_this.logistic_delivery_date&&_this.logistic_schedule_id>0){
 						_this.orderData()
 					}
 				});
@@ -137,6 +173,7 @@
 			orderData(){
 				var data = {
 					'logistic_delivery_date':this.logistic_delivery_date,
+					'logistic_schedule_id':this.logistic_schedule_id,
 					'o_sort':this.o_sort,
 					'o_sort_type':this.o_sort_type
 				}
@@ -152,33 +189,93 @@
 					_this.driverOrderDoneNum = res.all_order_count.order_done_count
 					_this.driverOrderNum = res.all_order_count.order_count
 					_this.order = res.order
+					if(_this.order.length>0&&res.is_finish_receive!=1){
+						_this.is_show_all_receive=true
+					}
 				});
 			},
 			markReceipt(item,index){  // 標記收穫
-				var data = {
-					'orderId':item.orderId
-				}
-				var _this = this
-				_this.isLoading=true
-				getData("{:url('/driver/changeReceiptStatus')}", data, function (res) {
-					_this.isLoading=false
-					if (res.status == 200) {
-						_this.order[index].driver_receipt_status = 1
-						//更改订单完成数量
-						_this.boxDoneNum+=item.boxesNumber
-						_this.driverOrderDoneNum+=1
-					} else {
-						alert(res.message)
+				if(item.status != 3){
+					swal({
+						title: 'Please start job first, whether to jump to start job?',
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href="{:url('/driver/startJob')}"
+						}
+					});
+				}else{
+					var data = {
+						'orderId':item.orderId
 					}
-				});
+					var _this = this
+					_this.isLoading=true
+					getData("{:url('/driver/changeReceiptStatus')}", data, function (res) {
+						_this.isLoading=false
+						if (res.status == 200) {
+							_this.order[index].driver_receipt_status = 1
+							//更改订单完成数量
+							_this.boxDoneNum+=item.boxesNumber
+							_this.driverOrderDoneNum+=1
+						} else {
+							popContent(res.message)
+							return
+						}
+					});
+				}
+			},
+			//标记全部收货
+			receiveAll(){
+				if(this.order[0]['status'] != 3){
+					swal({
+						title: 'Please start job first, whether to jump to start job?',
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href="{:url('/driver/startJob')}"
+						}
+					});
+				}else{
+					var data = {
+						'logistic_delivery_date':this.logistic_delivery_date,
+						'logistic_schedule_id':this.logistic_schedule_id,
+					}
+					console.log('获取全部收货参数---',data);
+					var _this = this
+					_this.isLoading=true
+					getData("{:url('/driver/changeAllReceiptStatus')}", data, function (res) {
+						_this.isLoading=false
+						console.log('获取全部收货结果---',res);
+						if (res.status == 200) {
+							popContent("Receive all boxes success")
+							this.timeOutEvent = setTimeout(()=>{
+								for(let i in _this.order){
+									_this.order[i]['driver_receipt_status'] = 1
+								}
+								//更改订单完成数量
+								_this.boxDoneNum=_this.boxNum
+								_this.driverOrderDoneNum=_this.driverOrderNum
+								_this.is_show_all_receive=false
+								clearTimeout(this.timeOutEvent);//清除定时器
+							},2000);//这里设置定时器
+						} else {
+							popContent(res.message)
+						}
+					});
+				}
 			},
 			//切换日期
 			choseDay(item){
 				this.choseDate=item
 				this.logistic_delivery_date=localStorage.logistic_delivery_date=item.logistic_delivery_date
+				this.logistic_schedule_id=localStorage.logistic_schedule_id=item.logistic_schedule_id
 				this.close()
 				//重置订单数据
-				this.orderData()
+				this.deliveryDateFun()
 			},
 			//订单排序
 			sortOrder(type){
@@ -207,6 +304,16 @@
 			//打开谷歌地图，并定位
 			googleMap(address){
 				window.open("https://www.google.com/maps/search/?api=1&query="+address)
+			},
+			//显示订单详情信息
+			showDetail(item){
+				this.isShowOrderDetail=true
+				this.orderDetail=item.order_detail
+			},
+			//关闭弹窗
+			closeBox(){
+				this.isShowOrderDetail=false
+				this.orderDetail=[]
 			},
 		}
 	})

@@ -49,7 +49,9 @@ class Picking extends AuthBase
 
         $DispatchingProgressSummery = new DispatchingProgressSummery();
         $businessId = $this->getBusinessId();
-        $res = $DispatchingProgressSummery->getDeliveryDate($businessId,$logistic_delivery_date);
+        $user_id = $this->getMemberUserId();
+
+        $res = $DispatchingProgressSummery->getDeliveryDate($businessId,$user_id,$logistic_delivery_date);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 
@@ -57,9 +59,11 @@ class Picking extends AuthBase
     public function iniData()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','truck_sort','type','choose_logistic_truck_No']);
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
-        $param['choose_logistic_truck_No'] = $param['choose_logistic_truck_No']??'';
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','truck_sort','type','choose_logistic_truck_No','logistic_schedule_id','choose_logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['choose_logistic_schedule_id'] = $param['choose_logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
+        $param['choose_logistic_truck_No'] = isset($param['choose_logistic_truck_No'])?($param['choose_logistic_schedule_id']>0?$param['choose_logistic_truck_No']:''):'';
         $param['truck_sort'] = $param['truck_sort']??0;
 
         $businessId = $this->getBusinessId();
@@ -67,11 +71,11 @@ class Picking extends AuthBase
         $Order = new Order();
         $DispatchingProgressSummery = new DispatchingProgressSummery();
         //3.获取对应日期默认全部的司机的已加工订单数量和总的加工订单数量
-        $driver_order_count = $DispatchingProgressSummery->getDispatchingOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        $driver_order_count = $DispatchingProgressSummery->getDispatchingOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['logistic_schedule_id']);
         //4.获取对应日期全部的已加工订单数量和总的加工订单数量
         $all_order_count = $DispatchingProgressSummery->getDispatchingOrderCount($businessId,$param['logistic_delivery_date']);
         //5.获取司机的信息
-        $truck = $DispatchingProgressSummery->getDriversDeliveryData($businessId,$user_id,$param['logistic_delivery_date'],$param['choose_logistic_truck_No'],$param['truck_sort']);
+        $truck = $DispatchingProgressSummery->getDriversDeliveryData($businessId,$user_id,$param['logistic_delivery_date'],$param['choose_logistic_truck_No'],$param['truck_sort'],1,$param['logistic_schedule_id'],$param['choose_logistic_schedule_id']);
         $data = [
             'truck' => $truck,
             'driver_order_count' => $driver_order_count,
@@ -84,9 +88,11 @@ class Picking extends AuthBase
     public function changeTruck()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','choose_logistic_truck_No','tw_sort','tw_sort_type','type']);
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
-        $param['choose_logistic_truck_No'] = $param['choose_logistic_truck_No']??'';
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','choose_logistic_truck_No','tw_sort','tw_sort_type','type','logistic_schedule_id','choose_logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['choose_logistic_schedule_id'] = $param['choose_logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
+        $param['choose_logistic_truck_No'] = isset($param['choose_logistic_truck_No'])?($param['choose_logistic_schedule_id']>0?$param['choose_logistic_truck_No']:''):'';
         $param['tw_sort'] = $param['tw_sort']??0;//排序字段
         $param['tw_sort_type'] = $param['tw_sort_type']??1;//1-正向排序 2-反向排序
         $param['type'] = $param['type']??'';//=空时-切换司机获取订单信息  =‘allDriverOrder’-获取所有司机的订单信息
@@ -97,9 +103,9 @@ class Picking extends AuthBase
 
         //1.获取对应日期加司机的订单信息
         $user_id = $this->getMemberUserId();
-        $order = $DispatchingProgressSummery->getOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['choose_logistic_truck_No'],$param['tw_sort'],$param['tw_sort_type'],$param['type']);
+        $order = $DispatchingProgressSummery->getOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['choose_logistic_truck_No'],$param['tw_sort'],$param['tw_sort_type'],$param['type'],$param['logistic_schedule_id'],$param['choose_logistic_schedule_id']);
         //2.获取对应日期的司机的已加工订单数量和总的加工订单数量
-        $driver_order_count = $DispatchingProgressSummery->getDispatchingOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        $driver_order_count = $DispatchingProgressSummery->getDispatchingOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['logistic_schedule_id']);
         $data = [
             'order' => $order,
             'driver_order_count' => $driver_order_count,
@@ -257,8 +263,9 @@ class Picking extends AuthBase
     public function changeProductOrderStatus()
     {
         //接收参数
-        $param = $this->request->only(['id','is_producing_done','logistic_truck_No']);
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param = $this->request->only(['id','is_producing_done','logistic_truck_No','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
         $validate = new IndexValidate();
         if (!$validate->scene('changeProductOrderStatus')->check($param)) {
             return show(config('status.code')['param_error']['code'], $validate->getError());
@@ -321,7 +328,7 @@ class Picking extends AuthBase
                 }
                 $finish_quantities = $dps_info['finish_quantities']+1;
                 $dps_data['finish_quantities'] = $finish_quantities;
-                if($finish_quantities == $dps_info['sum_quantities']){
+                if($finish_quantities >= $dps_info['sum_quantities']){
                     $dps_data['isDone'] = 1;
                     $is_order_done = 1;
                 }
@@ -335,8 +342,8 @@ class Picking extends AuthBase
                     ]);
                     $order_inc_num = 1;//待加工产品全部完工，订单数+1
                     //判断对应司机的订单数，如果司机信息一致，则司机订单+1
-                    if($param['logistic_truck_No']>0){
-                        if($wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
+                    if($param['logistic_schedule_id']>0&&$param['logistic_truck_No']>0){
+                        if($wcc_info['logistic_schedule_id'] == $param['logistic_schedule_id'] && $wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
                             $driver_order_inc_num = 1;
                         }else{
                             $driver_order_inc_num = 0;
@@ -350,6 +357,7 @@ class Picking extends AuthBase
                     $isDone_arr = DispatchingProgressSummery::where([
                         ['business_id','=',$businessId],
                         ['delivery_date','=',$wcc_info['logistic_delivery_date']],
+                        ['logistic_schedule_id','=',$wcc_info['logistic_schedule_id']],
                         ['truck_no','=',$wcc_info['logistic_truck_No']],
                         ['isdeleted','=',0],
                     ])->column('isDone');
@@ -396,7 +404,7 @@ class Picking extends AuthBase
                 $dps_data['finish_quantities'] = $finish_quantities;
                 $dps_data['operator_user_id'] = $user_id;
                 //判断之前是否已加工完成，若加工完成，需要修改状态
-                if($dps_info['finish_quantities'] == $dps_info['sum_quantities']){
+                if($dps_info['finish_quantities'] >= $dps_info['sum_quantities']){
                     $dps_data['isDone'] = 0;
                     $is_order_done = 0;
                 }
@@ -409,8 +417,8 @@ class Picking extends AuthBase
                     ]);
                     $order_inc_num = -1;
                     //判断对应司机的订单数，如果司机信息一致，则司机订单-1
-                    if($param['logistic_truck_No']>0){
-                        if($wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
+                    if($param['logistic_schedule_id']>0&&$param['logistic_truck_No']>0){
+                        if($wcc_info['logistic_schedule_id'] == $param['logistic_schedule_id']&&$wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
                             $driver_order_inc_num = -1;
                         }else{
                             $driver_order_inc_num = 0;
@@ -501,15 +509,16 @@ class Picking extends AuthBase
     public function currentStockProduct()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No']);
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
         $ProducingProgressSummery = new ProducingProgressSummery();
         $RestaurantCategory = new RestaurantCategory();
 
         //1.获取对应日期加工的商品信息
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
-        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],0,'',2);
+        $goods = $ProducingProgressSummery->getGoodsOneCate($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],0,'',2,$param['logistic_schedule_id']);
         //按顺序获取产品大类
         $cate = $RestaurantCategory->getCategory($businessId);
         $cate_sort_arr = array_column($cate->toArray(),'id');
@@ -540,15 +549,16 @@ class Picking extends AuthBase
     public function category()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','logistic_schedule_id']);
         $param['logistic_delivery_date'] = $param['logistic_delivery_date']??'';
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
         $RestaurantCategory = new RestaurantCategory();
 
-        $cate = $RestaurantCategory->getOrderCategory($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No']);
+        $cate = $RestaurantCategory->getOrderCategory($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['logistic_schedule_id']);
 
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$cate);
     }
@@ -556,16 +566,17 @@ class Picking extends AuthBase
     //获取对应大类的产品
     public function categoryProduct()
     {
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','category_id']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','category_id','logistic_schedule_id']);
         $param['logistic_delivery_date'] = $param['logistic_delivery_date']??'';
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
         $param['category_id'] = $param['category_id']??'';
 
         $businessId = $this->getBusinessId();
         $user_id = $this->getMemberUserId();
 
         $WjCustomerCoupon = new WjCustomerCoupon();
-        $data = $WjCustomerCoupon->getWccList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['category_id']);
+        $data = $WjCustomerCoupon->getWccList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['category_id'],'',$param['logistic_schedule_id']);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 
@@ -588,8 +599,9 @@ class Picking extends AuthBase
     public function lockNoneProcessedProduct()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id']);
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
 
         $validate = new IndexValidate();
         if (!$validate->scene('lockNoneProcessedProduct')->check($param)) {
@@ -601,7 +613,7 @@ class Picking extends AuthBase
 
         //1.获取非加工产品信息
         $WjCustomerCoupon = new WjCustomerCoupon();
-        $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']]);
+        $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']],$param['logistic_schedule_id']);
 //        halt($product_data);
         if (!$product_data) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
@@ -650,8 +662,9 @@ class Picking extends AuthBase
     public function unlockNoneProcessedProduct()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id']);
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
 
         $validate = new IndexValidate();
         if (!$validate->scene('lockNoneProcessedProduct')->check($param)) {
@@ -664,7 +677,7 @@ class Picking extends AuthBase
             Db::startTrans();
             //1.获取非加工产品信息
             $WjCustomerCoupon = new WjCustomerCoupon();
-            $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']]);
+            $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']],$param['logistic_schedule_id']);
 //        halt($product_data);
             if (!$product_data) {
                 return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
@@ -678,7 +691,7 @@ class Picking extends AuthBase
                 return show(config('status.code')['unlock_user_error']['code'], config('status.code')['unlock_user_error']['msg']);
             }
             //解锁
-            $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,2);
+            $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,2,$param['logistic_schedule_id']);
             Db::commit();
             //添加用户行为日志
             $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();
@@ -695,8 +708,9 @@ class Picking extends AuthBase
     public function changeNoneProcessedProductStatus()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','is_producing_done']);
-        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','is_producing_done','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = isset($param['logistic_truck_No'])?($param['logistic_schedule_id']>0?$param['logistic_truck_No']:''):'';
 
         $validate = new IndexValidate();
         if (!$validate->scene('changeNoneProcessedProductOrderStatus')->check($param)) {
@@ -711,7 +725,7 @@ class Picking extends AuthBase
 
             //1.获取非加工产品信息
             $WjCustomerCoupon = new WjCustomerCoupon();
-            $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']]);
+            $product_data = $WjCustomerCoupon->getNoneProcessedData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],[$param['product_id']],$param['logistic_schedule_id']);
 //        halt($product_data);
             if (!$product_data) {
                 return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
@@ -731,7 +745,7 @@ class Picking extends AuthBase
                     return show(config('status.code')['lock_user_deal_error']['code'], config('status.code')['lock_user_deal_error']['msg']);
                 }
                 //2.更新该产品的备货状态
-                $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,3);
+                $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,3,$param['logistic_schedule_id']);
                 Db::commit();
                 //添加用户行为日志
                 $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();
@@ -741,7 +755,7 @@ class Picking extends AuthBase
             //二.返回继续处理流程
             if($param['is_producing_done'] == 0){
                 //2.更新该产品状态和操作员
-                $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,4);
+                $WjCustomerCoupon->updateNoneProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$user_id,4,$param['logistic_schedule_id']);
                 Db::commit();
                 //添加用户行为日志
                 $NoneprocessedProducingBehaviorLog = new NoneprocessedProducingBehaviorLog();

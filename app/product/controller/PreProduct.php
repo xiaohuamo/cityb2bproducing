@@ -61,6 +61,19 @@ class PreProduct extends AuthBase
                 'logistic_delivery_date' => $date_time
             ];
         }
+        //获取存储的默认日期,如果存储的日期大于今天的日期，则默认获取存储日期，否则获取距离今天最近的日期
+        $Order = new Order();
+        $businessId = $this->getBusinessId();
+        $user_id = $this->getMemberUserId();
+
+        $default_date = $Order->setDefaultDate(1,2,$businessId,$user_id);
+        if(empty($logistic_delivery_date)&&$default_date) {
+            $default_date_arr = json_decode($default_date, true);
+            $logistic_delivery_date = $default_date_arr['logistic_delivery_date'];
+            if($logistic_delivery_date < $today_time){
+                $logistic_delivery_date = '';
+            }
+        }
         $is_has_data = 2;//当前存储的日期是否存在，1-存在 2-不存在
         $logistic_delivery_date_arr = array_column($date_arr,'logistic_delivery_date');
         if(in_array($logistic_delivery_date,$logistic_delivery_date_arr)){
@@ -83,11 +96,7 @@ class PreProduct extends AuthBase
                 }
             }
         }
-        $res = [
-            'list' => $date_arr,
-            'default' => $default,
-            'default_k' => $default_k
-        ];
+        $res = $Order->defaultData($businessId, $user_id, $date_arr, $default_k);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$res);
     }
 

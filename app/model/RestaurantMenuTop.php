@@ -21,7 +21,7 @@ class RestaurantMenuTop extends Model
      * @param string $logistic_truck_No 配送司机id
      * @return array
      */
-    public function getTopProduct($businessId, $userId, $logistic_delivery_date, $logistic_truck_No='')
+    public function getTopProduct($businessId, $userId, $logistic_delivery_date, $logistic_truck_No='',$logistic_schedule_id=0)
     {
         //获取置顶产品id
         $product_top = Db::name('restaurant_menu_top')

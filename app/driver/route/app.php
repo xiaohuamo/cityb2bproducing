@@ -36,14 +36,20 @@ Route::post('driverDeliveryDate', 'Driver/deliveryDate');
 Route::post('driverOrder', 'Driver/driverOrder');
 //修改订单状态
 Route::post('changeReceiptStatus', 'Driver/changeReceiptStatus');
+//修改该调度的订单全部状态
+Route::post('changeAllReceiptStatus', 'Driver/changeAllReceiptStatus');
 //获取订单详情
 Route::post('driverOrderDetail', 'Driver/orderDetail');
 //图片上传
 Route::post('uploadImage', 'Driver/uploadImage');
+//修改店铺图片
+Route::post('updateStorePicture', 'Driver/updateStorePicture');
 //确定货物送到
 Route::post('updateOrderRceiptPicture', 'Driver/updateOrderRceiptPicture');
 //确定货物送到
 Route::post('confirmOrderFinish', 'Driver/confirmOrderFinish');
+//确定全部货物送到
+Route::post('confirmAllOrderFinish', 'Driver/confirmAllOrderFinish');
 //获取司机工作信息
 Route::post('truckJobInfo', 'Driver/truckJobInfo');
 //开始工作

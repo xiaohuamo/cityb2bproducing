@@ -198,5 +198,9 @@ return [
             'code' => 145,
             'msg' => 'The return of the order has been completed, please do not apply again'
         ],
+        'driver_status_error' => [
+            'code' => 146,
+            'msg' => 'The current state is not operational'
+        ]
     ]
 ];

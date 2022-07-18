@@ -8,6 +8,7 @@ use think\facade\Cookie;
 use app\product\validate\LoginValidate;
 use think\facade\Console;
 use think\facade\View;
+use think\facade\Db;
 use app\model\{
     User,
     StaffRoles,
@@ -181,9 +182,27 @@ class Login extends Base
 
 
     public function test(){
-        $param = $this->request->only(['orderId','business_userId']);
-        $BoxNumber = new BoxNumber();
-        $order = $BoxNumber->getOrderBoxes($param['orderId'],$param['business_userId']);
-        halt($order);
+//        $param = $this->request->only(['orderId','business_userId']);
+//        $BoxNumber = new BoxNumber();
+//        $order = $BoxNumber->getOrderBoxes($param['orderId'],$param['business_userId']);
+//        halt($order);
+        $dps_list = Db::name('dispatching_progress_summery')->field('id,orderId')->where(['isdeleted'=>0])->column('id','orderId');
+        $orderId_arr = array_keys($dps_list);
+        $order_list = Db::name('order')->field('logistic_schedule_id,logistic_truck_No,orderId')->where([
+            ['orderId','in',$orderId_arr],
+            ['logistic_schedule_id','>',0]
+        ])->select()->toArray();
+        $update = [];
+        foreach ($order_list as $k=>$v){
+            $update[$k] = [
+                'id' => $dps_list[$v['orderId']],
+                'logistic_schedule_id' => $v['logistic_schedule_id'],
+                'truck_no' => $v['logistic_truck_No'],
+                'orderId' => $v['orderId']
+            ];
+        }
+        $DispatchingProgressSummery = new DispatchingProgressSummery();
+        $res = $DispatchingProgressSummery->saveAll($update);
+        halt($res);
     }
 }

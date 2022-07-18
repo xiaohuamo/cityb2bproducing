@@ -23,7 +23,7 @@ class WjCustomerCoupon extends Model
     public function getWccInfo($id,$businessId)
     {
         $wcc_info = WjCustomerCoupon::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.voucher_deal_amount,o.id o_id,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.money_new,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,wcc.dispatching_item_operator_user_id,rm.restaurant_category_id cate_id,rm.proucing_item,wcc.assign_stock,wcc.operator_user_id')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.voucher_deal_amount,o.id o_id,o.business_userId,o.logistic_truck_No,o.logistic_delivery_date,o.is_producing_done order_is_producing_done,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.money_new,wcc.dispatching_is_producing_done,o.dispatching_is_producing_done order_dispatching_is_producing_done,wcc.dispatching_item_operator_user_id,rm.restaurant_category_id cate_id,rm.proucing_item,wcc.assign_stock,wcc.operator_user_id,o.logistic_schedule_id')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->where([
@@ -42,7 +42,7 @@ class WjCustomerCoupon extends Model
      * @param int $product_id
      * @param int $guige1_id
      */
-    public function getWccProductList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$product_id=0,$guige1_id=0)
+    public function getWccProductList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$product_id=0,$guige1_id=0,$logistic_schedule_id=0)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -51,6 +51,9 @@ class WjCustomerCoupon extends Model
         ];
         if (!empty($logistic_delivery_date)) {
             $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
+        }
+        if ($logistic_schedule_id>0) {
+            $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
         }
         if ($logistic_truck_No !== '') {
             $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
@@ -75,11 +78,10 @@ class WjCustomerCoupon extends Model
      * 判断某个订单的加工产品是否全部加工完毕
      * @param $type 1-加工端获取订单产品全部加工完成 2-配货端判断产品对应的订单是否全部拣货完成
      */
-    public function getWccOrderDone($order_id='',$business_userId='',$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$cate_id=0,$type=1)
+    public function getWccOrderDone($order_id='',$business_userId='',$logistic_delivery_date='',$logistic_truck_No='',$product_id='',$cate_id=0,$type=1,$logistic_schedule_id=0)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
-            ['wcc.is_producing_done', '=', 0],
             ['wcc.customer_buying_quantity', '>', 0]
         ];
         if($type == 1){
@@ -98,6 +100,9 @@ class WjCustomerCoupon extends Model
         if(!empty($logistic_delivery_date)){
             $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
         }
+        if($logistic_schedule_id>0){
+            $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
+        }
         if(!empty($logistic_truck_No)){
             $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
         }
@@ -109,6 +114,7 @@ class WjCustomerCoupon extends Model
         }
         $count = Db::name('wj_customer_coupon')
             ->alias('wcc')
+            ->field('wcc.*')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->where($where)
@@ -140,7 +146,7 @@ class WjCustomerCoupon extends Model
      * @param $id
      * @param $businessId
      */
-    public function getWccList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='',$proucing_item='')
+    public function getWccList($businessId,$userId,$logistic_delivery_date='',$logistic_truck_No='',$category_id='',$proucing_item='',$logistic_schedule_id=0)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -149,6 +155,9 @@ class WjCustomerCoupon extends Model
         ];
         if(!empty($logistic_delivery_date)){
             $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
+        }
+        if($logistic_schedule_id>0){
+            $where[] = ['o.logistic_schedule_id','=',$logistic_schedule_id];
         }
         if($logistic_truck_No !== ''){
             $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
@@ -185,11 +194,11 @@ class WjCustomerCoupon extends Model
         }
         //如果存在加工产品，则获取该产品的加工状态
         if($product_id_arr){
-            $product_status_arr = $ProducingProgressSummery->productTwoCateDoneInfo($businessId,$userId,$logistic_delivery_date,$logistic_truck_No,$product_id_arr);
+            $product_status_arr = $ProducingProgressSummery->productTwoCateDoneInfo($businessId,$userId,$logistic_delivery_date,$logistic_truck_No,$product_id_arr,$logistic_schedule_id);
         }
 
         if($product_no_id_arr){
-            $product_status_arr = $this->getNoneProcessedData($businessId,$userId,$logistic_delivery_date,$logistic_truck_No,$product_no_id_arr);
+            $product_status_arr = $this->getNoneProcessedData($businessId,$userId,$logistic_delivery_date,$logistic_truck_No,$product_no_id_arr,$logistic_schedule_id);
         }
 //        halt($product_status_arr);
         $list = [];
@@ -305,7 +314,7 @@ class WjCustomerCoupon extends Model
     /**
      * 获取非加工明细产品数据
      */
-    public function getNoneProcessedData($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id_arr)
+    public function getNoneProcessedData($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id_arr,$logistic_schedule_id=0)
     {
         $where = [
             ['o.business_userId','=',$businessId],
@@ -313,6 +322,9 @@ class WjCustomerCoupon extends Model
             ['wcc.restaurant_menu_id','in',$product_id_arr],
             ['wcc.customer_buying_quantity','>',0],
         ];
+        if($logistic_schedule_id>0){
+            $where[] = ['o.logistic_schedule_id','=',$logistic_schedule_id];
+        }
         if($logistic_truck_No != ''){
             $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
         }
@@ -394,7 +406,7 @@ class WjCustomerCoupon extends Model
      * @param $type 1-锁定时更新操作员 2-解锁 3-备货完成 4-返回重新操作
      * @return mixed
      */
-    public function updateNoneProcessedData($businessId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$operator_user_id,$type)
+    public function updateNoneProcessedData($businessId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$operator_user_id,$type,$logistic_schedule_id=0)
     {
         $where = [
             ['o.business_userId', '=', $businessId],
@@ -412,12 +424,18 @@ class WjCustomerCoupon extends Model
                 $update_data = ['wcc.operator_user_id'=>0];
                 break;
             case 3:
+                if ($logistic_schedule_id>0) {
+                    $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
+                }
                 if ($logistic_truck_No != '') {
                     $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
                 }
                 $update_data = ['wcc.is_producing_done'=>1];
                 break;
             case 4:
+                if ($logistic_schedule_id>0) {
+                    $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
+                }
                 if ($logistic_truck_No != '') {
                     $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
                 }
@@ -440,7 +458,7 @@ class WjCustomerCoupon extends Model
      * @param string $logistic_delivery_date
      * @param string $logistic_truck_No
      */
-    public function getPickingItemCategory($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$cate_sort=0)
+    public function getPickingItemCategory($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$cate_sort=0,$logistic_schedule_id=0)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -449,6 +467,9 @@ class WjCustomerCoupon extends Model
         ];
         if (!empty($logistic_delivery_date)) {
             $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
+        }
+        if ($logistic_schedule_id>0) {
+            $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
         }
         if (!empty($logistic_truck_No)) {
             $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
@@ -510,7 +531,7 @@ class WjCustomerCoupon extends Model
         return array_values($category);
     }
 
-    public function getOneCateProductList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$one_cate_id=0,$two_cate_id=0)
+    public function getOneCateProductList($businessId,$user_id,$logistic_delivery_date='',$logistic_truck_No='',$one_cate_id=0,$two_cate_id=0,$logistic_schedule_id=0)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -519,6 +540,9 @@ class WjCustomerCoupon extends Model
         ];
         if (!empty($logistic_delivery_date)) {
             $where[] = ['o.logistic_delivery_date', '=', $logistic_delivery_date];
+        }
+        if ($logistic_schedule_id>0) {
+            $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
         }
         if (!empty($logistic_truck_No)) {
             $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
@@ -616,7 +640,7 @@ class WjCustomerCoupon extends Model
     /**
      * 获取产品明细信息
      */
-    public function getPickProductData($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$guige1_id=0)
+    public function getPickProductData($businessId,$userId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$guige1_id=0,$logistic_schedule_id=0)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -625,6 +649,9 @@ class WjCustomerCoupon extends Model
             ['wcc.restaurant_menu_id','=',$product_id],
             ['wcc.customer_buying_quantity','>',0],
         ];
+        if ($logistic_schedule_id>0) {
+            $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
+        }
         if($logistic_truck_No !== ''){
             $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];
         }
@@ -695,7 +722,7 @@ class WjCustomerCoupon extends Model
      * @param $type 1-锁定时更新操作员 2-解锁 3-拣货完成 4-返回重新操作
      * @return mixed
      */
-    public function updatePickProductItemProcessedData($businessId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$guige1_id=0,$operator_user_id,$type)
+    public function updatePickProductItemProcessedData($businessId,$logistic_delivery_date,$logistic_truck_No='',$product_id,$guige1_id=0,$operator_user_id,$type,$logistic_schedule_id=0)
     {
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
@@ -717,12 +744,18 @@ class WjCustomerCoupon extends Model
                 $update_data = ['wcc.dispatching_item_operator_user_id'=>0];
                 break;
             case 3:
-                if ($logistic_truck_No !== '') {
+                if ($logistic_schedule_id>0) {
+                    $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
+                }
+                if ($logistic_truck_No != '') {
                     $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
                 }
                 $update_data = ['wcc.dispatching_is_producing_done'=>1];
                 break;
             case 4:
+                if ($logistic_schedule_id>0) {
+                    $where[] = ['o.logistic_schedule_id', '=', $logistic_schedule_id];
+                }
                 if ($logistic_truck_No != '') {
                     $where[] = ['o.logistic_truck_No', '=', $logistic_truck_No];
                 }
@@ -785,7 +818,7 @@ class WjCustomerCoupon extends Model
     public function getOrderItemDetails($orderId)
     {
         $data = self::alias('wcc')
-            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rmo.menu_en_name guige_name,rm.unit_en,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,IFNULL(ordi.return_qty,0) return_qty,IFNULL(ordi.reasonType,1) reasonType')
+            ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,rm.menu_en_name,rm.menu_id,rmo.menu_en_name guige_name,rm.unit_en,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,IFNULL(ordi.return_qty,0) return_qty,IFNULL(ordi.reasonType,1) reasonType,IFNULL(ordi.note,"") note')
             ->leftJoin('order o','o.orderId = wcc.order_id')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')

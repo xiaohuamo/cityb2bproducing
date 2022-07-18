@@ -35,7 +35,8 @@ class PickingItem extends AuthBase
     public function iniData()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','one_cate_sort','type']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','one_cate_sort','type','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['one_cate_sort'] = $param['one_cate_sort']??0;
 
@@ -45,11 +46,11 @@ class PickingItem extends AuthBase
         $Order = new Order();
         $WjCustomerCoupon = new WjCustomerCoupon();
         //3.获取对应日期默认全部的司机的已加工订单数量和总的加工订单数量
-        $driver_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],2);
+        $driver_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],2,$param['logistic_schedule_id']);
         //4.获取对应日期全部的已加工订单数量和总的加工订单数量
         $all_order_count = $Order->getOrderCount($businessId,$param['logistic_delivery_date'],'',2);
         //5.获取分类的信息
-        $cate = $WjCustomerCoupon->getPickingItemCategory($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['one_cate_sort']);
+        $cate = $WjCustomerCoupon->getPickingItemCategory($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['one_cate_sort'],$param['logistic_schedule_id']);
         $data = [
             'cate' => $cate,
             'driver_order_count' => $driver_order_count,
@@ -62,7 +63,8 @@ class PickingItem extends AuthBase
     public function changeCate()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','one_cate_id','two_cate_id']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','one_cate_id','two_cate_id','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['one_cate_id'] = $param['one_cate_id']??0;
         $param['two_cate_id'] = $param['two_cate_id']??0;
@@ -73,7 +75,7 @@ class PickingItem extends AuthBase
         $WjCustomerCoupon = new WjCustomerCoupon();
 
         //1.获取对应日期加一级类目的产品信息
-        $product = $WjCustomerCoupon->getOneCateProductList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['one_cate_id'],$param['two_cate_id']);
+        $product = $WjCustomerCoupon->getOneCateProductList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['one_cate_id'],$param['two_cate_id'],$param['logistic_schedule_id']);
         $data = [
             'product' => $product,
         ];
@@ -84,7 +86,9 @@ class PickingItem extends AuthBase
     public function productItemOrderDetailList()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','wcc_sort','wcc_sort_type']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','wcc_sort','wcc_sort_type','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
+        $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['guige1_id'] = $param['guige1_id']??'';
         $param['wcc_sort'] = $param['wcc_sort']??0;//排序字段
         $param['wcc_sort_type'] = $param['wcc_sort_type']??1;//1-正向排序 2-反向排序
@@ -94,7 +98,7 @@ class PickingItem extends AuthBase
 
         $Order = new Order();
         //获取对应日期的加工订单
-        $order = $Order->getProductItemOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['wcc_sort'],$param['wcc_sort_type']);
+        $order = $Order->getProductItemOrderList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['wcc_sort'],$param['wcc_sort_type'],$param['logistic_schedule_id']);
         $redis = redis_connect();
         $param['guige1_id'] = empty($param['guige1_id'])?0:$param['guige1_id'];
         $key = 'fit_print_all_'.$param['logistic_delivery_date'].'_'.$param['product_id'].'_'.$param['guige1_id'];
@@ -110,7 +114,8 @@ class PickingItem extends AuthBase
     public function lockProductItem()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['guige1_id'] = $param['guige1_id']??'';
 
@@ -124,7 +129,7 @@ class PickingItem extends AuthBase
 
         //1.获取产品信息
         $WjCustomerCoupon = new WjCustomerCoupon();
-        $product_data = $WjCustomerCoupon->getPickProductData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id']);
+        $product_data = $WjCustomerCoupon->getPickProductData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['logistic_schedule_id']);
 //        halt($product_data);
         if (!$product_data) {
             return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
@@ -173,7 +178,8 @@ class PickingItem extends AuthBase
     public function unlockProductItem()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['guige1_id'] = $param['guige1_id']??'';
 
@@ -188,7 +194,7 @@ class PickingItem extends AuthBase
             Db::startTrans();
             //1.获取产品信息
             $WjCustomerCoupon = new WjCustomerCoupon();
-            $product_data = $WjCustomerCoupon->getPickProductData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id']);
+            $product_data = $WjCustomerCoupon->getPickProductData($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$param['logistic_schedule_id']);
 //        halt($product_data);
             if (!$product_data) {
                 return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
@@ -202,7 +208,7 @@ class PickingItem extends AuthBase
                 return show(config('status.code')['unlock_user_error']['code'], config('status.code')['unlock_user_error']['msg']);
             }
             //解锁
-            $WjCustomerCoupon->updatePickProductItemProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$user_id,2);
+            $WjCustomerCoupon->updatePickProductItemProcessedData($businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],$param['guige1_id'],$user_id,2,$param['logistic_schedule_id']);
             Db::commit();
             //添加用户行为日志
             $DispatchingItemBehaviorLog = new DispatchingItemBehaviorLog();
@@ -219,7 +225,8 @@ class PickingItem extends AuthBase
     public function pickChangeProductItemStatus()
     {
         //接收参数
-        $param = $this->request->only(['id','is_producing_done','logistic_truck_No','product_id','guige1_id']);
+        $param = $this->request->only(['id','is_producing_done','logistic_truck_No','product_id','guige1_id','logistic_schedule_id']);
+        $param['logistic_schedule_id'] = $param['logistic_schedule_id']??0;
         $param['logistic_truck_No'] = $param['logistic_truck_No']??'';
         $param['product_id'] = $param['product_id']??'';
         $param['guige1_id'] = $param['guige1_id']??'';
@@ -256,7 +263,7 @@ class PickingItem extends AuthBase
                 return show(config('status.code')['summary_done_error']['code'], config('status.code')['summary_done_error']['msg']);
             }
             //获取该产品的数据
-            $product_data = $WjCustomerCoupon->getWccProductList($businessId,$user_id,$wcc_info['logistic_delivery_date'],$param['logistic_truck_No'],$wcc_info['product_id']);
+            $product_data = $WjCustomerCoupon->getWccProductList($businessId,$user_id,$wcc_info['logistic_delivery_date'],$param['logistic_truck_No'],$wcc_info['product_id'],$param['logistic_schedule_id']);
             //计算完成的总数
             $sum_quantities = 0;//该产品的总数量
             $guige_sum_quantities = 0;//该规格的总数量
@@ -294,20 +301,20 @@ class PickingItem extends AuthBase
                 $finish_quantities += $wcc_info['customer_buying_quantity'];
                 if ($wcc_info['guige1_id'] > 0) {
                     $guige_finish_quantities += $wcc_info['customer_buying_quantity'];
-                    if($guige_finish_quantities == $guige_sum_quantities){
+                    if($guige_finish_quantities >= $guige_sum_quantities){
                         $is_product_guige1_done = 1;
-                        if($finish_quantities == $sum_quantities){
+                        if($finish_quantities >= $sum_quantities){
                             $is_product_guige1_all_done = 1;
                         }
                     }
                 } else {
-                    if($finish_quantities == $sum_quantities){
+                    if($finish_quantities >= $sum_quantities){
                         $is_product_guige1_all_done = 1;
                     }
                 }
                 //如果产品全部完成，判断该产品对应的分类是否完成
                 if($is_product_guige1_all_done == 1){
-                    $count = $WjCustomerCoupon->getWccOrderDone('',$businessId,$wcc_info['logistic_delivery_date'],$wcc_info['logistic_truck_No'],'',$wcc_info['cate_id'],2);
+                    $count = $WjCustomerCoupon->getWccOrderDone('',$businessId,$wcc_info['logistic_delivery_date'],$wcc_info['logistic_truck_No'],'',$wcc_info['cate_id'],2,$wcc_info['logistic_schedule_id']);
                     if($count == 0){
                         $is_cate_all_done = 1;
                     }
@@ -317,13 +324,13 @@ class PickingItem extends AuthBase
                 if(!empty($dps_info)){
                     $finish_quantities = $dps_info['finish_quantities']+1;
                     $dps_data['finish_quantities'] = $finish_quantities;
-                    if($finish_quantities == $dps_info['sum_quantities']){
+                    if($finish_quantities >= $dps_info['sum_quantities']){
                         $dps_data['isDone'] = 1;
                     }
                     DispatchingProgressSummery::getUpdate(['id' => $dps_info['id']],$dps_data);
                 }
                 //3.判断该订单是否全部加工完毕
-                //如果该产品对应规则的产品全部加工完毕，则更改订单加工状态
+                //如果该产品对应规格的产品全部加工完毕，则更改订单加工状态
                 $count = $WjCustomerCoupon->getWccOrderDone($wcc_info['order_id'],'','','','','',2);
                 if($count == 0){
                     Order::getUpdate(['orderId' => $wcc_info['order_id']],[
@@ -331,8 +338,8 @@ class PickingItem extends AuthBase
                     ]);
                     $order_inc_num = 1;//待加工产品全部完工，订单数+1
                     //判断对应司机的订单数，如果司机信息一致，则司机订单+1
-                    if($param['logistic_truck_No']>0){
-                        if($wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
+                    if($param['logistic_schedule_id']>0&&$param['logistic_truck_No']>0){
+                        if($wcc_info['logistic_schedule_id'] == $param['logistic_schedule_id']&&$wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
                             $driver_order_inc_num = 1;
                         }else{
                             $driver_order_inc_num = 0;
@@ -363,7 +370,7 @@ class PickingItem extends AuthBase
                 //2.更新该产品加工数量和状态
                 WjCustomerCoupon::getUpdate(['id' => $wcc_info['id']],['dispatching_item_operator_user_id'=>$user_id,'dispatching_is_producing_done'=>0]);
                 //同时将其他该产品对应的其他订单锁定为当前人员
-                $WjCustomerCoupon->updatePickProductItemProcessedData($businessId,$wcc_info['logistic_delivery_date'],$param['logistic_truck_No'],$wcc_info['product_id'],$wcc_info['guige1_id'],$user_id,1);
+                $WjCustomerCoupon->updatePickProductItemProcessedData($businessId,$wcc_info['logistic_delivery_date'],$param['logistic_truck_No'],$wcc_info['product_id'],$wcc_info['guige1_id'],$user_id,1,$param['logistic_schedule_id']);
                 $finish_quantities -= $wcc_info['customer_buying_quantity'];
                 $is_cate_all_done = 0;
                 $is_product_guige1_all_done = 0;
@@ -389,8 +396,8 @@ class PickingItem extends AuthBase
                     ]);
                     $order_inc_num = -1;
                     //判断对应司机的订单数，如果司机信息一致，则司机订单-1
-                    if($param['logistic_truck_No']>0){
-                        if($wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
+                    if($param['logistic_schedule_id']>0&&$param['logistic_truck_No']>0){
+                        if($wcc_info['logistic_schedule_id'] == $param['logistic_schedule_id']&&$wcc_info['logistic_truck_No'] == $param['logistic_truck_No']){
                             $driver_order_inc_num = -1;
                         }else{
                             $driver_order_inc_num = 0;
@@ -428,7 +435,7 @@ class PickingItem extends AuthBase
     public function pickAllChangeProductItemStatus()
     {
         //接收参数
-        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','is_producing_done']);
+        $param = $this->request->only(['logistic_delivery_date','logistic_truck_No','product_id','guige1_id','is_producing_done','logistic_schedule_id']);
         $validate = new IndexValidate();
         if (!$validate->scene('changePickAllProductOrderStatus')->check($param)) {
             return show(config('status.code')['param_error']['code'], $validate->getError());
@@ -447,7 +454,7 @@ class PickingItem extends AuthBase
 
             $WjCustomerCoupon = new WjCustomerCoupon();
             //1.获取该产品的所有订单数据
-            $product_data = $WjCustomerCoupon->getWccProductList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id']);
+            $product_data = $WjCustomerCoupon->getWccProductList($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_truck_No'],$param['product_id'],'',$param['logistic_schedule_id']);
             if (!$product_data) {
                 return show(config('status.code')['order_error']['code'], config('status.code')['order_error']['msg']);
             }else{
@@ -528,7 +535,7 @@ class PickingItem extends AuthBase
                         $dps_data = [];
                         $finish_quantities = $dps_info['finish_quantities'] + 1;
                         $dps_data['finish_quantities'] = $finish_quantities;
-                        if ($finish_quantities == $dps_info['sum_quantities']) {
+                        if ($finish_quantities >= $dps_info['sum_quantities']) {
                             $dps_data['isDone'] = 1;
                         }
                         DispatchingProgressSummery::getUpdate(['id' => $dps_info['id']], $dps_data);
@@ -538,21 +545,21 @@ class PickingItem extends AuthBase
                 $finish_quantities += $add_quantity;
                 if ($param['guige1_id'] > 0) {
                     $guige_finish_quantities += $add_quantity;
-                    if($guige_finish_quantities == $guige_sum_quantities){
+                    if($guige_finish_quantities >= $guige_sum_quantities){
                         $is_product_guige1_done = 1;
-                        if($finish_quantities == $sum_quantities){
+                        if($finish_quantities >= $sum_quantities){
                             $is_product_guige1_all_done = 1;
                         }
                     }
                 } else {
-                    if($finish_quantities == $sum_quantities){
+                    if($finish_quantities >= $sum_quantities){
                         $is_product_guige1_all_done = 1;
                     }
                 }
                 //如果产品全部完成，判断该产品对应的分类是否完成
                 if($is_product_guige1_all_done == 1){
                     $cate_id = $product_data[0]['cate_id'];
-                    $count = $WjCustomerCoupon->getWccOrderDone('',$businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],'',$cate_id,2);
+                    $count = $WjCustomerCoupon->getWccOrderDone('',$businessId,$param['logistic_delivery_date'],$param['logistic_truck_No'],'',$cate_id,2,$param['logistic_schedule_id']);
                     if($count == 0){
                         $is_cate_all_done = 1;
                     }
@@ -567,8 +574,8 @@ class PickingItem extends AuthBase
                         ]);
                         $order_inc_num += 1;
                         //判断对应司机的订单数，如果司机信息一致，则司机订单+1
-                        if($param['logistic_truck_No']>0){
-                            if($v['logistic_truck_No'] == $param['logistic_truck_No']){
+                        if($param['logistic_schedule_id']>0&&$param['logistic_truck_No']>0){
+                            if($v['logistic_schedule_id'] == $param['logistic_schedule_id']>0&&$v['logistic_truck_No'] == $param['logistic_truck_No']){
                                 $driver_order_inc_num += 1;
                             }
                         }else{

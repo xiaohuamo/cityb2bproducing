@@ -30,7 +30,7 @@ class RestaurantCategory extends Model
      * @param string $logistic_delivery_date
      * @param string $logistic_truck_No
      */
-    public function getOrderCategory($businessId,$logistic_delivery_date='',$logistic_truck_No=''){
+    public function getOrderCategory($businessId,$logistic_delivery_date='',$logistic_truck_No='',$logistic_schedule_id=0){
         $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
         $where = [
             ['o.business_userId', '=', $businessId],
@@ -38,6 +38,9 @@ class RestaurantCategory extends Model
         ];
         if(!empty($logistic_delivery_date)){
             $where[] = ['o.logistic_delivery_date','=',$logistic_delivery_date];
+        }
+        if($logistic_schedule_id>0){
+            $where[] = ['o.logistic_schedule_id','=',$logistic_schedule_id];
         }
         if(!empty($logistic_truck_No)){
             $where[] = ['o.logistic_truck_No','=',$logistic_truck_No];

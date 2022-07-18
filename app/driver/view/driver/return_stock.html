@@ -13,8 +13,10 @@
 	<script src="__STATIC__/product/js/vue.min.js"></script>
 	<script src="__STATIC__/product/js/axios.min.js"></script>
 	<script src="__STATIC__/product/js/driver_common.js"></script>
+	<script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
 	<!--引入公共组件-->
 	<script src="__STATIC__/product/js/driver_footer.js"></script>
+	<script src="__STATIC__/product/js/pop.js"></script>
 </head>
 <body class="bgF2F2F2">
 <div id="returnStock" v-cloak>
@@ -31,7 +33,7 @@
 		</div>
 		<div class="flexBox2 pmb10">
 			<span class="boxWidth50">Ref Id</span>
-			<span v-if="orderInfo.order_info">23222</span>
+			<span v-if="orderInfo.order_info">{{orderInfo.order_info.id}}</span>
 		</div>
 		<div class="flexBox2 pmb10">
 			<span class="boxWidth50">CustomerID</span>
@@ -50,7 +52,7 @@
 		<div class="pa15">
 			<div class="flexBox2 pmb10">
 				<div class="bold boxWidth30">Reasons</div>
-				<div class="selectBtn pa0-15 flexBox1 relative" @click="showReason(item,index)">
+				<div class="selectBtn pa0-15 flexBox1 relative" @click="(!orderInfo.order_return_info||orderInfo.order_return_info.is_approved==0)&&showReason(item,index)">
 					{{item.reason}}
 					<img src="__STATIC__/product/img/down_white.png" />
 					<div class="pullBox2 col1C1C1C" v-show="item.is_show_reason">
@@ -58,9 +60,13 @@
 					</div>
 				</div>
 			</div>
+			<div class="flexBox2 pmb10" v-if="item.reasonType==5">
+				<div class="boxWidth30"></div>
+				<textarea class="reasonBox f30" placeholder="Please fill in the reason for return..." v-model="item.note" :disabled="orderInfo.order_return_info&&orderInfo.order_return_info.is_approved==1"></textarea>
+			</div>
 			<div class="flexBox2 pmb10">
 				<span class="bold boxWidth30">Ord.qty</span>
-				<span>{{item.new_customer_buying_quantity}} kg</span>
+				<span>{{item.new_customer_buying_quantity}} {{item.unit_en}}</span>
 			</div>
 			<div class="flexBox2 pmb10">
 				<span class="bold boxWidth30">Ret.qty</span>
@@ -72,8 +78,9 @@
 			</div>
 		</div>
 	</div>
-	<div class="ma0-15 pa0-15 bold pmb15">
-		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>
+	<div class="pmb15" v-if="!orderInfo.order_return_info||orderInfo.order_return_info.is_approved==0">
+<!--		<div class="borFD5204 colFD5204 center pa15-0 borR21 f35" @click="sure()">sure</div>-->
+		<div class="signOut f35 colfff bglgFD5001-FC8F4F" @click="sure">Confirm</div>
 	</div>
 </div>
 </body>
@@ -157,19 +164,20 @@
 					this.orderInfo.item_detail[i].return_qty = parseFloat(this.orderInfo.item_detail[i].return_qty)
 					if(this.orderInfo.item_detail[i].return_qty > 0){
 						if(this.orderInfo.item_detail[i].return_qty > parseFloat(this.orderInfo.item_detail[i].customer_buying_quantity)){
-							alert('Returns up to '+this.orderInfo.item_detail[i].customer_buying_quantity);
-							return;
+							popContent('Returns up to '+this.orderInfo.item_detail[i].customer_buying_quantity)
+							return
 						}
 						return_data.push({
 							"item_order_id":this.orderInfo.item_detail[i].id,
 							"return_qty":this.orderInfo.item_detail[i].return_qty,
 							"reasonType":this.orderInfo.item_detail[i].reasonType,
+							"note":this.orderInfo.item_detail[i].reasonType==5?this.orderInfo.item_detail[i].note:'',
 						});
 					}
 				}
 				if(return_data.length<=0){
-					alert('Please select the returned product and fill in the return quantity');
-					return;
+					popContent('Please select the returned product and fill in the return quantity')
+					return
 				}
 				let data = {
 					'orderId':this.orderId,
@@ -179,7 +187,15 @@
 				let _this = this
 				getData("{:url('/driver/doReturnStock')}", data, function (res) {
 					console.log('return stock结果---',res);
-					alert(res.message)
+					if(res.status == 200){
+						//确认退货后跳转回导航页面
+						localStorage.is_return_stock = 1
+						//点击确定后返回导航页面
+						window.location.href = "{:url('driver/customerSearch')}";
+					}else{
+						popContent(res.message)
+						return
+					}
 				})
 			},
 			numSub(arg1,arg2){

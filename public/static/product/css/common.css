@@ -607,11 +607,17 @@ a{
 .ml10{
 	margin-left: 10px;
 }
+.ml15{
+	margin-left: 15px;
+}
 .ml160{
 	margin-left: 160px;
 }
 .mr5{
 	margin-right: 5px;
+}
+.mr15{
+	margin-right: 15px;
 }
 .pa5{
 	padding:5px;
@@ -1367,4 +1373,9 @@ tbody tr td{
 .itemSumBox{
 	height: 100%;
 	text-align: left;
+}
+.stopNo{
+	position: absolute;
+	left: 5px;
+	bottom: -2px;
 }

@@ -69,6 +69,9 @@ body{
 .f30{
 	font-size:0.9375rem;
 }
+.F30{
+	font-size:1.87rem;
+}
 .f33{
 	font-size:1.03rem;
 }
@@ -117,7 +120,12 @@ body{
 .bg34C079{
 	background: #34C079;
 }
-
+.bg999{
+	background: #999999 !important;
+}
+.bgFD5506{
+	background: #FD5506 !important;
+}
 .col333{
 	color: #333333;
 }
@@ -246,6 +254,12 @@ body{
 .bgB4B4B4{
 	background:#B4B4B4 !important;
 }
+.bglgFD5001-FC8F4F{
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F) !important;
+}
+.bglg45A009-78DB36{
+	background:linear-gradient(-87deg, #45A009, #78DB36);
+}
 
 .flexBox1{
 	display:flex;
@@ -319,6 +333,9 @@ body{
 .mar10{
 	margin-right:10px;
 }
+.mar15{
+	margin-right:15px;
+}
 .mb10{
 	margin-bottom:10px;
 }
@@ -371,6 +388,12 @@ body{
 .maT15{
 	margin-top: 15px !important;
 }
+.mab5{
+	margin-bottom: 5px;
+}
+.mab15{
+	margin-bottom: 15px;
+}
 .star{
 	width: 1.5625rem;
 	height: 1.5625rem;
@@ -390,6 +413,9 @@ body{
 
 .borderB{
 	border-bottom: 1px solid #ECEDEE;
+}
+.borderBBFBFBF{
+	border-bottom: 1px solid #BFBFBF;
 }
 .borderT{
 	border-top: 1px solid #E9E9E9;
@@ -418,7 +444,6 @@ body{
 	max-width: 6.8rem;
 	height: 2.28rem;
 	line-height: 2.28rem;
-	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
 	border-radius: 12px;
 	color: #fff;
 	text-align: center;
@@ -894,7 +919,7 @@ body{
 	border: 1px solid #ECEDEE;
 }
 .boxWidth{
-	width: 90%;
+	width: 98%;
 }
 .boxWidth50{
 	width: 50%;
@@ -1023,6 +1048,55 @@ input[type=checkbox]:checked::before {
 	border: none;
 	outline: none;
 	text-align: center;
+}
+.reasonBox{
+	flex: 1;
+	height: 5rem;
+	border: 1px solid #ECEDEE;
+}
+.nav{
+	padding: 10px;
+	border-radius: 5px;
+	background: linear-gradient(-87deg, #FD5001, #FC8F4F);
+}
+.arrow_box{
+	border-style: solid;
+	border-width: 4px;
+	animation: glow 2s linear infinite;
+}
+@keyframes glow {
+	0% {border-color: #F2F2F2;}
+	50% { border-color: #F2F2F2;}
+	50.01% {border-color: #FD6921;}
+	100% {border-color: #FD6921;}
+}
+.swal-modal {
+	border-radius: 3px;
+}
+.swal-text {
+	color: #1C1C1C;
+	font-size: 1.25rem;
+	text-align: center;
+}
+.driveChaClose{
+	position: absolute;
+	top: -1.3rem;
+	right: -1rem;
+	width: 24px;
+	height: 24px;
+}
+.driverPopOrderDetail{
+	display: flex;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%,-50%);
+	width: 80%;
+	max-height: 60%;
+}
+.driverPopOrderContent{
+	flex: 1;
+	overflow: auto;
 }
 
 

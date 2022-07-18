@@ -12,6 +12,8 @@
   <script src="__STATIC__/product/js/jquery-3.3.1.min.js"></script>
   <script src="__STATIC__/product/js/driver_common.js"></script>
   <script src="__STATIC__/dist/index.js"></script>
+  <script src="__STATIC__/product/js/sweet-alert/sweetalert.min.js"></script>
+  <script src="__STATIC__/product/js/pop.js"></script>
   <style>
     .dome {
       display: flex;
@@ -111,7 +113,8 @@
         getData("{:url('/driver/uploadBase64Picture')}", param, function (res) {
           console.log(res);
           if(res.status != 200){
-            alert(res.message);
+            popContent(res.message)
+            return
           }
         });
       },
