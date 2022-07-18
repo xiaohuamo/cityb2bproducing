@@ -49,15 +49,23 @@ class Order extends Model
         }
         $diff_today_arr = array_column($date_arr,'diff_today');
         array_multisort($diff_today_arr,SORT_ASC, $date_arr);
+        //判断当前供应商最近7天内是否有订单数据，如果有，则前端需要实时刷新数据，如果没有，则无需更新
+        $map = 'status=1 or accountPay=1';
+        $order_count = Db::name('order')->where([
+            ['business_userId', '=', $businessId],
+            ['coupon_status', '=', 'c01'],
+            ['logistic_delivery_date','>',time()-3600*24*7],
+        ])->count();
+        $is_has_data = $order_count>0 ? 1 : 2;
         //如果存储的日期存在，则默认显示存储日期；否则按原先规格显示
         if ($default) {
-            return $this->defaultData($businessId, $user_id, $date_arr, $default_k);
+            return $this->defaultData($businessId, $user_id, $date_arr, $default_k,1,1,$is_has_data);
         } else {
             $today_before_k = $today_k = $today_after_k = '';
             //如果有当天的，默认取当前的，如果没有，则获取距离当天最近的日期
             if (in_array(0, $diff_today_arr)) {
                 $today_k = array_search(0, $diff_today_arr);
-                return $this->defaultData($businessId, $user_id, $date_arr, $today_k);
+                return $this->defaultData($businessId, $user_id, $date_arr, $today_k,1,1,$is_has_data);
             } else {
                 $today_before_arr = $today_after_arr = [];//存储今天之前和今天之后的数据
                 foreach ($date_arr as $k => $v) {
@@ -70,21 +78,16 @@ class Order extends Model
                 }
                 if ($today_after_arr) {
                     $today_after_k = array_search($today_after_arr[0]['diff_today'], $diff_today_arr);
-                    return $this->defaultData($businessId, $user_id, $date_arr, $today_after_k);
+                    return $this->defaultData($businessId, $user_id, $date_arr, $today_after_k,1,1,$is_has_data);
                 } else {
-                    $today_before_k = array_search($today_before_arr[count($today_before_arr) - 1]['diff_today'], $diff_today_arr);
-                    return $this->defaultData($businessId, $user_id, $date_arr, $today_before_k);
+                    if($today_before_arr){
+                        $today_before_k = array_search($today_before_arr[count($today_before_arr) - 1]['diff_today'], $diff_today_arr);
+                        return $this->defaultData($businessId, $user_id, $date_arr, $today_before_k,1,1,$is_has_data);
+                    }else{
+                        return ['list' => $date_arr,'default' => $default,'default_k' => $default_k,'is_has_data' => $is_has_data];
+                    }
                 }
             }
-            //判断当前供应商最近7天内是否有订单数据，如果有，则前端需要实时刷新数据，如果没有，则无需更新
-            $map = 'status=1 or accountPay=1';
-            $order_count = Db::name('order')->where([
-                    ['business_userId', '=', $businessId],
-                    ['coupon_status', '=', 'c01'],
-                    ['logistic_delivery_date','>',time()-3600*24*7],
-            ])->count();
-            $is_has_data = $order_count>0 ? 1 : 2;
-            return ['list' => $date_arr,'default' => $default,'default_k' => $default_k,'is_has_data' => $is_has_data];
         }
     }
 
@@ -649,16 +652,17 @@ class Order extends Model
      * @param $user_id
      * @param $date_arr 数据
      * @param $defaut_key 默认key值
+     * @param $is_has_data 判断当前供应商最近7天内是否有订单数据，如果有，则前端需要实时刷新数据，如果没有，则无需更新
      * @return array
      */
-    public function defaultData($businessId,$user_id,$date_arr,$defaut_key,$type=1,$action_type=1)
+    public function defaultData($businessId,$user_id,$date_arr,$defaut_key,$type=1,$action_type=1,$is_has_data=2)
     {
         $date_arr[$defaut_key]['is_default'] = 1;
         $default = $date_arr[$defaut_key];
         $default_k = $defaut_key;
         //存储默认调度
         $this->setDefaultDate($type,$action_type,$businessId,$user_id,$default);
-        return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k];
+        return ['list' => $date_arr, 'default' => $default, 'default_k' => $default_k,'is_has_data' => $is_has_data];
     }
 
     /**
@@ -1090,7 +1094,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.business_userId,o.coupon_status,o.displayName,o.first_name,o.last_name,o.address,o.receipt_picture,o.phone,o.xero_invoice_id,o.xero_id,userId,uf.nickname,u.pic')
+            ->field('o.orderId,o.business_userId,o.coupon_status,o.displayName,o.first_name,o.last_name,o.address,o.receipt_picture,o.phone,o.xero_invoice_id,o.xero_id,userId,uf.user_id,uf.factory_id,uf.nickname,uf.pic')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id=o.business_userId')
             ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)

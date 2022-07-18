@@ -164,11 +164,11 @@
 					});
 					return;
 				}
-				if(this.jobFillData.end_kile_metre==''||this.jobFillData.end_kile_metre==null||this.jobFillData.end_kile_metre<0){
+				if(this.jobFillData.end_kile_metre==''||this.jobFillData.end_kile_metre==null||parseFloat(this.numberData(this.jobFillData.end_kile_metre))<0){
 					popContent('Please enter the correct number of kilometers');
 					return;
 				}
-				if(parseFloat(this.jobFillData.end_kile_metre)<parseFloat(this.jobData.start_kile_metre_num)){
+				if(parseFloat(this.numberData(this.jobFillData.end_kile_metre))<parseFloat(this.numberData(this.jobData.start_kile_metre_num))){
 					popContent('The end kilo metre cannot be less than the start kilo metre');
 					return;
 				}
