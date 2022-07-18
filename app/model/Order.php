@@ -1098,7 +1098,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('order')
             ->alias('o')
-            ->field('o.orderId,o.business_userId,o.coupon_status,o.displayName,o.first_name,o.last_name,o.address,o.receipt_picture,o.phone,o.xero_invoice_id,o.xero_id,userId,uf.user_id,uf.factory_id,uf.nickname,uf.pic')
+            ->field('o.id,o.orderId,o.business_userId,o.coupon_status,o.displayName,o.first_name,o.last_name,o.address,o.receipt_picture,o.phone,o.xero_invoice_id,o.xero_id,userId,uf.user_id,uf.factory_id,uf.nickname,uf.pic')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id=o.business_userId')
             ->leftJoin('user u','u.id = o.business_userId')
             ->where($where)
