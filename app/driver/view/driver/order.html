@@ -88,12 +88,16 @@
 		<common-footer current-menu="2"></common-footer>
 		<!-- 显示订单信息-->
 		<div class="mask" v-if="isShowOrderDetail">
-			<div class="driverPopOrderDetail bgF2F2F2 pa15-0 borR7 relative">
-				<div class="driveChaClose" @click="closeBox">×</div>
+			<div class="driverPopOrderDetail bgfff pa15-0 borR7 relative">
+<!--				<div class="driveChaClose" @click="closeBox">×</div>-->
+				<img src="__STATIC__/product/img/cha2.png" class="driveChaClose" @click="closeBox">
 				<div class="driverPopOrderContent">
 					<div class="f30 col1C1C1C ma15" :class="index<orderDetail.length-1?'borderBBFBFBF':''" v-for="(item,index) in orderDetail">
 						<div class="flexBox1 col000 f30 f500 pmb10">
 							<span class="col000 f40">{{item.menu_en_name}} {{item.guige_name}}</span>
+						</div>
+						<div class="flexBox2 pmb15" v-if="item.print_label_sorts_arr.length>0">
+							<span class="bold colFD5001 f35" v-for="(item1,index1) in item.print_label_sorts_arr">{{item1}}/{{item.boxesNumber}}<span v-if="index1<item.print_label_sorts_arr.length-1">，</span></span>
 						</div>
 						<div class="flexBox2 pmb15">
 							<span class="boxWidth30">{{item.menu_id}}</span>

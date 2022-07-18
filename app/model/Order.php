@@ -572,7 +572,7 @@ class Order extends Model
     {
 
         //当天凌晨时间戳
-        $start_time = strtotime(date('Y-m-d'))-3600*24*3;
+        $start_time = strtotime(date('Y-m-d'))-3600*24*7;
         $date_arr = Db::name('order')
             ->alias('o')
             ->field("o.logistic_delivery_date,o.logistic_schedule_id,FROM_UNIXTIME(o.logistic_delivery_date,'%Y-%m-%d') date,2 as is_default,tds.schedule_start_time")
@@ -825,7 +825,7 @@ class Order extends Model
         if($order) {
             $order_detail_arr = Db::name('wj_customer_coupon')
                 ->alias('wcc')
-                ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.print_label_sorts,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
                 ->leftJoin('restaurant_menu rm', 'rm.id = wcc.restaurant_menu_id')
                 ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
                 ->where([
@@ -846,6 +846,8 @@ class Order extends Model
             foreach ($order_detail_arr as $vv){
                 if($vv['order_id'] == $v['orderId']){
                     $vv['new_customer_buying_quantity'] = $vv['new_customer_buying_quantity']>=0?$vv['new_customer_buying_quantity']:$vv['customer_buying_quantity'];
+                    $vv['print_label_sorts_arr'] = $vv['print_label_sorts'] ? explode(',',$vv['print_label_sorts']):[];
+                    $vv['boxesNumber'] = $v['boxesNumber'];
                     $v['order_detail'][] = $vv;
                 }
             }
