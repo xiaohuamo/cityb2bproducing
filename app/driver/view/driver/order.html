@@ -70,7 +70,7 @@
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
 				<div class="col000 f40 bold">{{item.name}}</div>
-				<div class="wlbtn1">{{item.boxesNumber}}<span v-if="item.boxesNumber>1">boxes</span><span v-else>box</span></div>
+				<div class="wlbtn1"><span class="F30">{{item.boxesNumber}} </span><span v-if="item.boxesNumber>1">BXS</span><span v-else>BX</span></div>
 			</div>
 			<div class="bgfff flexBox1 pa15 borderB">
 				<div @click="googleMap(item.address)">{{item.address}}</div>
@@ -97,11 +97,11 @@
 							<span class="col000 f40">{{item.menu_en_name}} {{item.guige_name}}</span>
 						</div>
 						<div class="flexBox2 pmb15" v-if="item.print_label_sorts_arr.length>0">
-							<span class="bold colFD5001 f35" v-for="(item1,index1) in item.print_label_sorts_arr">{{item1}}/{{item.boxesNumber}}<span v-if="index1<item.print_label_sorts_arr.length-1">，</span></span>
+							<span class="bold colFD5001 f40" v-for="(item1,index1) in item.print_label_sorts_arr">{{item1}}/{{item.boxesNumber}}<span v-if="index1<item.print_label_sorts_arr.length-1">，</span></span>
 						</div>
 						<div class="flexBox2 pmb15">
 							<span class="boxWidth30">{{item.menu_id}}</span>
-							<span class="f35">{{item.new_customer_buying_quantity}} {{item.unit_en}}</span>
+							<span><span class="f40">{{item.new_customer_buying_quantity}}</span> {{item.unit_en}}</span>
 						</div>
 					</div>
 				</div>

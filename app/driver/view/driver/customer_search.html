@@ -78,7 +78,7 @@
 <!--		</div>-->
 		<div class="bgfff flexBox1 pa15 borderB">
 			<div class="col000 f40 bold">{{item.name}}</div>
-			<div class="wlbtn1">{{item.boxesNumber}}<span v-if="item.boxesNumber>1">boxes</span><span v-else>box</span></div>
+			<div class="wlbtn1"><span class="F30">{{item.boxesNumber}} </span><span v-if="item.boxesNumber>1">BXS</span><span v-else>BX</span></div>
 		</div>
 		<div class="flexBox2 pa15 borderB">
 			<a class="col000" :href="'tel:'+item.phone"><img src="__STATIC__/product/img/service3.png" class="location2"/>

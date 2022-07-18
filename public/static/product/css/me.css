@@ -242,12 +242,12 @@
 
 .wlbtn1{
 	min-width: 6.8rem;
-	height: 2.28rem;
-	background: #FFCEB6;
+	height: 3.28rem;
+	/*background: #FFCEB6;*/
 	border: 1px solid #FD5103;
 	border-radius: 7px;
 	text-align: center;
-	line-height: 2.28rem;
+	line-height: 3.28rem;
 	color: #000;
 	font-size: 1.56rem;
 	font-weight: bold;

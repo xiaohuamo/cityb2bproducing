@@ -831,7 +831,9 @@ class Order extends Model
                 ->where([
                     ['wcc.order_id', 'in', array_column($order, 'orderId')],
                     ['wcc.customer_buying_quantity', '>', 0],
-                ])->select()->toArray();
+                ])
+                ->order('rm.menu_id asc,wcc.id asc')
+                ->select()->toArray();
         }
         foreach($order as &$v){
             //获取该订单的总箱数
