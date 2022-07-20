@@ -502,7 +502,7 @@ class Driver extends Base
         if($all_order_count['order_done_count'] != $all_order_count['order_count']){
             return show(config('status.code')['driver_status_error']['code'], 'Please complete the receive first');
         }
-        //判断司机货物是否全部送达
+        //判断司机货物是否全部送达 
         $all_delivery_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],3);
         if($all_delivery_order_count['order_done_count'] != $all_delivery_order_count['order_count']){
             return show(config('status.code')['driver_status_error']['code'], 'Please complete the delivery first');
