@@ -234,7 +234,7 @@ class DispatchingProgressSummery extends Model
             ->group('dps.logistic_schedule_id')
             ->order($order_by)
 //            ->select()->toArray();
-            ->column('dps.logistic_schedule_id,dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,tds.schedule_start_time,count(o.orderId) all_order_num,o.edit_boxesNumber,o.boxesNumber,0 as all_bxs_num','dps.logistic_schedule_id');
+            ->column('dps.logistic_schedule_id,dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,tds.schedule_start_time,count(o.orderId) all_order_num,sum(IF(o.edit_boxesNumber>0,o.edit_boxesNumber,o.boxesNumber)) as all_bxs_num','dps.logistic_schedule_id');
         if(isset($data[0])){
             $data_0 = $data[0];
             unset($data[0]);
@@ -246,11 +246,6 @@ class DispatchingProgressSummery extends Model
         $time = time();
         foreach ($data as &$v){
             //计算总箱数
-            if($v['edit_boxesNumber']>0){
-                $v['all_bxs_num'] += $v['edit_boxesNumber'];
-            }else{
-                $v['all_bxs_num'] += $v['boxesNumber'];
-            }
             $v['schedule_time'] = $v['schedule_start_time'] > 0 ? date('h:ia',$v['schedule_start_time']) : '';//发车时间
             $v['remain_time'] = $v['schedule_start_time'] > 0 && $v['schedule_start_time']>=$time ?  $v['schedule_start_time']-$time : 0;//距离发车剩余时间
             $v['remain_time_desc'] = $v['remain_time']>0?$this->remainTimeForm($v['remain_time']):'';

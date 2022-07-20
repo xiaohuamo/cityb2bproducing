@@ -697,7 +697,7 @@ class Order extends Model
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
      * @param string $logistic_schedule_id 配送司机调度id
-     * @param int $type 1。获取boxs的统计信息 2.获取订单的统计信息
+     * @param int $type 1。获取boxs的统计信息 2.获取订单的统计信息 3.获取订单送达的统计信息
      * @return array
      */
     public function getDriverOrderCount($businessId,$logistic_delivery_date,$logistic_schedule_id,$type=2)
@@ -713,7 +713,7 @@ class Order extends Model
             ->where($where)
             ->where($map);
         //获取需要配送的订单总数
-        if($type == 2){
+        if($type == 2 || $type == 3){
             $order_count = $sql_model->count();
         } else {
             $order_count_arr = $sql_model->field('IF(`edit_boxesNumber`>0,`edit_boxesNumber`,`boxesNumber`) as boxesNumber')->select()->toArray();
@@ -727,6 +727,8 @@ class Order extends Model
             ->where($map);
         if($type == 2){
             $order_done_count = $sql_model1->count();
+        } elseif ($type == 3) {
+            $order_done_count = $sql_model1->where("o.coupon_status='b01'")->count();
         } else {
             $order_done_count_arr = $sql_model1->field('IF(`edit_boxesNumber`>0,`edit_boxesNumber`,`boxesNumber`) as boxesNumber')->select()->toArray();
             $order_done_count = array_sum(array_column($order_done_count_arr,'boxesNumber'));
