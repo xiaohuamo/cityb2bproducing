@@ -1011,6 +1011,40 @@ class Order extends Model
             }
         }
         $data['print_label_sorts_length'] = count($data['print_label_sorts_arr']);//获取该产品打印标签的个数
+        //如果存在标签序号，判断连号的放在一起
+        if (count($data['print_label_sorts_arr']) <= 1){
+            $data['print_label_sorts_show_arr'] = [$data['print_label_sorts_arr']];
+        }else{
+            # 计算差值
+            $diff = 1;
+            # 检查剩余的差值
+            for($i=1; $i<count($data['print_label_sorts_arr']); $i++)
+            {
+                if($i == 1){
+                    $data['print_label_sorts_show_arr'][] = [$data['print_label_sorts_arr'][0]];
+                }
+                if ($data['print_label_sorts_arr'][$i]-$data['print_label_sorts_arr'][$i-1] == $diff)
+                {
+                    foreach($data['print_label_sorts_show_arr'] as $k=>&$v){
+                        if(in_array($data['print_label_sorts_arr'][$i-1],$v)){
+                            array_push($data['print_label_sorts_show_arr'][$k],$data['print_label_sorts_arr'][$i]);
+                            break;
+                        }
+                    }
+                }else{
+                    $data['print_label_sorts_show_arr'][] = [$data['print_label_sorts_arr'][$i]];
+                }
+            }
+        }
+        $data['print_label_sorts_show_detail'] = [];
+        foreach($data['print_label_sorts_show_arr'] as $plssak=>$plssav){
+            $count = count($plssav);
+            if($count<=1){
+                $data['print_label_sorts_show_detail'][$plssak] = $plssav?$plssav[0]:'';
+            }else{
+                $data['print_label_sorts_show_detail'][$plssak] = $plssav[0].'-'.$plssav[$count-1];
+            }
+        }
         return $data;
     }
 

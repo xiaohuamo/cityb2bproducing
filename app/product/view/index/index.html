@@ -397,6 +397,11 @@
 						<div class="remarkBox orderDetail pa5-10 maT10 blink" style="width: auto;" v-if="item.message"><div class="pa0-26">{{item.message}}</div></div>
 					</div>
 					<div class="flexbox1 pa5 F18 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
+						<div class="col666 F20" style="width: 90px;">
+							<div v-for="(item1,index1) in item.print_label_sorts_show_detail"><template v-if="item1">{{item1}}/{{item.boxesNumber}}<span v-if="index1<item.print_label_sorts_show_detail.length-1">,</span></template></div>
+						</div>
+					</div>
+					<div class="flexbox1 pa5 F18 orderItemBox" :class="index%2==0?'bgFFF7F3':'bgF0FBFB'">
 						<div class="flexbox2">
 							<div class="col666 F20" style="width: 35px;" v-if="item.mix_box_group>0">M{{item.mix_box_group}}</div>
 							<div class="col666 F20" style="width: 35px;" v-else></div>
