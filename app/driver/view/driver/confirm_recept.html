@@ -80,7 +80,8 @@
 	new Vue({
 		el:"#photo",
 		data:{
-			orderId:localStorage.getItem('orderId'),//订单id
+			orderId:localStorage.getItem('orderId') != null ? localStorage.getItem('orderId') : '',//订单id
+			type:localStorage.getItem('type') != null ? localStorage.getItem('type') : 1,//订单类型 1-正常送货订单 2-pick up订单
 			orderInfo:[],//订单详情
 			isLoading: false,//是否显示加载图标
 			receipt_picture:'__STATIC__/product/img/photo.png',//完成上传的图片
@@ -98,7 +99,8 @@
 				var _this = this
 				_this.isLoading=true
 				var param = {
-					'orderId':_this.orderId
+					'orderId':_this.orderId,
+					'type':_this.type
 				}
 				getData("{:url('/driver/driverOrderDetail')}", param, function (res) {
 					console.log('获取订单详情结果---',res);
@@ -155,7 +157,8 @@
 			updateOrderRceiptPicture(){
 				let param = {
 					'orderId': this.orderId,
-					'receipt_picture': this.receipt_picture
+					'receipt_picture': this.receipt_picture,
+					'type':this.type
 				}
 				console.log('更新图片参数---',param);
 				let _this = this

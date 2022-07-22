@@ -96,7 +96,7 @@
 						<div class="flexBox1 col000 f30 f500 pmb10">
 							<span class="col000 f40">{{item.menu_en_name}} {{item.guige_name}}</span>
 						</div>
-						<div class="flexBox2 pmb15" v-if="item.print_label_sorts_arr.length>0">
+						<div class="flexBox2 wrap pmb15" v-if="item.print_label_sorts_arr.length>0">
 							<span class="bold colFD5001 f40" v-for="(item1,index1) in item.print_label_sorts_arr">{{item1}}/{{item.boxesNumber}}<span v-if="index1<item.print_label_sorts_arr.length-1">，</span></span>
 						</div>
 						<div class="flexBox2 pmb15">

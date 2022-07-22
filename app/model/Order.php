@@ -860,6 +860,109 @@ class Order extends Model
     }
 
     /**
+     * 获取司机导航订单明细信息
+     * @return array
+     */
+    public function getDriverNavOrderList($logistic_delivery_date,$businessId,$logistic_schedule_id,$o_sort=0,$o_sort_type=1)
+    {
+        //获取当前用户对应的司机编号
+        $map = "(o.status=1 or o.accountPay=1) and (o.coupon_status='c01' or o.coupon_status='b01')";
+        $where = [
+            ['o.logistic_delivery_date', '=', $logistic_delivery_date],
+            ['o.business_userId', '=', $businessId],
+            ['o.logistic_schedule_id', '=', $logistic_schedule_id],
+        ];
+        $pmap = "(p.coupon_status='p01' or p.coupon_status='b01')";
+        $pwhere = [
+            ['p.logistic_delivery_date', '=', $logistic_delivery_date],
+            ['p.business_userId', '=', $businessId],
+            ['p.logistic_schedule_id', '=', $logistic_schedule_id],
+        ];
+        //获取加工明细单数据
+        $order = Db::name('order')
+            ->alias('o')
+            ->field('o.id,1 as type,o.orderId,o.userId,o.business_userId,o.coupon_status,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_stop_No,o.address,o.driver_receipt_status,o.boxesNumber,o.edit_boxesNumber,o.displayName,o.first_name,o.last_name,o.phone,o.receipt_picture,uf.nickname user_name,u.nickname business_name,u.name,tds.status,"" as order_name')
+            ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.schedule_id=o.logistic_schedule_id")
+            ->leftJoin('user_factory uf','uf.user_id = o.userId and uf.factory_id='.$businessId)
+            ->leftJoin('user u','u.id = o.business_userId')
+            ->where($where)
+            ->where($map)
+            ->union(function ($query) use ($businessId,$logistic_delivery_date,$pwhere,$pmap) {
+                $query->name('picking')->alias('p')
+                    ->field('p.id,2 as type,p.orderId,p.userId,p.business_userId,p.coupon_status,p.logistic_delivery_date,p.logistic_sequence_No,p.logistic_stop_No,p.address,p.driver_receipt_status,p.boxesNumber,p.edit_boxesNumber,p.displayName,p.first_name,p.last_name,p.phone,p.receipt_picture,uf.nickname user_name,u.nickname business_name,u.name,tds.status,p.order_name')
+                    ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.schedule_id=p.logistic_schedule_id")
+                    ->leftJoin('user_factory uf','uf.user_id = p.userId and uf.factory_id='.$businessId)
+                    ->leftJoin('user u','u.id = p.business_userId')
+                    ->where($pwhere)
+                    ->where($pmap);
+            })
+            ->select()->toArray();
+        $id_arr = array_column($order,'id');
+        switch ($o_sort){
+            case 1://Name排序
+                $userId_arr = array_column($order,'userId');
+                if ($o_sort_type == 1) {
+                    array_multisort($userId_arr, SORT_ASC, $id_arr, SORT_ASC, $order);
+                } else {
+                    array_multisort($userId_arr, SORT_DESC, $id_arr, SORT_DESC, $order);
+                }
+                break;
+            case 2://SeqNo排序
+                $logistic_sequence_No_arr = array_column($order,'logistic_sequence_No');
+                $id_arr = array_column($order,'id');
+                if ($o_sort_type == 1) {
+                    array_multisort($logistic_sequence_No_arr,SORT_ASC,$id_arr,SORT_ASC,$order);
+                } else {
+                    array_multisort($logistic_sequence_No_arr,SORT_DESC,$id_arr,SORT_DESC,$order);
+                }
+                break;
+            default://默认StopNo排序
+                $logistic_stop_No_arr = array_column($order,'logistic_stop_No');
+                $id_arr = array_column($order,'id');
+                if ($o_sort_type == 1) {
+                    array_multisort($logistic_stop_No_arr,SORT_ASC,$id_arr,SORT_ASC,$order);
+                } else {
+                    array_multisort($logistic_stop_No_arr,SORT_DESC,$id_arr,SORT_DESC,$order);
+                }
+        }
+        //获取订单明细
+        $order_detail_arr = [];
+        if($order) {
+            $order_detail_arr = Db::name('wj_customer_coupon')
+                ->alias('wcc')
+                ->field('wcc.id,wcc.order_id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.print_label_sorts,rm.menu_en_name,rm.menu_id,rm.unit_en,rmo.menu_en_name guige_name')
+                ->leftJoin('restaurant_menu rm', 'rm.id = wcc.restaurant_menu_id')
+                ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
+                ->where([
+                    ['wcc.order_id', 'in', array_column($order, 'orderId')],
+                    ['wcc.customer_buying_quantity', '>', 0],
+                ])
+                ->order('rm.menu_id asc,wcc.id asc')
+                ->select()->toArray();
+        }
+        foreach($order as &$v){
+            //获取该订单的总箱数
+            if($v['edit_boxesNumber']<=0){
+                $v['edit_boxesNumber'] = $v['boxesNumber'];
+            }
+            $v['boxesNumber'] = $v['edit_boxesNumber'];
+            $v['delivery_date'] = date('m/d/Y',$v['logistic_delivery_date']);
+            $v['business_name'] = $v['business_name'] ?: $v['name'];
+            $v['business_shortcode']  = $v['displayName'] ?: $v['first_name'].' '.$v['last_name'];
+            $v['name'] = $this->getCustomerName($v);
+            foreach ($order_detail_arr as $vv){
+                if($vv['order_id'] == $v['orderId']){
+                    $vv['new_customer_buying_quantity'] = $vv['new_customer_buying_quantity']>=0?$vv['new_customer_buying_quantity']:$vv['customer_buying_quantity'];
+                    $vv['print_label_sorts_arr'] = $vv['print_label_sorts'] ? explode(',',$vv['print_label_sorts']):[];
+                    $vv['boxesNumber'] = $v['boxesNumber'];
+                    $v['order_detail'][] = $vv;
+                }
+            }
+        }
+        return $order;
+    }
+
+    /**
      * 配货端-获取产品订单明细
      * @param $businessId  供应商id
      * @param string $logistic_delivery_date 配送日期
@@ -1103,7 +1206,7 @@ class Order extends Model
         }
         //  如果客户无简码，并且提交订单时未填写客户户名，则，客户填写的 姓 ，名 做为第三优先级 ；
         if((!empty($order['first_name'])&&trim($order['first_name'])) || (!empty($order['last_name'])&&trim($order['last_name'])) ) {
-            return  trim($order['first_name']).' '.trim($order['last_name']);
+            return  trim($order['first_name']?:'').' '.trim($order['last_name']?:'');
         }
         //如果以上均为捕获到客户信息，则获取用户注册时的用户信息做为标记；
         $user = User::getOne($order['userId']);
@@ -1115,7 +1218,7 @@ class Order extends Model
                 return trim($user['businessName']);
             }
             if((!empty($order['person_first_name'])&&trim($user['person_first_name'])) || (!empty($order['person_last_name'])&&trim($user['person_last_name']))){
-                return trim($user['person_first_name']).' '.trim($user['person_last_name']);
+                return trim($user['person_first_name']?:'').' '.trim($user['person_last_name']?:'');
             }
             return trim($user['name']);
         }

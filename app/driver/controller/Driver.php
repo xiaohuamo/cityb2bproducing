@@ -4,11 +4,12 @@ declare (strict_types = 1);
 namespace app\driver\controller;
 
 use think\facade\Db;
+use think\Model;
 use think\Request;
 use app\common\service\UploadFileService;
 use app\product\validate\IndexValidate;
 use app\driver\validate\DriverValidate;
-use app\model\{Order, Truck, User, TruckJob, UserFactory, WjCustomerCoupon, OrderReturn, OrderReturnDetailInfo};
+use app\model\{Order, Truck, User, TruckJob, UserFactory, WjCustomerCoupon, OrderReturn, OrderReturnDetailInfo, Picking};
 use think\route\dispatch\Controller;
 
 class Driver extends Base
@@ -211,6 +212,34 @@ class Driver extends Base
     }
 
     /**
+     * 获取司机导航订单信息
+     * @return \think\response\Json
+     */
+    public function driverNavOrder(Request $request)
+    {
+        //接收参数
+        $param = $request->only(['logistic_delivery_date','logistic_schedule_id','o_sort','o_sort_type']);
+        $param['o_sort'] = $param['o_sort']??0;//排序字段
+        $param['o_sort_type'] = $param['o_sort_type']??1;//1-正向排序 2-反向排序
+        $businessId = $request->businessId;
+        $user_id = $request->user_id;//当前操作用户
+
+        $Order = new Order();
+
+        //获取对应日期的总的订单数和已完成的订单数
+        $all_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],2);
+        //获取对应日期的送货订单和pick up订单
+        $order = $Order->getDriverNavOrderList($param['logistic_delivery_date'],$businessId,$param['logistic_schedule_id'],$param['o_sort'],$param['o_sort_type']);
+        $coupon_status_arr = array_column($order,'coupon_status');
+        $data = [
+            'order' => $order,
+            'is_finish_receive' => $all_order_count['order_done_count'] == $all_order_count['order_count'] ? 1 : 2,//是否完成收货 1-是 2-否
+            'is_finish_deliveryed' => in_array('c01',$coupon_status_arr) || in_array('p01',$coupon_status_arr) ? 2 : 1,//是否全部送货 1-是 2-否
+        ];
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
+    }
+
+    /**
      * 修改收货状态
      */
     public function changeReceiptStatus(Request $request)
@@ -258,13 +287,17 @@ class Driver extends Base
     public function orderDetail(Request $request)
     {
         //接收参数
-        $param = $request->only(['orderId']);
+        $param = $request->only(['orderId','type']);
         $orderId = $param['orderId']??'';
+        $type = $param['type']??1;
 
-        $Order = new Order();
-        $WjCustomerCoupon = new WjCustomerCoupon();
-
-        $order_info = $Order->getOrderInfo($orderId);
+        if($type == 1){
+            $Order = new Order();
+            $order_info = $Order->getOrderInfo($orderId);
+        }else{
+            $Picking = new Picking();
+            $order_info = $Picking->getOrderInfo($orderId);
+        }
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$order_info);
     }
 
@@ -342,21 +375,33 @@ class Driver extends Base
     public function updateOrderRceiptPicture(Request $request)
     {
         //接收参数
-        $param = $request->only(['orderId','receipt_picture']);
+        $param = $request->only(['orderId','receipt_picture','type']);
 
         $validate = new DriverValidate();
         if (!$validate->scene('updateOrderRceiptPicture')->check($param)) {
             return show(config('status.code')['param_error']['code'], $validate->getError());
         }
-        $info = Order::getOne(['orderId' => $param['orderId']],"coupon_status,receipt_picture,driver_receipt_status");
-        if(empty($info)){
-            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+        if($param['type'] == 1){
+            $info = Order::getOne(['orderId' => $param['orderId']],"coupon_status,receipt_picture,driver_receipt_status");
+            if(empty($info)){
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
+            if($info['coupon_status'] != 'c01' && !empty($info['receipt_picture'])){
+                return show(config('status.code')['finish_order_error']['code'], config('status.code')['finish_order_error']['msg']);
+            }
+            //将图片存入数据库
+            $res = Order::getUpdate(['orderId' => $param['orderId']],['receipt_picture' => $param['receipt_picture']]);
+        }else{
+            $info = Picking::getOne(['orderId' => $param['orderId']],"coupon_status,receipt_picture");
+            if(empty($info)){
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
+            if($info['coupon_status'] != 'p01' && !empty($info['receipt_picture'])){
+                return show(config('status.code')['finish_order_error']['code'], config('status.code')['finish_order_error']['msg']);
+            }
+            //将图片存入数据库
+            $res = Picking::getUpdate(['orderId' => $param['orderId']],['receipt_picture' => $param['receipt_picture']]);
         }
-        if($info['coupon_status'] != 'c01' && !empty($info['receipt_picture'])){
-            return show(config('status.code')['finish_order_error']['code'], config('status.code')['finish_order_error']['msg']);
-        }
-        //将图片存入数据库
-        $res = Order::getUpdate(['orderId' => $param['orderId']],['receipt_picture' => $param['receipt_picture']]);
         if($res !== false){
             if(!empty($info['receipt_picture'])){
                 //并将原图删除
@@ -378,26 +423,37 @@ class Driver extends Base
     public function confirmOrderFinish()
     {
         //接收参数
-        $param = $this->request->only(['orderId']);
+        $param = $this->request->only(['orderId','type']);
         $validate = new DriverValidate();
         if (!$validate->scene('confirmOrderFinish')->check($param)) {
             return show(config('status.code')['param_error']['code'], $validate->getError());
         }
 
-        $info = Order::getOne(['orderId' => $param['orderId']],"coupon_status,receipt_picture,driver_receipt_status");
-        if(empty($info)){
-            return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
-        }
+        if($param['type'] == 1){
+            $info = Order::getOne(['orderId' => $param['orderId']],"coupon_status,receipt_picture,driver_receipt_status");
+            if(empty($info)){
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
 //        if($info['driver_receipt_status'] == 0){
 //            return show(config('status.code')['finish_order_status_error']['code'], config('status.code')['finish_order_status_error']['msg']);
 //        }
 //        if($info['coupon_status'] != 'c01'){
 //            return show(config('status.code')['finish_order_error']['code'], config('status.code')['finish_order_error']['msg']);
 //        }
-        //更改订单状态
-        Order::getUpdate(['orderId' => $param['orderId']],[
-            'coupon_status' => 'b01',
-        ]);
+            //更改订单状态
+            Order::getUpdate(['orderId' => $param['orderId']],[
+                'coupon_status' => 'b01',
+            ]);
+        }else{
+            $info = Picking::getOne(['orderId' => $param['orderId']],"coupon_status,receipt_picture");
+            if(empty($info)){
+                return show(config('status.code')['param_error']['code'], config('status.code')['param_error']['msg']);
+            }
+            //更改订单状态
+            Picking::getUpdate(['orderId' => $param['orderId']],[
+                'coupon_status' => 'b01',
+            ]);
+        }
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$info);
     }
 
@@ -419,6 +475,11 @@ class Driver extends Base
         //更改订单状态
         $map = "business_userId=$businessId and (status=1 or accountPay=1) and coupon_status='c01' and logistic_delivery_date=".$param['logistic_delivery_date']." and logistic_schedule_id=".$param['logistic_schedule_id'];
         Order::getUpdate($map,[
+            'coupon_status' => 'b01',
+        ]);
+        //包含pick up的订单
+        $pmap = "business_userId=$businessId and coupon_status='p01' and logistic_delivery_date=".$param['logistic_delivery_date']." and logistic_schedule_id=".$param['logistic_schedule_id'];
+        Picking::getUpdate($pmap,[
             'coupon_status' => 'b01',
         ]);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg']);
@@ -502,7 +563,7 @@ class Driver extends Base
         if($all_order_count['order_done_count'] != $all_order_count['order_count']){
             return show(config('status.code')['driver_status_error']['code'], 'Please complete the receive first');
         }
-        //判断司机货物是否全部送达 
+        //判断司机货物是否全部送达
         $all_delivery_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],3);
         if($all_delivery_order_count['order_done_count'] != $all_delivery_order_count['order_count']){
             return show(config('status.code')['driver_status_error']['code'], 'Please complete the delivery first');

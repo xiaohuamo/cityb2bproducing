@@ -10,6 +10,7 @@ class DriverValidate extends Validate
 
     protected $rule = [
         'orderId' => 'require',//账号
+        'type' => 'require|in:1,2',//订单类型 1-订单 2-pick up订单
         'receipt_picture'  =>  'require',//密码
         'logistic_delivery_date'  =>  'require',//配送日期
         'logistic_schedule_id' => 'require',//调度id
@@ -30,8 +31,8 @@ class DriverValidate extends Validate
 
     protected $scene = [
         'updateStorePicture' => ['user_id','factory_id','pic'],//更新店铺图片
-        'updateOrderRceiptPicture' => ['orderId','receipt_picture'],//更新收货图片
-        'confirmOrderFinish' => ['orderId'],//确认完成收货
+        'updateOrderRceiptPicture' => ['orderId','receipt_picture','type'],//更新收货图片
+        'confirmOrderFinish' => ['orderId','type'],//确认完成收货
         'confirmAllOrderFinish' => ['logistic_delivery_date','logistic_schedule_id'],//确认全部订单完成收货
         'truckJobInfo' => ['logistic_delivery_date','logistic_schedule_id'],//获取车辆信息
         'doStartJob' => ['logistic_delivery_date','logistic_schedule_id','start_kile_metre','start_temprature','start_truck_check'],//开始工作

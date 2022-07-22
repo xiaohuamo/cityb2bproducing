@@ -88,11 +88,18 @@
 			<img src="__STATIC__/product/img/location2.png" class="location2"/>{{item.address}}
 		</div>
 		<div class="bgfff flexBox5 pa15 borderB">
-			<div class="commonBtn bglgFD5001-FC8F4F pa0-15 mar10" @click="item.status!=4&&returnStock(item,index)">return</div>
-			<div class="commonBtn bglgFD5001-FC8F4F pa0-5 mar10" v-if="item.coupon_status == 'c01'" @click="item.status!=4&&makeDelivery(item,index)">mark delivery</div>
-			<div class="commonBtn bglg45A009-78DB36 pa0-15 mar10" v-if="item.coupon_status == 'b01'">delivered</div>
-			<div class="commonBtn bglgFD5001-FC8F4F pa0-5" v-if="item.coupon_status == 'c01'" @click="item.status!=4&&photograph(item,index)">photograph</div>
-			<div class="commonBtn bglg45A009-78DB36 pa0-15" v-if="item.coupon_status == 'b01'" @click="item.status!=4&&photograph(item,index)">arrived</div>
+			<div class="commonBtn bglgFD5001-FC8F4F pa0-15 mar10" v-if="item.type==1" @click="item.status!=4&&returnStock(item,index)">return</div>
+			<div class="commonBtn bglgFD5001-FC8F4F pa0-15 mar10" v-if="item.type==2" @click="showPickDetail(item,index)">details</div>
+			<div class="commonBtn bglgFD5001-FC8F4F pa0-5 mar10" v-if="item.coupon_status == 'c01'||item.coupon_status == 'p01'" @click="item.status!=4&&makeDelivery(item,index)">
+				<template v-if="item.type==1">mark delivery</template>
+				<template v-else>mark pick up</template>
+			</div>
+			<div class="commonBtn bglg45A009-78DB36 pa0-5 mar10" v-if="item.coupon_status == 'b01'">
+				<template v-if="item.type==1">delivered</template>
+				<template v-else>picked up</template>
+			</div>
+			<div class="commonBtn bglgFD5001-FC8F4F pa0-5" v-if="!item.receipt_picture" @click="item.status!=4&&photograph(item,index)">photograph</div>
+			<div class="commonBtn bglg45A009-78DB36 pa0-5" v-if="item.receipt_picture" @click="item.status!=4&&photograph(item,index)">photograph</div>
 		</div>
 	</div>
 	<div>
@@ -101,6 +108,20 @@
 	</div>
 	<!--自定义的组件使用-->
 	<common-footer current-menu="3"></common-footer>
+	<!-- 显示pick up订单信息-->
+	<div class="mask" v-if="isShowPickupOrderDetail">
+		<div class="driverPopOrderDetail bgfff pa15-0 borR7 relative">
+			<!--				<div class="driveChaClose" @click="closeBox">×</div>-->
+			<img src="__STATIC__/product/img/cha2.png" class="driveChaClose" @click="closeBox">
+			<div class="driverPopOrderContent">
+				<div class="f30 col1C1C1C ma15">
+					<div class="flexBox1 col000 f30 f500 pmb10">
+						<span class="col000 f40">{{pickupData.order_name}}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 </body>
 </html>
@@ -124,8 +145,11 @@
 			choseData:'',
 			currentMenu:3,   // 当前菜单
 			nav_current_index:localStorage.getItem('nav_current_index') != null ? localStorage.getItem('nav_current_index') : -1,
+			driver_orderId:localStorage.getItem('driver_orderId') != null ? localStorage.getItem('driver_orderId') : '',
 			is_show_all_deliveryed:false,//是否显示全部收货按钮
 			timeOutEvent:null,//定时器
+			isShowPickupOrderDetail:false,//是否显示pickup订单信息
+			pickupData:[],//收货数据
 		},
 		computed: {
 			newOrder() {
@@ -198,7 +222,7 @@
 				console.log('获取订单参数----',data)
 				var _this = this
 				_this.isLoading=true
-				getData("{:url('/driver/driverOrder')}", data, function (res) {
+				getData("{:url('/driver/driverNavOrder')}", data, function (res) {
 					console.log('获取订单结果----',res)
 					_this.isLoading=false
 					res = res.result
@@ -257,7 +281,48 @@
 				this.o_sort = type
 				// console.log(this.o_sort,this.o_sort_type);
 				//排序订单数据
-				this.orderData()
+				switch(type){
+					case 0:
+						this.sortData(this.order,'logistic_stop_No',this.o_sort_type);
+						break;
+					case 1:
+						this.sortData(this.order,'name',this.o_sort_type);
+						break;
+					case 2:
+						this.sortData(this.order,'logistic_sequence_No',this.o_sort_type);
+						break;
+				}
+			},
+			//对数据进行排序
+			//data:需要排序的数组 sort_field:排序字段  sort_type:排序方式 1升序 2降序
+			sortData(data,sort_field,sort_type,sort_field2=''){
+				return data.sort(
+						function(a, b) {
+							var value1 = a[sort_field]
+							var value2 = b[sort_field]
+							// console.log(value1,value2)
+							if($.type(value1) == 'number'){
+								if(sort_field2){
+									if(value1 == value2) return a[sort_field2]-b[sort_field2]
+								}
+								if (sort_type == 1) {
+									return value1 - value2
+								} else {
+									return value2 - value1
+								}
+							} else {
+								if (sort_type == 1) {
+									if(value1 < value2) return -1;
+									if(value1 > value2) return 1;
+									return 0;
+								} else {
+									if(value1 < value2) return 1;
+									if(value1 > value2) return -1;
+									return 0;
+								}
+							}
+						}
+				);
 			},
 			//打开谷歌地图，并定位
 			googleMap(address){
@@ -287,7 +352,8 @@
 					});
 				} else {
 					let param = {
-						'orderId': item.orderId
+						'orderId': item.orderId,
+						'type': item.type,
 					}
 					let _this = this
 					getData("{:url('/driver/confirmOrderFinish')}", param, function (res) {
@@ -383,8 +449,36 @@
 					});
 				} else {
 					localStorage.orderId = item.orderId
+					localStorage.type = item.type
 					this.nav_current_index = localStorage.nav_current_index = index
 					window.location.href = "{:url('/driver/confirmRecept')}"
+				}
+			},
+			//显示pick up详情
+			showPickDetail(item,index){
+				if (item.status != 3 || item.status == 3 && this.is_finish_receive != 1) {
+					let message = ''
+					let url = ''
+					if(item.status != 3){
+						message = 'Please start job first, whether to jump to start job page?';
+						url = "{:url('/driver/startJob')}"
+					}else{
+						message = 'Please complete the receive first, whether to jump to the receive page?';
+						url = "{:url('/driver/order')}"
+					}
+					swal({
+						title: message,
+						buttons: true,
+					}).then((willContinue) => {
+						if (!willContinue) {
+							return
+						} else {
+							window.location.href=url
+						}
+					});
+				} else {
+					this.isShowPickupOrderDetail=true
+					this.pickupData=item
 				}
 			},
 			chose:function(index){
@@ -435,6 +529,11 @@
 				this.$nextTick(()=> {
 					$('html,body').animate({scrollTop:$(selector).offset().top-55},500)
 				})
+			},
+			//关闭弹窗
+			closeBox(){
+				this.isShowPickupOrderDetail=false
+				this.pickupData=[]
 			},
 		}
 	})

@@ -34,6 +34,8 @@ Route::post('uploadBase64Picture', 'Driver/uploadBase64Picture');
 Route::post('driverDeliveryDate', 'Driver/deliveryDate');
 //获取订单
 Route::post('driverOrder', 'Driver/driverOrder');
+//获取导航订单
+Route::post('driverNavOrder', 'Driver/driverNavOrder');
 //修改订单状态
 Route::post('changeReceiptStatus', 'Driver/changeReceiptStatus');
 //修改该调度的订单全部状态
