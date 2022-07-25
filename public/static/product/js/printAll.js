@@ -303,7 +303,11 @@ function labelTemplateAll(order,goods,goodsTwoCate,businessName,userName,print_t
         html+='</tr>';
         html+='<tr style="height:36px;">';
         html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: left;font-size:32px;" >&nbsp;&nbsp;'+order.logistic_sequence_No+'</td>';
-        html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;" ><span style="font-size:16px">DROPNO&nbsp;</span>'+order.logistic_stop_No+'&nbsp;&nbsp;<span style="font-size:16px">BOX </span> '+order.boxLabel+'&nbsp;&nbsp;</td>';
+        if(order.boxLabel.length>=8){
+            html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;" ><span style="font-size:16px">DROPNO&nbsp;</span>'+order.logistic_stop_No+'&nbsp;&nbsp;<span style="font-size:12px">BOX </span> '+order.boxLabel+'&nbsp;&nbsp;</td>';
+        }else{
+            html+=	'<td style="border-width: 1px 1px 1px 1px;border-style:solid;text-align: right;" ><span style="font-size:16px">DROPNO&nbsp;</span>'+order.logistic_stop_No+'&nbsp;&nbsp;<span style="font-size:16px">BOX </span> '+order.boxLabel+'&nbsp;&nbsp;</td>';
+        }
 
         html+='</tr>';
         html+='</table>';
