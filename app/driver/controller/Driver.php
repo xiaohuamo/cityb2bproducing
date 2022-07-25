@@ -194,7 +194,7 @@ class Driver extends Base
 
         $Order = new Order();
 
-        //获取对应日期的总橡树和已完成的箱数
+        //获取对应日期的总箱数和已完成的箱数
         $box_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],1);
         //获取对应日期的总的订单数和已完成的订单数
         $all_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],2);
@@ -226,12 +226,16 @@ class Driver extends Base
 
         $Order = new Order();
 
+        //获取对应日期的总箱数和已完成的箱数
+        $box_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],1);
         //获取对应日期的总的订单数和已完成的订单数
         $all_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],2);
         //获取对应日期的送货订单和pick up订单
         $order = $Order->getDriverNavOrderList($param['logistic_delivery_date'],$businessId,$param['logistic_schedule_id'],$param['o_sort'],$param['o_sort_type']);
         $coupon_status_arr = array_column($order,'coupon_status');
         $data = [
+            'box_count' => $box_count,
+            'all_order_count' => $all_order_count,
             'order' => $order,
             'is_finish_receive' => $all_order_count['order_done_count'] == $all_order_count['order_count'] ? 1 : 2,//是否完成收货 1-是 2-否
             'is_finish_deliveryed' => in_array('c01',$coupon_status_arr) || in_array('p01',$coupon_status_arr) ? 2 : 1,//是否全部送货 1-是 2-否
@@ -550,6 +554,7 @@ class Driver extends Base
 
         $TruckJob = new TruckJob();
         $Order = new Order();
+        $Picking = new Picking();
         //1.获取司机信息
         $info = $TruckJob->getTruckJobInfo($businessId,$user_id,$param['logistic_delivery_date'],$param['logistic_schedule_id']);
         if (empty($info)) {
@@ -564,8 +569,11 @@ class Driver extends Base
             return show(config('status.code')['driver_status_error']['code'], 'Please complete the receive first');
         }
         //判断司机货物是否全部送达
+        //1.获取司机送达数量
         $all_delivery_order_count = $Order->getDriverOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],3);
-        if($all_delivery_order_count['order_done_count'] != $all_delivery_order_count['order_count']){
+        //2.获取司机pick up数量
+        $all_picking_order_count = $Picking->getPickingOrderCount($businessId,$param['logistic_delivery_date'],$param['logistic_schedule_id'],3);
+        if(($all_delivery_order_count['order_done_count'] != $all_delivery_order_count['order_count']) || ($all_picking_order_count['order_done_count'] != $all_picking_order_count['order_count'])){
             return show(config('status.code')['driver_status_error']['code'], 'Please complete the delivery first');
         }
         //更改订单状态
