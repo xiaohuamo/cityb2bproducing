@@ -346,7 +346,7 @@ class Order extends Model
             }
         }
         if(count($pps_list) > 0 && count($pps_has_list) != count($pps_list)){
-            $pps_has_id_arr = array_column($pps_has_list,'id');
+            $pps_has_id_arr = array_column($pps_has_list,'pps_id');
             $pps_id_arr = array_column($pps_list,'id');
             $result = array_diff($pps_id_arr,$pps_has_id_arr);
             ProducingProgressSummery::getUpdate([['id','in',$result]],['isdeleted'=>1]);
@@ -416,7 +416,7 @@ class Order extends Model
             }
         }
         if(count($dps_list) > 0 && count($dps_has_list) != count($dps_list)){
-            $dps_has_id_arr = array_column($dps_has_list,'id');
+            $dps_has_id_arr = array_column($dps_has_list,'dps_id');
             $dps_id_arr = array_column($dps_list,'id');
             $result = array_diff($dps_id_arr,$dps_has_id_arr);
             DispatchingProgressSummery::getUpdate([['id','in',$result]],['isdeleted'=>1]);
