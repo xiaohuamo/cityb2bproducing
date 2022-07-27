@@ -54,6 +54,10 @@ class DispatchingProgressSummery extends Model
                         }
 
                     }
+                }else{
+                    if($update_data['finish_quantities'] >= $update_data['sum_quantities']){
+                        $update_data['isDone'] = 1;
+                    }
                 }
                 $res = self::getUpdate(['id' => $dps_info['id']], $update_data);
             }

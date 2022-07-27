@@ -36,6 +36,9 @@ class ProducingProgressSummery extends Model
                 if($data['isDone']==1 && $update_data['finish_quantities'] < $update_data['sum_quantities']){
                     $update_data['isDone'] = 0;
                 }
+                if($update_data['finish_quantities'] >= $update_data['sum_quantities']){
+                    $update_data['isDone'] = 1;
+                }
                 $res = self::getUpdate(['id' => $data['pps_id']], $update_data);
             }
         } else {
