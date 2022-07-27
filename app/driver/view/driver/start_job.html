@@ -106,8 +106,8 @@
 					_this.isLoading=false
 					_this.list = res.result.list
 					_this.choseDate =  res.result.default
-					_this.logistic_delivery_date = localStorage.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
-					_this.logistic_schedule_id = localStorage.logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
+					_this.logistic_delivery_date = localStorage.driver_logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
+					_this.logistic_schedule_id = localStorage.driver_logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
 					//获取当前的配送日期之后，获取车辆的信息
 					if(_this.logistic_delivery_date&&_this.logistic_schedule_id>0){
 						_this.getJobData()
@@ -117,8 +117,8 @@
 			//切换日期
 			choseDay(item){
 				this.choseDate=item
-				this.logistic_delivery_date=localStorage.logistic_delivery_date=item.logistic_delivery_date
-				this.logistic_schedule_id=localStorage.logistic_schedule_id=item.logistic_schedule_id
+				this.logistic_delivery_date=localStorage.driver_logistic_delivery_date=item.logistic_delivery_date
+				this.logistic_schedule_id=localStorage.driver_logistic_schedule_id=item.logistic_schedule_id
 				this.close()
 				//重新获取车辆数据
 				this.deliveryDateFun()
@@ -155,7 +155,7 @@
 					return;
 				}
 				if(this.jobFillData.start_temprature==null||this.jobFillData.start_temprature==''){
-					popContent('please input vechile start kilo metres.');
+					popContent('please input vechile start temprature.');
 					return;
 				}
 				this.jobFillData.start_temprature = parseFloat(this.jobFillData.start_temprature)

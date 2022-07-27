@@ -190,8 +190,8 @@
 					_this.isLoading=false
 					_this.list = res.result.list
 					_this.choseDate =  res.result.default
-					_this.logistic_delivery_date = localStorage.logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
-					_this.logistic_schedule_id = localStorage.logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
+					_this.logistic_delivery_date = localStorage.driver_logistic_delivery_date = _this.choseDate.hasOwnProperty('logistic_delivery_date')?_this.choseDate.logistic_delivery_date:''
+					_this.logistic_schedule_id = localStorage.driver_logistic_schedule_id = _this.choseDate.hasOwnProperty('logistic_schedule_id')?_this.choseDate.logistic_schedule_id:''
 					//获取初始化数据
 					if(_this.logistic_delivery_date&&_this.logistic_schedule_id>0){
 						_this.orderData()
@@ -202,8 +202,8 @@
 			driverInfo(){
 				let _this = this
 				let data = {
-					'logistic_delivery_date':localStorage.logistic_delivery_date,
-					'logistic_schedule_id':localStorage.logistic_schedule_id
+					'logistic_delivery_date':localStorage.driver_logistic_delivery_date,
+					'logistic_schedule_id':localStorage.driver_logistic_schedule_id
 				}
 				getData("{:url('/driver/driverLoginInfo')}", data, function (res) {
 					console.log('获取登录信息---',res);
@@ -265,8 +265,8 @@
 			//切换日期
 			choseDay(item){
 				this.choseDate=item
-				this.logistic_delivery_date=localStorage.logistic_delivery_date=item.logistic_delivery_date
-				this.logistic_schedule_id=localStorage.logistic_schedule_id=item.logistic_schedule_id
+				this.logistic_delivery_date=localStorage.driver_logistic_delivery_date=item.logistic_delivery_date
+				this.logistic_schedule_id=localStorage.driver_logistic_schedule_id=item.logistic_schedule_id
 				this.close()
 				//重置订单数据
 				this.deliveryDateFun()
