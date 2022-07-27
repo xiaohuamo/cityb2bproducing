@@ -27,6 +27,8 @@ Route::get('returnStock', 'Driver/returnStock');
 //登录
 Route::post('loginByPassword', 'Login/loginByPassword');
 //登录信息
+Route::post('userInfo', 'Driver/userInfo');
+//登录信息
 Route::post('driverLoginInfo', 'Driver/loginInfo');
 //登录信息
 Route::post('uploadBase64Picture', 'Driver/uploadBase64Picture');

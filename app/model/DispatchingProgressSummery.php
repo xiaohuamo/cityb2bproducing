@@ -82,7 +82,7 @@ class DispatchingProgressSummery extends Model
             ['o.business_userId', '=', $businessId],
             ['o.coupon_status', '=', 'c01'],
             ['wcc.customer_buying_quantity', '>', 0],
-            ['o.logistic_delivery_date','>',time()-3600*24*7],
+            ['o.logistic_delivery_date','>',time()-3600*24*17],
         ];
         //获取需要加工的订单总数
         $date_arr = Db::name('wj_customer_coupon')
@@ -233,12 +233,12 @@ class DispatchingProgressSummery extends Model
             ->leftJoin('order o','o.orderId = dps.orderId')
             ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
             ->leftJoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.schedule_id = dps.logistic_schedule_id")
-            ->leftjoin('user u','u.id=t.current_driver')
+            ->leftjoin('user u','u.id=tds.driver_id')
             ->where($where)
             ->group('dps.logistic_schedule_id')
             ->order($order_by)
 //            ->select()->toArray();
-            ->column('dps.logistic_schedule_id,dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,tds.schedule_start_time,count(o.orderId) all_order_num,sum(IF(o.edit_boxesNumber>0,o.edit_boxesNumber,o.boxesNumber)) as all_bxs_num','dps.logistic_schedule_id');
+            ->column('dps.logistic_schedule_id,dps.truck_no logistic_truck_No,dps.operator_user_id,dps.isDone,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,u.contactPersonNickName,tds.schedule_start_time,count(o.orderId) all_order_num,sum(IF(o.edit_boxesNumber>0,o.edit_boxesNumber,o.boxesNumber)) as all_bxs_num','dps.logistic_schedule_id');
         if(isset($data[0])){
             $data_0 = $data[0];
             unset($data[0]);
@@ -256,7 +256,7 @@ class DispatchingProgressSummery extends Model
             if($v['logistic_schedule_id'] == 0){
                 $v['name'] = 'waiting assigned';//无-待分配司机
             }else{
-                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];//司机姓名
+                $v['name'] = $v['contactPersonNickName'];//$v['contactPersonFirstname'].' '.$v['contactPersonLastname'];//司机姓名
             }
             //获取司机对应的所有订单
             $map = ['dps.logistic_schedule_id'=>$v['logistic_schedule_id']];
@@ -335,12 +335,12 @@ class DispatchingProgressSummery extends Model
         }
         $order_list = Db::name('dispatching_progress_summery')
             ->alias('dps')
-            ->field('dps.orderId,dps.logistic_schedule_id,dps.truck_no logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,dps.sum_quantities,dps.finish_quantities,dps.operator_user_id,dps.isDone,o.userId,o.displayName,o.first_name,o.last_name,uf.nickname,t.truck_name,t.plate_number,tds.schedule_start_time,u.contactPersonFirstname,u.contactPersonLastname,o.boxesNumber,o.edit_boxesNumber')
+            ->field('dps.orderId,dps.logistic_schedule_id,dps.truck_no logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,dps.sum_quantities,dps.finish_quantities,dps.operator_user_id,dps.isDone,o.userId,o.displayName,o.first_name,o.last_name,uf.nickname,t.truck_name,t.plate_number,tds.schedule_start_time,u.contactPersonFirstname,u.contactPersonLastname,u.contactPersonNickName,o.boxesNumber,o.edit_boxesNumber')
             ->leftJoin('order o','o.orderId = dps.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
             ->leftJoin('truck t',"t.truck_no = dps.truck_no and t.business_id=$businessId")
-            ->leftJoin('truck_driver_schedule tds',"tds.schedule_id = dps.logistic_schedule_id and tds.factory_id=$businessId")
-            ->leftJoin('user u','u.id=t.current_driver')
+            ->leftJoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=dps.delivery_date and tds.schedule_id = dps.logistic_schedule_id")
+            ->leftJoin('user u','u.id=tds.driver_id')
             ->where($where)
             ->order($order_by)
             ->select()->toArray();
@@ -352,7 +352,7 @@ class DispatchingProgressSummery extends Model
             if($v['logistic_schedule_id'] == 0){
                 $v['name'] = 'waiting assigned';//无-待分配司机
             }else {
-                $v['name'] = $v['contactPersonFirstname'] . ' ' . $v['contactPersonLastname'];//司机姓名
+                $v['name'] = $v['contactPersonNickName'];//$v['contactPersonFirstname'] . ' ' . $v['contactPersonLastname'];//司机姓名
             }
             $v['schedule_time'] = $v['schedule_start_time'] > 0 ? date('h:ia',$v['schedule_start_time']) : '';//发车时间
             $v['remain_time'] = $v['schedule_start_time'] > 0 && $v['schedule_start_time']>=$time ?  $time-$v['schedule_start_time'] : 0;//距离发车剩余时间

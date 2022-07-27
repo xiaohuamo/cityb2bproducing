@@ -17,19 +17,19 @@ class TruckJob extends Model
 
     public function getTruckJobInfo($businessId,$user_id,$logistic_delivery_date,$logistic_schedule_id)
     {
-        $info = Truck::alias('t')
-            ->field('tj.*,tds.id tds_id,tds.truck_id,tds.status,tds.driver_start_location,tds.driver_end_location,tds.driver_work_start_time,tds.driver_work_end_time,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
-            ->leftjoin('truck_driver_schedule tds',"tds.factory_id=$businessId and tds.delivery_date=$logistic_delivery_date and tds.driver_id=t.current_driver and tds.schedule_id=$logistic_schedule_id")
+        $info = TruckDriverSchedule::alias('tds')
+            ->field('tj.*,tds.id tds_id,tds.truck_id,tds.status,tds.driver_start_location,tds.driver_end_location,tds.driver_work_start_time,tds.driver_work_end_time,t.business_id businessId,t.current_driver user_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,u.contactPersonNickName')
+            ->leftjoin('truck t','t.truck_no=tds.truck_id and business_id='.$businessId)
             ->leftjoin('truck_job tj',"tj.truck_driver_schedule_id=tds.id")
-            ->leftjoin('user u','u.id=t.current_driver')
+            ->leftjoin('user u','u.id=tds.driver_id')
             ->where([
-                ['t.business_id','=',$businessId],
-                ['t.current_driver','=',$user_id],
-                ['t.isAvaliable','=',1]
+                ['tds.delivery_date','=',$logistic_delivery_date],
+                ['tds.factory_id','=',$businessId],
+                ['tds.schedule_id','=',$logistic_schedule_id]
             ])
             ->find();
         if($info){
-            $info['name'] = $info['contactPersonFirstname'].' '.$info['contactPersonLastname'];
+            $info['name'] = $info['contactPersonNickName'];//$info['contactPersonFirstname'].' '.$info['contactPersonLastname'];
             if(!empty($info['truck_id']) && empty($info['start_kile_metre_num'])){
                 //查询该车的最后一次的结束里程数，作为开始里程数
                 $last_driver_data = self::alias('tj')

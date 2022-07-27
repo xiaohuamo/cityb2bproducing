@@ -90,7 +90,7 @@
       //获取司机信息
       driverInfo(){
         let _this = this
-        getData("{:url('/driver/driverLoginInfo')}", '', function (res) {
+        getData("{:url('/driver/userInfo')}", '', function (res) {
           console.log('获取登录信息---',res);
           if(res.status == 144){
             //清空本地存储信息，并跳转到登录页面

@@ -9,7 +9,16 @@ use think\Request;
 use app\common\service\UploadFileService;
 use app\product\validate\IndexValidate;
 use app\driver\validate\DriverValidate;
-use app\model\{Order, Truck, User, TruckJob, UserFactory, WjCustomerCoupon, OrderReturn, OrderReturnDetailInfo, Picking};
+use app\model\{Order,
+    Truck,
+    TruckDriverSchedule,
+    User,
+    TruckJob,
+    UserFactory,
+    WjCustomerCoupon,
+    OrderReturn,
+    OrderReturnDetailInfo,
+    Picking};
 use think\route\dispatch\Controller;
 
 class Driver extends Base
@@ -95,10 +104,19 @@ class Driver extends Base
     }
 
     //获取用户登录信息
+    public function userInfo(Request $request)
+    {
+        $data = User::getOne(['id'=>$request->user_id]);
+        return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
+    }
+
+
+    //获取司机信息
     public function loginInfo(Request $request)
     {
-        $truck = new Truck();
-        $data = $truck->getTruckInfo($request->businessId,$request->user_id);
+        $param = $request->only(['logistic_delivery_date','logistic_schedule_id']);
+        $TruckDriverSchedule = new TruckDriverSchedule();
+        $data = $TruckDriverSchedule->getTruckScheduleInfo($request->businessId,$request->user_id,$param['logistic_delivery_date'],$param['logistic_schedule_id']);
         return show(config('status.code')['success']['code'],config('status.code')['success']['msg'],$data);
     }
 

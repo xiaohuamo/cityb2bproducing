@@ -110,9 +110,9 @@ class Order extends Model
         $logistic_schedule_id_arr = array_filter($logistic_schedule_id_arr);
         if($logistic_schedule_id_arr){
             $drivers = TruckDriverSchedule::alias('tds')
-                ->field('tds.schedule_id logistic_schedule_id,tds.schedule_start_time,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname')
+                ->field('tds.schedule_id logistic_schedule_id,tds.schedule_start_time,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,u.contactPersonNickName')
                 ->leftjoin('truck t','t.truck_no=tds.truck_id and business_id='.$businessId)
-                ->leftjoin('user u','u.id=t.current_driver')
+                ->leftjoin('user u','u.id=tds.driver_id')
                 ->where([
                     ['tds.delivery_date','=',$logistic_delivery_date],
                     ['tds.factory_id','=',$businessId],
@@ -120,12 +120,13 @@ class Order extends Model
                 ])
                 ->order('tds.schedule_start_time asc,tds.truck_id asc')->select();
             foreach ($drivers as &$v){
-                if($v['contactPersonFirstname']){
-                    $v['name'] = $v['contactPersonFirstname'];
-                }
-                if($v['contactPersonLastname']){
-                    $v['name'] = $v['name'].' '.$v['contactPersonLastname'];
-                }
+//                if($v['contactPersonFirstname']){
+//                    $v['name'] = $v['contactPersonFirstname'];
+//                }
+//                if($v['contactPersonLastname']){
+//                    $v['name'] = $v['name'].' '.$v['contactPersonLastname'];
+//                }
+                $v['name'] = $v['contactPersonNickName'];
                 $v['start_time'] = date('H:i',$v['schedule_start_time']);
             }
         }
@@ -248,7 +249,7 @@ class Order extends Model
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
 //            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,o.userId,o.orderId,o.first_name,o.last_name,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone,rm.unit_en,wcc.assign_stock,o.boxesNumber,o.edit_boxesNumber,wcc.current_box_sort_id,o.customer_delivery_option')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate,wcc.assign_stock')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_schedule_id,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,pps.operator_user_id,pps.isDone,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate,wcc.assign_stock')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
@@ -258,23 +259,14 @@ class Order extends Model
             ->order($order_by)
             ->select()->toArray();
         //获取所有的司机信息
-        $logistic_truck_No_arr = array_filter(array_unique(array_column($order,'logistic_truck_No')));
+        $logistic_schedule_id_arr = array_filter(array_unique(array_column($order,'logistic_schedule_id')));
         $truck_data_arr = [];//存储司机的信息
-        if($logistic_truck_No_arr){
-            $truck_data_arr = Truck::alias('t')
-                ->leftjoin('user u','u.id=t.current_driver')
-                ->where([
-                    ['t.business_id','=',$businessId],
-                    ['t.truck_no','in',$logistic_truck_No_arr],
-                ])
-                ->column('t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname','t.truck_no');
-            foreach ($truck_data_arr as &$v){
-                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];
-            }
+        if($logistic_schedule_id_arr){
+            $truck_data_arr = $this->getDriverData($businessId,$logistic_delivery_date,$logistic_schedule_id_arr);
         }
         foreach($order as &$v){
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
-            $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
+            $v['truck_info'] = $truck_data_arr[$v['logistic_schedule_id']] ?? [];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;
@@ -481,7 +473,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_stop_No,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.mix_box_group,wcc.assign_stock,rm.restaurant_category_id cate_id,pps.operator_user_id pps_operator_user_id,pps.isDone pps_isDone')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.customer_delivery_option,o.logistic_schedule_id,o.logistic_stop_No,o.logistic_delivery_date,rm.menu_en_name,rm.menu_id,rm.unit_en,wcc.guige1_id,rmo.menu_en_name guige_name,o.userId,o.orderId,o.logistic_delivery_date,o.logistic_sequence_No,o.logistic_truck_No,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,wcc.dispatching_is_producing_done,1 as num1,dps.operator_user_id,dps.isDone,rm.proucing_item,rm.unit_en,wcc.dispatching_item_operator_user_id,wcc.mix_box_group,wcc.assign_stock,rm.restaurant_category_id cate_id,pps.operator_user_id pps_operator_user_id,pps.isDone pps_isDone')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('restaurant_menu_option rmo','wcc.guige1_id = rmo.id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
@@ -492,23 +484,14 @@ class Order extends Model
             ->order($order_by)
             ->select()->toArray();
         //获取所有的司机信息
-        $logistic_truck_No_arr = array_filter(array_unique(array_column($order,'logistic_truck_No')));
+        $logistic_schedule_id_arr = array_filter(array_unique(array_column($order,'logistic_schedule_id')));
         $truck_data_arr = [];//存储司机的信息
-        if($logistic_truck_No_arr){
-            $truck_data_arr = Truck::alias('t')
-                ->leftjoin('user u','u.id=t.current_driver')
-                ->where([
-                    ['t.business_id','=',$businessId],
-                    ['t.truck_no','in',$logistic_truck_No_arr],
-                ])
-                ->column('t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname','t.truck_no');
-            foreach ($truck_data_arr as &$v){
-                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];
-            }
+        if($logistic_schedule_id_arr){
+            $truck_data_arr = $this->getDriverData($businessId,$order[0]['logistic_delivery_date'],$logistic_schedule_id_arr);
         }
         foreach($order as &$v){
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
-            $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
+            $v['truck_info'] = $truck_data_arr[$v['logistic_schedule_id']] ?? [];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;
@@ -1017,7 +1000,7 @@ class Order extends Model
         //获取加工明细单数据
         $order = Db::name('wj_customer_coupon')
             ->alias('wcc')
-            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_schedule_id,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate,wcc.assign_stock')
+            ->field('wcc.id,wcc.restaurant_menu_id product_id,wcc.guige1_id,wcc.message,wcc.boxnumber,wcc.splicingboxnumber,wcc.mix_box_group,wcc.print_label_sorts,wcc.current_box_sort_id,wcc.mix_box_sort_id,o.userId,o.orderId,o.first_name,o.last_name,o.displayName,o.address,o.phone,o.message_to_business,o.logistic_schedule_id,o.logistic_schedule_id,o.logistic_truck_No,o.logistic_sequence_No,o.logistic_stop_No,o.logistic_delivery_date,o.logistic_suppliers_info,o.logistic_suppliers_count,o.customer_delivery_option,o.boxesNumber,o.boxesNumberSortId,o.edit_boxesNumber,o.redeem_code,uf.nickname,wcc.customer_buying_quantity,wcc.new_customer_buying_quantity,wcc.is_producing_done,1 as num1,wcc.dispatching_item_operator_user_id,wcc.dispatching_is_producing_done,rm.proucing_item,rm.unit_en,rm.unitQtyPerBox,rm.overflowRate,wcc.assign_stock')
             ->leftJoin('restaurant_menu rm','rm.id = wcc.restaurant_menu_id')
             ->leftJoin('order o','wcc.order_id = o.orderId')
             ->leftJoin('user_factory uf','uf.user_id = o.userId and factory_id='.$businessId)
@@ -1026,19 +1009,10 @@ class Order extends Model
             ->order($order_by)
             ->select()->toArray();
         //获取所有的司机信息
-        $logistic_truck_No_arr = array_filter(array_unique(array_column($order,'logistic_truck_No')));
+        $logistic_schedule_id_arr = array_filter(array_unique(array_column($order,'logistic_schedule_id')));
         $truck_data_arr = [];//存储司机的信息
-        if($logistic_truck_No_arr){
-            $truck_data_arr = Truck::alias('t')
-                ->leftjoin('user u','u.id=t.current_driver')
-                ->where([
-                    ['t.business_id','=',$businessId],
-                    ['t.truck_no','in',$logistic_truck_No_arr],
-                ])
-                ->column('t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname','t.truck_no');
-            foreach ($truck_data_arr as &$v){
-                $v['name'] = $v['contactPersonFirstname'].' '.$v['contactPersonLastname'];
-            }
+        if($logistic_schedule_id_arr){
+            $truck_data_arr = $this->getDriverData($businessId,$logistic_delivery_date,$logistic_schedule_id_arr);
         }
         $picking_user_id = 0;//存储当前正在拣货的用户id
         $no_picking_id_arr = [];//存储当前未同步的拣货员用户id(因为拣货时，可能会实时增加订单，所以需要将正在进行拣货时，未存储的用户id给同步上)
@@ -1056,7 +1030,7 @@ class Order extends Model
                 }
             }
             $v['new_customer_buying_quantity'] = $v['new_customer_buying_quantity']>=0?$v['new_customer_buying_quantity']:$v['customer_buying_quantity'];
-            $v['truck_info'] = $truck_data_arr[$v['logistic_truck_No']] ?? [];
+            $v['truck_info'] = $truck_data_arr[$v['logistic_schedule_id']] ?? [];
             //判断当前加工明细是否被锁定
             $v['is_lock'] = 0;
             $v['lock_type'] = 0;
@@ -1247,5 +1221,26 @@ class Order extends Model
             $order['name'] = $name;
         }
         return $order;
+    }
+
+    /**
+     * 获取司机信息
+     * @return mixed
+     */
+    public function getDriverData($businessId,$logistic_delivery_date,$logistic_schedule_id_arr)
+    {
+        $drivers = TruckDriverSchedule::alias('tds')
+            ->leftjoin('truck t','t.truck_no=tds.truck_id and business_id='.$businessId)
+            ->leftjoin('user u','u.id=tds.driver_id')
+            ->where([
+                ['tds.delivery_date','=',$logistic_delivery_date],
+                ['tds.factory_id','=',$businessId],
+                ['tds.schedule_id','in',$logistic_schedule_id_arr]
+            ])
+            ->column('tds.schedule_id,t.truck_no logistic_truck_No,t.truck_name,t.plate_number,u.contactPersonFirstname,u.contactPersonLastname,u.contactPersonNickName','tds.schedule_id');
+        foreach ($drivers as &$v){
+            $v['name'] = $v['contactPersonNickName'];
+        }
+        return $drivers;
     }
 }
