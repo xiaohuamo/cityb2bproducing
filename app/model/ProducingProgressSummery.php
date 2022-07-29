@@ -214,6 +214,7 @@ class ProducingProgressSummery extends Model
                 ['business_userId', '=', $businessId],
                 ['delivery_date','=',$logistic_delivery_date],
                 ['product_id', 'in', $product_id_arr],
+                ['isdeleted', '=', 0],
             ];
             $goods_one_cate = Db::name('producing_progress_summery')
                 ->alias('pps')
